@@ -4,12 +4,15 @@
 // that uses this DLL. This way any other project whose source files include this file see
 // WNASPI32_API functions as being imported from a DLL, whereas this DLL sees symbols
 // defined with this macro as being exported.
-#include "srb32.h"
+#pragma once
+
 #ifdef WNASPI32_EXPORTS
 #define WNASPI32_API __declspec(dllexport)
 #else
 #define WNASPI32_API __declspec(dllimport)
 #endif
+#include "srbcmn.h"
+#include "srb32.h"
 
 typedef struct HaTargetLun
 {
