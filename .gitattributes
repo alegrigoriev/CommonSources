@@ -1,0 +1,8 @@
+*       text=auto
+*.c     text
+*.cpp   text
+*.h     text
+*.H     text
+*.RTF   text
+*.doc   binary
+*.pdf   binary
