@@ -1,7 +1,7 @@
 //#include "Complex.h"
 #include "stdafx.h"
 #include "PolyRatio.h"
-#include "float.h"
+#include <float.h>
 
 polyRatio::polyRatio(Complex first, int MaxOrder)
 	: m_denom(0, Complex(1.), MaxOrder), m_numer(0, first, MaxOrder)
