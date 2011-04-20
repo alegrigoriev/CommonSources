@@ -10,28 +10,7 @@
 #if !defined(__COMPLEX_H)
 #include <Complex.h>
 #endif
-
-class fcomplex
-{
-public:
-	float re;
-	float im;
-
-	fcomplex() {}
-
-	fcomplex(double real, double imag = 0.)
-		: re((float)real), im((float)imag)
-	{
-	}
-	fcomplex(const Complex & z)
-		: re((float)z.re), im((float)z.im)
-	{
-	}
-	operator Complex() const
-	{
-		return Complex(re, im);
-	}
-};
+typedef std::complex<float> fcomplex;
 
 #define SIGNAL_COMPLEX  1
 #define SIGNAL_STEREO   2
