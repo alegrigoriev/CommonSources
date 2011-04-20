@@ -2,12 +2,13 @@
 #ifndef __DIGITAL_SIGNAL_H__
 #define __DIGITAL_SIGNAL_H__
 
+
 #ifndef __FILTER_H
 #include "Filter.h"
 #endif
 #include "mmsystem.h"
 
-#include <DigitalSignalArray.h>
+#include "DigitalSignalArray.h"
 
 #ifndef __AFXTEMPL_H__
 #include <afxtempl.h>
@@ -337,7 +338,7 @@ inline double CFilterband::GetLevelDB(int nSample)
 		if(pInSignal->Flags(SIGNAL_COMPLEX))
 		{
 			Complex tmp = pInSignal->GetComplexAt(nSample - iFirstSample);
-			double level = dNormCoeff * (tmp.re * tmp.re + tmp.im * tmp.im);
+			double level = dNormCoeff * (tmp.real() * tmp.real() + tmp.imag() * tmp.imag());
 			if (level != 0.)
 			{
 				return 10. * log10(level);

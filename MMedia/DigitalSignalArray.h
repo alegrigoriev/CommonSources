@@ -8,7 +8,7 @@
 #endif
 
 #if !defined(__COMPLEX_H)
-#include <Complex.h>
+#include "Complex.h"
 #endif
 typedef std::complex<float> fcomplex;
 
@@ -323,44 +323,44 @@ inline void CSignalArray<__int16, 2>::SetNextDouble(double value)
 	pStore = 2 + (__int16 *) pStore;
 }
 
-inline CSignalArray<class Complex, 1>::CSignalArray()
+inline CSignalArray<Complex, 1>::CSignalArray()
 	:nChan(0)
 {
 	nItemSize = sizeof (Complex) * 1;
 	dwFlags |= SIGNAL_COMPLEX | SIGNAL_DOUBLE;
 }
 
-inline CSignalArray<class Complex, 2>::CSignalArray()
+inline CSignalArray<Complex, 2>::CSignalArray()
 	:nChan(0)
 {
 	nItemSize = sizeof (Complex) * 2;
 	dwFlags |= SIGNAL_COMPLEX | SIGNAL_DOUBLE;
 }
 
-inline CSignalArray<class fcomplex, 1>::CSignalArray()
+inline CSignalArray<fcomplex, 1>::CSignalArray()
 	:nChan(0)
 {
 	nItemSize = sizeof (fcomplex) * 1;
 	dwFlags |= SIGNAL_COMPLEX;
 }
 
-inline CSignalArray<class fcomplex, 2>::CSignalArray()
+inline CSignalArray<fcomplex, 2>::CSignalArray()
 	:nChan(0)
 {
 	nItemSize = sizeof (fcomplex) * 2;
 	dwFlags |= SIGNAL_COMPLEX;
 }
 
-inline double CSignalArray<class Complex, 1>::GetDoubleAt(int nIndex) const
+inline double CSignalArray<Complex, 1>::GetDoubleAt(int nIndex) const
 {
 	ASSERT(FALSE);
-	return ((Complex *) pArray)[nIndex].re;
+	return ((Complex *) pArray)[nIndex].real();
 }
 
 inline double CSignalArray<Complex, 1>::GetNextDouble()
 {
 	ASSERT(FALSE);
-	return ((const Complex * & ) pRetrieve)++->re;
+	return ((const Complex * & ) pRetrieve)++->real();
 }
 
 inline void CSignalArray<Complex, 1>::SetComplexAt(const Complex & value, int nIndex)
@@ -376,10 +376,10 @@ inline void CSignalArray<Complex, 1>::SetNextComplex(const Complex & value)
 	*((Complex * & ) pStore)++ = value;
 }
 
-inline double CSignalArray<class Complex, 2>::GetDoubleAt(int nIndex) const
+inline double CSignalArray<Complex, 2>::GetDoubleAt(int nIndex) const
 {
 	ASSERT(FALSE);
-	return ((Complex *) pArray)[nIndex * 2].re;
+	return ((Complex *) pArray)[nIndex * 2].real();
 }
 
 inline double CSignalArray<Complex, 2>::GetNextDouble()
@@ -387,7 +387,7 @@ inline double CSignalArray<Complex, 2>::GetNextDouble()
 	ASSERT(FALSE);
 	const Complex * pTmp = (const Complex *) pRetrieve;
 	pRetrieve = pTmp + 2;
-	return pTmp->re;
+	return pTmp->real();
 }
 
 inline void CSignalArray<Complex, 2>::SetComplexAt(const Complex & value, int nIndex)
@@ -404,16 +404,16 @@ inline void CSignalArray<Complex, 2>::SetNextComplex(const Complex & value)
 	((Complex * & ) pStore) += 2;
 }
 //
-inline double CSignalArray<class fcomplex, 1>::GetDoubleAt(int nIndex) const
+inline double CSignalArray<fcomplex, 1>::GetDoubleAt(int nIndex) const
 {
 	ASSERT(FALSE);
-	return ((fcomplex *) pArray)[nIndex].re;
+	return ((fcomplex *) pArray)[nIndex].real();
 }
 
 inline double CSignalArray<fcomplex, 1>::GetNextDouble()
 {
 	ASSERT(FALSE);
-	return ((const fcomplex * & ) pRetrieve)++->re;
+	return ((const fcomplex * & ) pRetrieve)++->real();
 }
 
 inline void CSignalArray<fcomplex, 1>::SetComplexAt(const Complex & value, int nIndex)
@@ -429,10 +429,10 @@ inline void CSignalArray<fcomplex, 1>::SetNextComplex(const Complex & value)
 	*((fcomplex * & ) pStore)++ = value;
 }
 
-inline double CSignalArray<class fcomplex, 2>::GetDoubleAt(int nIndex) const
+inline double CSignalArray<fcomplex, 2>::GetDoubleAt(int nIndex) const
 {
 	ASSERT(FALSE);
-	return ((fcomplex *) pArray)[nIndex * 2].re;
+	return ((fcomplex *) pArray)[nIndex * 2].real();
 }
 
 inline double CSignalArray<fcomplex, 2>::GetNextDouble()
@@ -440,7 +440,7 @@ inline double CSignalArray<fcomplex, 2>::GetNextDouble()
 	ASSERT(FALSE);
 	const fcomplex * pTmp = (const fcomplex *) pRetrieve;
 	pRetrieve = pTmp + 2;
-	return pTmp->re;
+	return pTmp->real();
 }
 
 inline void CSignalArray<fcomplex, 2>::SetComplexAt(const Complex & value, int nIndex)

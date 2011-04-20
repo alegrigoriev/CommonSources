@@ -6,14 +6,16 @@
 #include "PolyRatio.h"
 #endif
 #include <afxtempl.h>
+#define _USE_MATH_DEFINES   // for M_PI definition
+#include <math.h>
 #include <float.h>
 
 #ifndef DIGITAL_SIGNAL_ARRAY__H__
-#include <DigitalSignalArray.h>
+#include "DigitalSignalArray.h"
 #endif
 
 #ifndef PIANOSTRING_H_
-#include "PianoString.h"
+//#include "PianoString.h"
 #endif
 
 #pragma pack(push, 8)
@@ -245,8 +247,10 @@ public:
 	double dSamplingRate;
 	double dCenterFreq;
 
+#ifdef PIANOSTRING_H_
 	BOOL CreateStringReflectorFilter(NewFilterData * pFD,
 									CPianoString& PianoString = CPianoString());
+#endif
 protected:
 	POLY_ROOTS m_Zeros;
 	POLY_ROOTS m_Poles;

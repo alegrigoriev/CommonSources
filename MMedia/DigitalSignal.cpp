@@ -584,7 +584,8 @@ CFilterband * CSignalWave::CreateFilterband
 	}
 
 #else
-	for (int subband = 0; subband
+	int subband;
+	for (subband = 0; subband
 		< aDecimators.GetUpperBound(); subband++)
 	{
 		CSignalDecimator * pDecimator = aDecimators[subband];

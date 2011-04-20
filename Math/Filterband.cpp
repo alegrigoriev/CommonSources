@@ -253,7 +253,7 @@ const float * CFilterband::GetLevelDB(int iStart, int iLength)
 	for (int i = 0; i < iReqLength; i++)
 	{
 		Complex ctmp = pSrc->GetNextComplex();
-		double tmp = ctmp.re * ctmp.re + ctmp.im * ctmp.im;
+		double tmp = ctmp.real() * ctmp.real() + ctmp.imag() * ctmp.imag();
 		if (tmp != 0.)
 		{
 			pLevelDBArray[i] =

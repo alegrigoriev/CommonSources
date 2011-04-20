@@ -206,7 +206,8 @@ BOOL CDigitalFilter::CreateHighpassElliptic(NewFilterData * pFD)
 
 	dCenterFreq = dSamplingRate * 0.5;
 	// convert all polynoms to z = -z
-	for (int i = 0; i < m_aRatios.GetSize(); i++)
+	int i;
+	for (i = 0; i < m_aRatios.GetSize(); i++)
 	{
 		m_aRatios[i]->ScaleRoots(COMPLEX(-1., 0.));
 		m_aDerivRatios[i]->ScaleRoots(COMPLEX(-1., 0.));
@@ -410,9 +411,11 @@ BOOL CDigitalFilter::CreateBandpassElliptic(NewFilterData * pFD)
 			BilinearLowPass(poles, zeros, 1.,
 							Zpoles1, Zzeros1, conj(rotator));
 			numer = poly(ZPlaneZeros) * poly (Zpoles1);
-			for (int i = 0; i <= numer.order(); i++)
+
+			int i;
+			for (i = 0; i <= numer.order(); i++)
 			{
-				numer[i] = numer[i].re * 2;
+				numer[i] = numer[i].real() * 2;
 			}
 			Zpoles1 = ZPlanePoles;
 			ZPlanePoles.SetCount(0);
@@ -422,7 +425,7 @@ BOOL CDigitalFilter::CreateBandpassElliptic(NewFilterData * pFD)
 				ZPlanePoles += conj(Zpoles1[i]);
 			}
 
-			m_prCanonical = POLY_RATIO(numer * NormCoeff.re,
+			m_prCanonical = POLY_RATIO(numer * NormCoeff.real(),
 										POLY(ZPlanePoles));
 
 			InsertRatio(m_prCanonical);
@@ -516,8 +519,9 @@ BOOL CDigitalFilter::CreatePartialDelayFilter(NewFilterData * pFD)
 	double delay = (n / 2) + pFD->dDelay;
 	polyRoots freqs;
 	polyRoots values;
+	int i;
 #if 1
-	for (int i = 0; i < n / 2; i++)
+	for (i = 0; i < n / 2; i++)
 	{
 		Complex freq = Complex(0,
 								pFD->dCenterFreq* (i + 1) * 2. * M_PI /
@@ -540,7 +544,7 @@ BOOL CDigitalFilter::CreatePartialDelayFilter(NewFilterData * pFD)
 		values += conj(values[i]);
 	}
 #else
-	for (int i = 0; i < n / 2; i++)
+	for (i = 0; i < n / 2; i++)
 	{
 		Complex freq = Complex(0,
 								pFD->dCenterFreq* (i + 1) * 2. * M_PI /
@@ -575,15 +579,15 @@ BOOL CDigitalFilter::CreatePartialDelayFilter(NewFilterData * pFD)
 	values.Dump();
 #endif
 #if 1
-	lpoly p;
-	p.FromPoints(lpolyRoots(freqs).array(), lpolyRoots(values).array(), freqs.count());
+	poly p;
+	p.FromPoints(polyRoots(freqs).array(), polyRoots(values).array(), freqs.count());
 #else
 	poly p;
 	p.FromPoints(freqs.array(), values.array(), freqs.count());
 #endif
 	for (i = 0; i <= p.order(); i++)
 	{
-		p[i].im = 0.;
+		p[i].imag(0.);
 	}
 	m_prCanonical = POLY_RATIO(p, POLY(0, Complex(1.)));
 	InsertRatio(m_prCanonical);
@@ -760,15 +764,15 @@ BOOL CDigitalFilter::CreateStringReflectorFilter(NewFilterData * pFD,
 	values.Dump();
 #endif
 #if 0
-	lpoly p;
-	p.FromPoints(lpolyRoots(freqs).array(), lpolyRoots(values).array(), freqs.count());
+	poly p;
+	p.FromPoints(polyRoots(freqs).array(), polyRoots(values).array(), freqs.count());
 #else
 	poly p;
 	p.FromPoints(freqs.array(), values.array(), freqs.count());
 #endif
 	for (i = 0; i <= p.order(); i++)
 	{
-		p[i].im = 0.;
+		p[i].imag() = 0.;
 	}
 #endif
 	m_prCanonical = POLY_RATIO(p, POLY(0, Complex(1.)));
@@ -1043,15 +1047,15 @@ int CDigitalFilter::TemporalResponce(COMPLEX * dst,
 		{
 			Complex tmp = m_Poles.array()[i];
 			if (i < nDenomOrder - 1
-				&& tmp.im != 0.
+				&& tmp.imag() != 0.
 				&& tmp == conj(m_Poles.array()[i + 1]))
 			{
 				// conjugated roots found
 				nConjPoles += 2;
 				pPrevOutArray[2 * (nDenomOrder - nConjPoles)] =
-					-2. * tmp.re;
+					-2. * tmp.real();
 				pPrevOutArray[2 * (nDenomOrder - nConjPoles) + 2] =
-					tmp.re * tmp.re + tmp.im * tmp.im;
+					tmp.real() * tmp.real() + tmp.imag() * tmp.imag();
 				i++;    // skip one extra pole
 			}
 			else
@@ -1072,15 +1076,15 @@ int CDigitalFilter::TemporalResponce(COMPLEX * dst,
 		{
 			Complex tmp = m_Zeros.array()[i];
 			if (i < nNumerOrder - 1
-				&& tmp.im != 0.
+				&& tmp.imag() != 0.
 				&& tmp == conj(m_Zeros.array()[i + 1]))
 			{
 				// conjugated roots found
 				nConjZeros += 2;
 				pPrevInArray[2 * (nNumerOrder - nConjZeros)] =
-					-2. * tmp.re;
+					-2. * tmp.real();
 				pPrevInArray[2 * (nNumerOrder - nConjZeros) + 2] =
-					tmp.re * tmp.re + tmp.im * tmp.im;
+					tmp.real() * tmp.real() + tmp.imag() * tmp.imag();
 			}
 			else
 			{
@@ -1130,8 +1134,8 @@ int CDigitalFilter::TemporalResponce(COMPLEX * dst,
 					// pPrevInArray[i * 2 - 1] - input sample at T-1
 					// pPrevInArray[i * 2 - 3] - sample at T-2
 					tmp1 = tmp;
-					tmp -= pPrevInArray[i * 2 - 3] * pPrevInArray[i * 2 - 4].re
-							+ pPrevInArray[i * 2 - 1] * pPrevInArray[i * 2 - 2].re;
+					tmp -= pPrevInArray[i * 2 - 3] * pPrevInArray[i * 2 - 4].real()
+							+ pPrevInArray[i * 2 - 1] * pPrevInArray[i * 2 - 2].real();
 					pPrevInArray[i * 2 - 3] = pPrevInArray[i * 2 - 1];
 					pPrevInArray[i * 2 - 1] = tmp1;
 				}
@@ -1167,8 +1171,8 @@ int CDigitalFilter::TemporalResponce(COMPLEX * dst,
 					// output goes to pPrevOutArray[i * 2 - 3]
 					tmp = pPrevOutArray[i * 2 - 3];
 					pPrevOutArray[i * 2 - 3] = pPrevOutArray[i * 2 + 1]
-												- pPrevOutArray[i * 2 - 3] * pPrevOutArray[i * 2 - 4].re
-												- pPrevOutArray[i * 2 - 1] * pPrevOutArray[i * 2 - 2].re;
+												- pPrevOutArray[i * 2 - 3] * pPrevOutArray[i * 2 - 4].real()
+												- pPrevOutArray[i * 2 - 1] * pPrevOutArray[i * 2 - 2].real();
 					pPrevOutArray[i * 2 - 1] = tmp;
 				}
 				// process single poles
@@ -1205,8 +1209,8 @@ int CDigitalFilter::TemporalResponce(COMPLEX * dst,
 					// pPrevInArray[i * 2 - 1] - input sample at T-1
 					// pPrevInArray[i * 2 - 3] - sample at T-2
 					tmp1 = tmp;
-					tmp -= pPrevInArray[i * 2 - 3] * pPrevInArray[i * 2 - 4].re
-							+ pPrevInArray[i * 2 - 1] * pPrevInArray[i * 2 - 2].re;
+					tmp -= pPrevInArray[i * 2 - 3] * pPrevInArray[i * 2 - 4].real()
+							+ pPrevInArray[i * 2 - 1] * pPrevInArray[i * 2 - 2].real();
 					pPrevInArray[i * 2 - 3] = pPrevInArray[i * 2 - 1];
 					pPrevInArray[i * 2 - 1] = tmp1;
 				}
@@ -1217,7 +1221,7 @@ int CDigitalFilter::TemporalResponce(COMPLEX * dst,
 					// pPrevInArray[i * 2 - 1] - input sample at T-1
 					// pPrevInArray[i * 2 - 3] - sample at T-2
 					tmp1 = tmp;
-					tmp -= pPrevInArray[i * 2 - 1] * pPrevInArray[i * 2 - 2].re;
+					tmp -= pPrevInArray[i * 2 - 1] * pPrevInArray[i * 2 - 2].real();
 					pPrevInArray[i * 2 - 1] = tmp1;
 				}
 			}
@@ -1225,7 +1229,7 @@ int CDigitalFilter::TemporalResponce(COMPLEX * dst,
 			{
 				for (i = 0; i < nNumerLength; i++)
 				{
-					tmp += pPrevInSampl[-i] * pNumer[i].re;
+					tmp += pPrevInSampl[-i] * pNumer[i].real();
 				}
 			}
 
@@ -1242,8 +1246,8 @@ int CDigitalFilter::TemporalResponce(COMPLEX * dst,
 					// output goes to pPrevOutArray[i * 2 - 3]
 					tmp = pPrevOutArray[i * 2 - 3];
 					pPrevOutArray[i * 2 - 3] = pPrevOutArray[i * 2 + 1]
-												- pPrevOutArray[i * 2 - 3] * pPrevOutArray[i * 2 - 4].re
-												- pPrevOutArray[i * 2 - 1] * pPrevOutArray[i * 2 - 2].re;
+												- pPrevOutArray[i * 2 - 3] * pPrevOutArray[i * 2 - 4].real()
+												- pPrevOutArray[i * 2 - 1] * pPrevOutArray[i * 2 - 2].real();
 					pPrevOutArray[i * 2 - 1] = tmp;
 				}
 				// process single poles
@@ -1253,7 +1257,7 @@ int CDigitalFilter::TemporalResponce(COMPLEX * dst,
 					// pPrevOutArray[i * 2 - 1] - sample at T-1
 					// output goes to pPrevOutArray[i * 2 - 1]
 					pPrevOutArray[i * 2 - 1] = pPrevOutArray[i * 2 + 1]
-												+ pPrevOutArray[i * 2 - 1] * pPrevOutArray[i * 2 - 2].re;
+												+ pPrevOutArray[i * 2 - 1] * pPrevOutArray[i * 2 - 2].real();
 				}
 				tmp = pPrevOutArray[1];
 			}
@@ -1261,7 +1265,7 @@ int CDigitalFilter::TemporalResponce(COMPLEX * dst,
 			{
 				for (i = 1; i < nDenomLength; i++)
 				{
-					tmp -= pPrevOutSampl[-i] * pDenom[i].re;
+					tmp -= pPrevOutSampl[-i] * pDenom[i].real();
 				}
 			}
 		}
@@ -1320,8 +1324,8 @@ int CDigitalFilter::TemporalResponce(
 	VERIFY(nNumOfCells <= 128);
 	// 1. Allocate a common buffer for filter coefficients (Complex, of exact size)
 	int nCoeffArraySize = 0;
-
-	for(int i = 0; i < nNumOfCells; i++)
+	int i;
+	for(i = 0; i < nNumOfCells; i++)
 	{
 		nNumerCountsArray[i] = 1 + m_aRatios[i]->numer().order();
 		nCoeffArraySize += nNumerCountsArray[i];
@@ -1340,7 +1344,8 @@ int CDigitalFilter::TemporalResponce(
 	Complex * pCoeff = pCoeffsArray;
 	for(i = 0; i < nNumOfCells; i++)
 	{
-		for (int j = 0; j < nNumerCountsArray[i]; j++)
+		int j;
+		for (j = 0; j < nNumerCountsArray[i]; j++)
 		{
 			*pCoeff++ = m_aRatios[i]->numer()[j];
 		}
@@ -1390,31 +1395,16 @@ int CDigitalFilter::TemporalResponce(
 				// 6. loop on numerator taps.
 				if(2 == nNumerCountsArray[nCell])
 				{
-					tmp.re = tmp.re + pCoeff[0].re * pHistoryPtr[0].re
-							+ pCoeff[1].re * pHistoryPtr[1].re
-							- pCoeff[0].im * pHistoryPtr[0].im
-							- pCoeff[1].im * pHistoryPtr[1].im;
-					tmp.im = tmp.im + pCoeff[0].re * pHistoryPtr[0].im
-							+ pCoeff[0].im * pHistoryPtr[0].re
-							+ pCoeff[1].re * pHistoryPtr[1].im
-							+ pCoeff[1].im * pHistoryPtr[1].re;
+					tmp += pCoeff[0] * pHistoryPtr[0]
+							+ pCoeff[1] * pHistoryPtr[1];
 					pHistoryPtr += 2;
 					pCoeff += 2;
 				}
 				else if(3 == nNumerCountsArray[nCell])
 				{
-					tmp.re = tmp.re + pCoeff[0].re * pHistoryPtr[0].re
-							+ pCoeff[1].re * pHistoryPtr[1].re
-							+ pCoeff[2].re * pHistoryPtr[2].re
-							- pCoeff[0].im * pHistoryPtr[0].im
-							- pCoeff[1].im * pHistoryPtr[1].im
-							- pCoeff[2].im * pHistoryPtr[2].im;
-					tmp.im = tmp.im + pCoeff[0].re * pHistoryPtr[0].im
-							+ pCoeff[0].im * pHistoryPtr[0].re
-							+ pCoeff[1].re * pHistoryPtr[1].im
-							+ pCoeff[1].im * pHistoryPtr[1].re
-							+ pCoeff[2].re * pHistoryPtr[2].im
-							+ pCoeff[2].im * pHistoryPtr[2].re;
+					tmp += pCoeff[0] * pHistoryPtr[0]
+							+ pCoeff[1] * pHistoryPtr[1]
+							+ pCoeff[2] * pHistoryPtr[2];
 					pHistoryPtr += 3;
 					pCoeff += 3;
 				}
@@ -1430,16 +1420,9 @@ int CDigitalFilter::TemporalResponce(
 				// 7. Loop on denominator taps.
 				if(3 == nDenomCountsArray[nCell])
 				{
-					OutSample.re += pHistoryPtr[0].re =
-										tmp.re - pCoeff[2].re * pHistoryPtr[2].re
-										- pCoeff[1].re * pHistoryPtr[1].re
-										+ pCoeff[2].im * pHistoryPtr[2].im
-										+ pCoeff[1].im * pHistoryPtr[1].im;
-					OutSample.im += pHistoryPtr[0].im =
-										tmp.im - pCoeff[2].re * pHistoryPtr[2].im
-										- pCoeff[2].im * pHistoryPtr[2].re
-										- pCoeff[1].re * pHistoryPtr[1].im
-										- pCoeff[1].im * pHistoryPtr[1].re;
+					pHistoryPtr[0] -= pCoeff[2] * pHistoryPtr[2] + pCoeff[1] * pHistoryPtr[1];
+
+					OutSample += pHistoryPtr[0];
 					// put the output to denominator history array
 					// 8. Add denominator result to the total
 					//advance the pointers
@@ -1493,16 +1476,16 @@ int CDigitalFilter::TemporalResponce(
 				// 6. loop on numerator taps.
 				if(2 == nNumerCountsArray[nCell])
 				{
-					tmp = tmp + pCoeff[0].re * pHistoryPtr[0].re
-						+ pCoeff[1].re * pHistoryPtr[1].re;
+					tmp = tmp + pCoeff[0].real() * pHistoryPtr[0].real()
+						+ pCoeff[1].real() * pHistoryPtr[1].real();
 					pHistoryPtr += 2;
 					pCoeff += 2;
 				}
 				else if(3 == nNumerCountsArray[nCell])
 				{
-					tmp = tmp + pCoeff[0].re * pHistoryPtr[0].re
-						+ pCoeff[1].re * pHistoryPtr[1].re
-						+ pCoeff[2].re * pHistoryPtr[2].re;
+					tmp = tmp + pCoeff[0].real() * pHistoryPtr[0].real()
+						+ pCoeff[1].real() * pHistoryPtr[1].real()
+						+ pCoeff[2].real() * pHistoryPtr[2].real();
 					pHistoryPtr += 3;
 					pCoeff += 3;
 				}
@@ -1510,7 +1493,7 @@ int CDigitalFilter::TemporalResponce(
 				{
 					for (int j = 0; j < nNumerCountsArray[nCell]; j++)
 					{
-						tmp += pCoeff[j].re * pHistoryPtr[j].re;
+						tmp += pCoeff[j].real() * pHistoryPtr[j].real();
 					}
 					pHistoryPtr += nNumerCountsArray[nCell];
 					pCoeff += nNumerCountsArray[nCell];
@@ -1518,9 +1501,9 @@ int CDigitalFilter::TemporalResponce(
 				// 7. Loop on denominator taps.
 				if(3 == nDenomCountsArray[nCell])
 				{
-					OutSample += pHistoryPtr[0].re =
-									tmp - pCoeff[2].re * pHistoryPtr[2].re
-									- pCoeff[1].re * pHistoryPtr[1].re;
+					pHistoryPtr[0].real(tmp - pCoeff[2].real() * pHistoryPtr[2].real()
+										- pCoeff[1].real() * pHistoryPtr[1].real());
+					OutSample += pHistoryPtr[0].real();
 					// put the output to denominator history array
 					// 8. Add denominator result to the total
 					//advance the pointers
@@ -1531,7 +1514,7 @@ int CDigitalFilter::TemporalResponce(
 				{
 					for (j = 1; j < nDenomCountsArray[nCell]; j++)
 					{
-						tmp -= pCoeff[j].re * pHistoryPtr[j].re;
+						tmp -= pCoeff[j].real() * pHistoryPtr[j].real();
 					}
 					// put the output to denominator history array
 					pHistoryPtr[0] = tmp;

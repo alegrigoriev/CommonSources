@@ -4,7 +4,6 @@
 
 IMPLEMENT_DYNAMIC(CSplitterWndEx, CSplitterWnd)
 
-using CSplitterWndEx::CEmptyPane;
 IMPLEMENT_DYNCREATE(CEmptyPane, CView)
 
 BEGIN_MESSAGE_MAP(CSplitterWndEx, CSplitterWnd)

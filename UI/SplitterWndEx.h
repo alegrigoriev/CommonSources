@@ -7,7 +7,7 @@
 class CSplitterWndEx : public CSplitterWnd
 {
 	DECLARE_DYNAMIC(CSplitterWndEx)
-// Construction
+	// Construction
 public:
 	void FillEmptyPanes();
 	CSplitterWndEx();
@@ -19,8 +19,8 @@ public:
 						DWORD dwStyle = WS_CHILD | WS_VISIBLE,
 						UINT nID = AFX_IDW_PANE_FIRST);
 
-// DeleteRow and DeleteColumn are provided only to
-// avoid ASSERT(GetStyle() & SPLS_DYNAMIC_SPLIT);
+	// DeleteRow and DeleteColumn are provided only to
+	// avoid ASSERT(GetStyle() & SPLS_DYNAMIC_SPLIT);
 	virtual void DeleteRow(int rowDelete);
 	virtual void DeleteColumn(int colDelete);
 
@@ -33,15 +33,15 @@ public:
 	DECLARE_MESSAGE_MAP()
 private:
 	// view type to fill empty panes
-	class CEmptyPane: public CView
-	{
-	protected: // create from serialization only
-		CEmptyPane() {}
-		DECLARE_DYNCREATE(CEmptyPane);
-	public:
-		virtual void OnDraw(CDC* pDC) {}  // draw nothing
-		virtual ~CEmptyPane() {}
-	};
 };
 
+class CEmptyPane: public CView
+{
+protected: // create from serialization only
+	CEmptyPane() {}
+	DECLARE_DYNCREATE(CEmptyPane);
+public:
+	virtual void OnDraw(CDC* pDC) {}  // draw nothing
+	virtual ~CEmptyPane() {}
+};
 #endif //#ifndef SPLITTER_WND_EX_H__
