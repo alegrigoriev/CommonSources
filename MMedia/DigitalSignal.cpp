@@ -522,25 +522,25 @@ BOOL CSignalWave::Open(LPCTSTR szFilename)
 	{
 		if (8 == wfFormat.wBitsPerSample)
 		{
-			pInSignal = new CMappedSignalArray<unsigned __int8, 1>(pDataAddress);
+			pInSignal = new CMappedSignalArray<unsigned __int8, 1>((unsigned __int8*) pDataAddress, nWaveSamples);
 		}
 		else
 		{
-			pInSignal = new CMappedSignalArray<__int16, 1>(pDataAddress);
+			pInSignal = new CMappedSignalArray<__int16, 1>((__int16*)pDataAddress, nWaveSamples);
 		}
 	}
 	else
 	{
 		if (8 == wfFormat.wBitsPerSample)
 		{
-			pInSignal = new CMappedSignalArray<unsigned __int8, 2>(pDataAddress);
+			pInSignal = new CMappedSignalArray<unsigned __int8, 2>((unsigned __int8*) pDataAddress, nWaveSamples);
 		}
 		else
 		{
-			pInSignal = new CMappedSignalArray<__int16, 2>(pDataAddress);
+			pInSignal = new CMappedSignalArray<__int16, 2>((__int16*)pDataAddress, nWaveSamples);
 		}
 	}
-	pInSignal->Allocate(nWaveSamples);
+
 	SetChannel(0);
 	CreateDecimators(8);
 	return TRUE;

@@ -7,10 +7,11 @@
 	#include <afx.h>
 #endif
 
-#if !defined(__COMPLEX_H)
-#include "Complex.h"
-#endif
+#include <complex>
+#include <vector>
+
 typedef std::complex<float> fcomplex;
+typedef std::complex<double> Complex;
 
 #define SIGNAL_COMPLEX  1
 #define SIGNAL_STEREO   2
@@ -21,21 +22,30 @@ typedef std::complex<float> fcomplex;
 class CSignalIterator
 {
 protected:
-	~CSignalIterator() {} // cannot delete explicitly
 	CSignalIterator() {} // cannot create explicitly
-	DWORD dwFlags;
+	~CSignalIterator() {} // cannot delete explicitly
 public:
-	DWORD Flags(DWORD mask = 0xFFFFFFFF)
-	{
-		return dwFlags & mask;
-	}
-	virtual void SetRetrieveIndex(int nIndex) = 0;
+	virtual DWORD Flags(DWORD mask = 0xFFFFFFFF) const = 0;
+	virtual void SetRetrieveIndex(int nIndex) const = 0;
 	virtual int GetRetrieveIndex() const = 0;
 	virtual double GetDoubleAt(int nIndex) const = 0;
 	virtual double GetNextDouble() = 0;
 	virtual Complex GetComplexAt(int nIndex) const = 0;
 	virtual Complex GetNextComplex() = 0;
+
+private:
+	// assignment guard
+	CSignalIterator(const CSignalIterator &);
+	CSignalIterator & operator =(const CSignalIterator &);
+};
+
+class CSignalStoreIterator
+{
 protected:
+	CSignalStoreIterator() {} // cannot create explicitly
+	~CSignalStoreIterator() {} // cannot delete explicitly
+public:
+	virtual DWORD Flags(DWORD mask = 0xFFFFFFFF) const = 0;
 	virtual void SetStoreIndex(int nIndex) = 0;
 	virtual int GetStoreIndex() const = 0;
 	virtual void SetDoubleAt(double value, int nIndex) = 0;
@@ -43,499 +53,401 @@ protected:
 	virtual void SetComplexAt(const Complex & value, int nIndex) = 0;
 	virtual void SetNextComplex(const Complex & value) = 0;
 
+private:
+	// assignment guard
+	CSignalStoreIterator(const CSignalStoreIterator &);
+	CSignalStoreIterator & operator =(const CSignalStoreIterator &);
 };
 
-class CSignalStoreIterator: public CSignalIterator
+class CSignalArrayBase: public CSignalStoreIterator, public CSignalIterator
 {
 protected:
-	~CSignalStoreIterator() {} // cannot delete explicitly
-	CSignalStoreIterator() {} // cannot create explicitly
-public:
-	using CSignalIterator::Flags;
-	using CSignalIterator::SetStoreIndex;
-	using CSignalIterator::GetStoreIndex;
-	using CSignalIterator::SetDoubleAt;
-	using CSignalIterator::SetNextDouble;
-	using CSignalIterator::SetComplexAt;
-	using CSignalIterator::SetNextComplex;
-protected:
-	using CSignalIterator::SetRetrieveIndex;
-	using CSignalIterator::GetRetrieveIndex;
-	using CSignalIterator::GetDoubleAt;
-	using CSignalIterator::GetNextDouble;
-	using CSignalIterator::GetComplexAt;
-	using CSignalIterator::GetNextComplex;
-};
+	DWORD dwFlags;
+	int nSize;          // number of samples (before multiplying on number of channels)
+	int StoreIndex;
+	mutable int RetrieveIndex;
 
-class CSignalArrayBase: public CSignalStoreIterator
-{
-protected:
-	void * pArray;
-	int nSize;
-	size_t nItemSize;
-	const void * pRetrieve;
-	void * pStore;
+	int data_size() const { return nSize; }
+
 public:
 	CSignalArrayBase()
-		:pArray(NULL), pRetrieve(NULL), pStore(NULL),
-		nSize(0), nItemSize(0)
+		:dwFlags(0)
+		, StoreIndex(0)
+		, RetrieveIndex(0)
+		, nSize(0)
+		, nChan(0)
 	{
-		dwFlags = 0;
 	}
 
-	virtual ~CSignalArrayBase();
-	using CSignalStoreIterator::SetRetrieveIndex;
-	using CSignalStoreIterator::GetRetrieveIndex;
-	using CSignalStoreIterator::GetDoubleAt;
-	using CSignalStoreIterator::GetNextDouble;
-	using CSignalStoreIterator::GetComplexAt;
-	using CSignalStoreIterator::GetNextComplex;
+	virtual ~CSignalArrayBase() {}
 
-	virtual BOOL Allocate(int Size);
+	virtual DWORD Flags(DWORD mask = 0xFFFFFFFF) const
+	{
+		return dwFlags & mask;
+	}
+	virtual BOOL Allocate(int Size) = 0;
 	virtual void SetChannel(int) = 0;
-	int GetSize() const { return nSize; }
-	size_t ItemSize() { return nItemSize; }
-};
 
-template<class T, int CHANS=1>
-class CSignalArray: public CSignalArrayBase
-{
-protected:
-	int nChan;
-public:
-	CSignalArray();
-	// functions are written as inline to allow inlining
-	// with explicit class refinition
-	virtual void SetRetrieveIndex(int nIndex)
+	virtual void SetRetrieveIndex(int nIndex) const
 	{
-		ASSERT(pArray != NULL);
-		ASSERT(nIndex >= 0 && nIndex < nSize);
-		pRetrieve = nChan + nIndex * CHANS + (T *) pArray;
+		ASSERT(nIndex >= 0);
+		ASSERT(nIndex < data_size());
+
+		RetrieveIndex = (unsigned) nIndex;
 	}
+
 	virtual void SetStoreIndex(int nIndex)
 	{
-		ASSERT(pArray != NULL);
-		ASSERT(nIndex >= 0 && nIndex < nSize);
-		pStore = nChan + nIndex * CHANS + (T *) pArray;
+		ASSERT(nIndex >= 0);
+		ASSERT(nIndex < data_size());
+
+		StoreIndex = (unsigned) nIndex;
 	}
 	virtual int GetRetrieveIndex() const
 	{
-		ASSERT(pArray != NULL);
-		return ((const T *) pRetrieve - nChan - (T *) pArray) / CHANS;
+		return RetrieveIndex;
 	}
 	virtual int GetStoreIndex() const
 	{
-		ASSERT(pArray != NULL);
-		return ((T *) pStore - (T *) pArray - nChan) / CHANS;
+		return StoreIndex;
 	}
-	virtual double GetDoubleAt(int nIndex) const;
-	virtual double GetNextDouble();
 
-	virtual void SetDoubleAt(double value, int nIndex);
-	virtual void SetNextDouble(double value);
-	virtual Complex GetComplexAt(int nIndex) const;
-	virtual Complex GetNextComplex();
-	virtual void SetComplexAt(const Complex & value, int nIndex);
-	virtual void SetNextComplex(const Complex & value);
+public:
 
+	int nChan;
+};
+
+template<class T, int CHANS>
+class CSignalArrayVector: public CSignalArrayBase
+{
+protected:
+	typedef std::vector<T> vector_t;
+
+	vector_t data;
+public:
+	BOOL Allocate(int Size)
+	{
+		ASSERT (Size > 0);
+		if (Size <= nSize && Size > (nSize / 2))
+		{
+			// don't reallocate the array
+			return TRUE;
+		}
+		data.resize(Size*CHANS);
+		nSize = Size;
+		RetrieveIndex = 0;
+		StoreIndex = 0;
+		return TRUE;
+	}
+};
+
+template<class T, int CHANS,class Base>
+class CSignalArrayMain: public Base
+{
+public:
+	CSignalArrayMain()
+	{
+		ASSERT(CHANS == 1 || CHANS == 2);
+	}
+	~CSignalArrayMain() {}
+	// functions are written as inline to allow inlining
+	// with explicit class refinition
+
+	virtual void SetDoubleAt(double value, int nIndex)
+	{
+		ASSERT(nIndex >= 0 && nIndex < data_size());
+		data[nIndex * CHANS + nChan] = T(value);
+	}
+
+	virtual void SetNextDouble(double value)
+	{
+		ASSERT(StoreIndex < data_size());
+		data[StoreIndex++*CHANS + nChan] = T(value);
+	}
+
+	virtual Complex GetComplexAt(int nIndex) const
+	{
+		ASSERT(nIndex >= 0 && nIndex < data_size());
+		return data[nIndex * CHANS + nChan];
+	}
+
+	virtual Complex GetNextComplex()
+	{
+		ASSERT(RetrieveIndex < data_size());
+
+		return data[RetrieveIndex++*CHANS + nChan];
+	}
+
+	virtual double GetDoubleAt(int nIndex) const
+	{
+		ASSERT(nIndex >= 0 && nIndex < data_size());
+		return data[nIndex * CHANS + nChan];
+	}
+
+	virtual double GetNextDouble()
+	{
+		ASSERT(RetrieveIndex < data_size());
+
+		return data[RetrieveIndex++*CHANS + nChan];
+	}
+
+	virtual void SetComplexAt(const Complex &, int )
+	{
+		ASSERT(FALSE);
+	}
+
+	virtual void SetNextComplex(const Complex & )
+	{
+		ASSERT(FALSE);
+	}
 	virtual void SetChannel(int Chan)  // 0-based channel
 	{
 		ASSERT(Chan >= 0 && Chan < CHANS);
-		if (pRetrieve)
-		{
-			pRetrieve = Chan - nChan + (const T *) pRetrieve;
-		}
-		if (pStore)
-		{
-			pStore = Chan - nChan + (T *) pStore;
-		}
 		nChan = Chan;
 	}
 };
 
-inline CSignalArray<__int16, 1>::CSignalArray()
-	:nChan(0)
+// partial specialization for __int16
+template<int CHANS, typename Base>
+class CSignalArrayMain<__int16, CHANS, Base> : public Base
 {
-	nItemSize = sizeof (__int16) * CHANS;
-	dwFlags |= SIGNAL_INT16;
-}
-
-inline CSignalArray<__int16, 2>::CSignalArray()
-	:nChan(0)
-{
-	nItemSize = sizeof (__int16) * 2;
-	dwFlags |= SIGNAL_INT16;
-}
-
-inline CSignalArray<unsigned __int8, 1>::CSignalArray()
-	:nChan(0)
-{
-	nItemSize = sizeof (unsigned __int8) * 1;
-	dwFlags |= SIGNAL_UNSIGNED8;
-}
-
-inline CSignalArray<unsigned __int8, 2>::CSignalArray()
-	:nChan(0)
-{
-	nItemSize = sizeof (unsigned __int8) * 2;
-	dwFlags |= SIGNAL_UNSIGNED8;
-}
-
-inline double CSignalArray<unsigned __int8, 1>::GetDoubleAt(int nIndex) const
-{
-	ASSERT(pArray != NULL);
-	ASSERT(nIndex >= 0 && nIndex < nSize);
-	return (((signed __int8 *) pArray)[nIndex * 1 + nChan] + 128) << 8;
-}
-
-inline double CSignalArray<unsigned __int8, 2>::GetDoubleAt(int nIndex) const
-{
-	ASSERT(pArray != NULL);
-	ASSERT(nIndex >= 0 && nIndex < nSize);
-	return (((signed __int8 *) pArray)[nIndex * 2 + nChan] + 128) << 8;
-}
-
-inline double CSignalArray<unsigned __int8, 1>::GetNextDouble()
-{
-	ASSERT(pRetrieve >= pArray && pRetrieve < nSize + (unsigned __int8 *)pArray);
-	return ((*((const signed __int8 * & ) pRetrieve)++) + 128) << 8;
-}
-
-inline double CSignalArray<unsigned __int8, 2>::GetNextDouble()
-{
-	ASSERT(pRetrieve >= pArray && pRetrieve < nSize * 2 + (unsigned __int8 *)pArray);
-	const signed __int8 * pTmp = (const signed __int8 *)pRetrieve;
-	pRetrieve = pTmp + 2;
-	return (*pTmp + 128) << 8;
-}
-
-inline Complex CSignalArray<unsigned __int8, 1>::GetComplexAt(int nIndex) const
-{
-	ASSERT(pArray != NULL);
-	ASSERT(nIndex >= 0 && nIndex < nSize);
-	return (((signed __int8 *) pArray)
-			[nIndex * 1 + nChan] + 128) << 8;
-}
-
-inline Complex CSignalArray<unsigned __int8, 2>::GetComplexAt(int nIndex) const
-{
-	ASSERT(pArray != NULL);
-	ASSERT(nIndex >= 0 && nIndex < nSize);
-	return (((signed __int8 *) pArray)
-			[nIndex * 2 + nChan] + 128) << 8;
-}
-
-inline Complex CSignalArray<unsigned __int8, 1>::GetNextComplex()
-{
-	ASSERT(pRetrieve >= pArray && pRetrieve < nSize + (unsigned __int8 *)pArray);
-	return ((*((const signed __int8 * & ) pRetrieve)++) + 128) << 8;
-}
-
-inline Complex CSignalArray<unsigned __int8, 2>::GetNextComplex()
-{
-	ASSERT(pRetrieve >= pArray && pRetrieve < nSize * 2 + (unsigned __int8 *)pArray);
-	const signed __int8 * pTmp = (const signed __int8 *)pRetrieve;
-	pRetrieve = pTmp + 2;
-	return (*pTmp + 128) << 8;
-}
-
-inline void CSignalArray<unsigned __int8, 1>::SetDoubleAt(double value, int nIndex)
-{
-	ASSERT(pArray != NULL);
-	ASSERT(nIndex >= 0 && nIndex < nSize);
-	((unsigned __int8 *) pArray)[nIndex * 1 + nChan] = int(value + 128.5);
-}
-
-inline void CSignalArray<unsigned __int8, 2>::SetDoubleAt(double value, int nIndex)
-{
-	ASSERT(pArray != NULL);
-	ASSERT(nIndex >= 0 && nIndex < nSize);
-	((unsigned __int8 *) pArray)[nIndex * 2 + nChan] = int(value + 128.5);
-}
-
-inline void CSignalArray<unsigned __int8, 1>::SetNextDouble(double value)
-{
-	ASSERT(pStore >= pArray && pStore < nSize * 1 + (unsigned __int8 *)pArray);
-	*((unsigned __int8 * & ) pStore) = int(value + 128.5);
-	pStore = 1 + (unsigned __int8 *) pStore;
-}
-
-inline void CSignalArray<unsigned __int8, 2>::SetNextDouble(double value)
-{
-	ASSERT(pStore >= pArray && pStore < nSize * 2 + (unsigned __int8 *)pArray);
-	*((unsigned __int8 * & ) pStore) = int(value + 128.5);
-	pStore = 2 + (unsigned __int8 *) pStore;
-}
-
-inline void CSignalArray<__int16, 1>::SetDoubleAt(double value, int nIndex)
-{
-	ASSERT(pArray != NULL);
-	ASSERT(nIndex >= 0 && nIndex < nSize);
-	if (value >= 0)
+public:
+	CSignalArrayMain()
 	{
-		((__int16 *) pArray)[nIndex * 1 + nChan] = __int16(value + 0.5);
+		ASSERT(CHANS == 1 || CHANS == 2);
+		dwFlags |= SIGNAL_INT16;
 	}
-	else
+
+	~CSignalArrayMain() {}
+	// functions are written as inline to allow inlining
+	// with explicit class refinition
+
+	void SetDoubleAt(double value, int nIndex)
 	{
-		((__int16 *) pArray)[nIndex * 1 + nChan] = __int16(value - 0.5);
+		ASSERT(nIndex >= 0 && nIndex < data_size());
+		data[nIndex * CHANS + nChan] = (value >= 0) ? __int16(value + 0.5) : __int16(value - 0.5);
 	}
-}
 
-inline void CSignalArray<__int16, 2>::SetDoubleAt(double value, int nIndex)
-{
-	ASSERT(pArray != NULL);
-	ASSERT(nIndex >= 0 && nIndex < nSize);
-	if (value >= 0)
+	void SetNextDouble(double value)
 	{
-		((__int16 *) pArray)[nIndex * 2 + nChan] = __int16(value + 0.5);
+		ASSERT(StoreIndex < data_size());
+		data[StoreIndex++*CHANS+nChan] = (value >= 0) ? __int16(value + 0.5) : __int16(value - 0.5);
 	}
-	else
+
+	virtual Complex GetComplexAt(int nIndex) const
 	{
-		((__int16 *) pArray)[nIndex * 2 + nChan] = __int16(value - 0.5);
+		ASSERT(nIndex >= 0 && nIndex < data_size());
+		return data[nIndex * CHANS + nChan];
 	}
-}
 
-inline void CSignalArray<__int16, 1>::SetNextDouble(double value)
-{
-	ASSERT(pStore >= pArray && pStore < nSize * 1 + (__int16 *)pArray);
-	if (value >= 0)
+	virtual Complex GetNextComplex()
 	{
-		*((__int16 * & ) pStore)++ = __int16(value + 0.5);
+		ASSERT(RetrieveIndex < data_size());
+
+		return data[RetrieveIndex++*CHANS + nChan];
 	}
-	else
+
+	virtual double GetDoubleAt(int nIndex) const
 	{
-		*((__int16 * & ) pStore)++ = __int16(value - 0.5);
+		ASSERT(nIndex >= 0 && nIndex < data_size());
+		return data[nIndex * CHANS + nChan];
 	}
-	pStore = 1 + (__int16 *) pStore;
-}
 
-inline void CSignalArray<__int16, 2>::SetNextDouble(double value)
-{
-	ASSERT(pStore >= pArray && pStore < nSize * 2 + (__int16 *)pArray);
-	if (value >= 0)
+	virtual double GetNextDouble()
 	{
-		*((__int16 * & ) pStore)++ = __int16(value + 0.5);
+		ASSERT(RetrieveIndex < data_size());
+
+		return data[RetrieveIndex++*CHANS + nChan];
 	}
-	else
+
+	virtual void SetComplexAt(const Complex &, int )
 	{
-		*((__int16 * & ) pStore)++ = __int16(value - 0.5);
+		ASSERT(FALSE);
 	}
-	pStore = 2 + (__int16 *) pStore;
-}
 
-inline CSignalArray<Complex, 1>::CSignalArray()
-	:nChan(0)
-{
-	nItemSize = sizeof (Complex) * 1;
-	dwFlags |= SIGNAL_COMPLEX | SIGNAL_DOUBLE;
-}
+	virtual void SetNextComplex(const Complex & )
+	{
+		ASSERT(FALSE);
+	}
+	virtual void SetChannel(int Chan)  // 0-based channel
+	{
+		ASSERT(Chan >= 0 && Chan < CHANS);
+		nChan = Chan;
+	}
+};
 
-inline CSignalArray<Complex, 2>::CSignalArray()
-	:nChan(0)
+// partial specialization for unsigned __int8
+template<int CHANS, typename Base>
+class CSignalArrayMain<unsigned __int8, CHANS, Base> : public Base
 {
-	nItemSize = sizeof (Complex) * 2;
-	dwFlags |= SIGNAL_COMPLEX | SIGNAL_DOUBLE;
-}
+public:
+	CSignalArrayMain()
+	{
+		ASSERT(CHANS == 1 || CHANS == 2);
+		dwFlags |= SIGNAL_UNSIGNED8;
+	}
 
-inline CSignalArray<fcomplex, 1>::CSignalArray()
-	:nChan(0)
-{
-	nItemSize = sizeof (fcomplex) * 1;
-	dwFlags |= SIGNAL_COMPLEX;
-}
+	~CSignalArrayMain() {}
+	// functions are written as inline to allow inlining
+	// with explicit class refinition
+	virtual double GetDoubleAt(int nIndex) const
+	{
+		ASSERT(nIndex >= 0 && nIndex < data_size());
+		return (int(data[nIndex * CHANS + nChan]) - 128) << 8;
+	}
 
-inline CSignalArray<fcomplex, 2>::CSignalArray()
-	:nChan(0)
-{
-	nItemSize = sizeof (fcomplex) * 2;
-	dwFlags |= SIGNAL_COMPLEX;
-}
+	virtual double GetNextDouble()
+	{
+		ASSERT(RetrieveIndex < data_size());
+		return (int(data[nChan + CHANS * RetrieveIndex++]) - 128) << 8;
+	}
 
-inline double CSignalArray<Complex, 1>::GetDoubleAt(int nIndex) const
-{
-	ASSERT(FALSE);
-	return ((Complex *) pArray)[nIndex].real();
-}
+	virtual Complex GetComplexAt(int nIndex) const
+	{
+		ASSERT(nIndex >= 0 && nIndex < data_size());
+		return float((int(data[nIndex * CHANS + nChan]) - 128) << 8);
+	}
 
-inline double CSignalArray<Complex, 1>::GetNextDouble()
-{
-	ASSERT(FALSE);
-	return ((const Complex * & ) pRetrieve)++->real();
-}
+	virtual Complex GetNextComplex()
+	{
+		ASSERT(RetrieveIndex < data_size());
 
-inline void CSignalArray<Complex, 1>::SetComplexAt(const Complex & value, int nIndex)
-{
-	ASSERT(pArray != NULL);
-	ASSERT(nIndex >= 0 && nIndex < nSize);
-	((Complex *) pArray)[nIndex] = value;
-}
+		float tmp =(int(data[RetrieveIndex++*CHANS + nChan]) - 128) * 256.f;
+		return tmp;
+	}
 
-inline void CSignalArray<Complex, 1>::SetNextComplex(const Complex & value)
-{
-	ASSERT(pStore >= pArray && pStore < nSize + (Complex*)pArray);
-	*((Complex * & ) pStore)++ = value;
-}
+	virtual void SetDoubleAt(double value, int nIndex)
+	{
+		ASSERT(nIndex >= 0 && nIndex < data_size());
+		data[nIndex * CHANS + nChan] = int(value + 128.5);
+	}
 
-inline double CSignalArray<Complex, 2>::GetDoubleAt(int nIndex) const
-{
-	ASSERT(FALSE);
-	return ((Complex *) pArray)[nIndex * 2].real();
-}
+	virtual void SetNextDouble(double value)
+	{
+		ASSERT(StoreIndex < data_size());
+		data[StoreIndex++*CHANS+nChan] = int(value + 128.5);
+	}
 
-inline double CSignalArray<Complex, 2>::GetNextDouble()
-{
-	ASSERT(FALSE);
-	const Complex * pTmp = (const Complex *) pRetrieve;
-	pRetrieve = pTmp + 2;
-	return pTmp->real();
-}
+	virtual void SetComplexAt(const Complex &, int )
+	{
+		ASSERT(FALSE);
+	}
 
-inline void CSignalArray<Complex, 2>::SetComplexAt(const Complex & value, int nIndex)
-{
-	ASSERT(pArray != NULL);
-	ASSERT(nIndex >= 0 && nIndex < nSize);
-	((Complex *) pArray)[nIndex * 2 + nChan] = value;
-}
+	virtual void SetNextComplex(const Complex & )
+	{
+		ASSERT(FALSE);
+	}
+	virtual void SetChannel(int Chan)  // 0-based channel
+	{
+		ASSERT(Chan >= 0 && Chan < CHANS);
+		nChan = Chan;
+	}
+};
 
-inline void CSignalArray<Complex, 2>::SetNextComplex(const Complex & value)
+template<int CHANS,class Base, typename T>
+class CSignalArrayMain<std::complex<T>, CHANS, Base>: public Base
 {
-	ASSERT(pStore >= pArray && pStore < nSize * 2 + (Complex*)pArray);
-	*((Complex * ) pStore) = value;
-	((Complex * & ) pStore) += 2;
-}
-//
-inline double CSignalArray<fcomplex, 1>::GetDoubleAt(int nIndex) const
-{
-	ASSERT(FALSE);
-	return ((fcomplex *) pArray)[nIndex].real();
-}
+public:
+	CSignalArrayMain()
+	{
+		ASSERT(CHANS == 1 || CHANS == 2);
+		dwFlags |= SIGNAL_COMPLEX | SIGNAL_DOUBLE;
+	}
+	~CSignalArrayMain() {}
+	// functions are written as inline to allow inlining
+	// with explicit class refinition
 
-inline double CSignalArray<fcomplex, 1>::GetNextDouble()
-{
-	ASSERT(FALSE);
-	return ((const fcomplex * & ) pRetrieve)++->real();
-}
+	virtual void SetDoubleAt(double value, int nIndex)
+	{
+		ASSERT(nIndex >= 0 && nIndex < data_size());
+		data[nIndex * CHANS + nChan] = Complex((T)value);
+	}
 
-inline void CSignalArray<fcomplex, 1>::SetComplexAt(const Complex & value, int nIndex)
-{
-	ASSERT(pArray != NULL);
-	ASSERT(nIndex >= 0 && nIndex < nSize);
-	((fcomplex *) pArray)[nIndex] = value;
-}
+	virtual void SetNextDouble(double value)
+	{
+		ASSERT(StoreIndex < data_size());
+		data[StoreIndex++*CHANS + nChan] = (T)value;
+	}
 
-inline void CSignalArray<fcomplex, 1>::SetNextComplex(const Complex & value)
-{
-	ASSERT(pStore >= pArray && pStore < nSize + (fcomplex*)pArray);
-	*((fcomplex * & ) pStore)++ = value;
-}
+	virtual Complex GetComplexAt(int nIndex) const
+	{
+		ASSERT(nIndex >= 0 && nIndex < data_size());
+		return data[nIndex * CHANS + nChan];
+	}
 
-inline double CSignalArray<fcomplex, 2>::GetDoubleAt(int nIndex) const
-{
-	ASSERT(FALSE);
-	return ((fcomplex *) pArray)[nIndex * 2].real();
-}
+	virtual Complex GetNextComplex()
+	{
+		ASSERT(RetrieveIndex < data_size());
 
-inline double CSignalArray<fcomplex, 2>::GetNextDouble()
-{
-	ASSERT(FALSE);
-	const fcomplex * pTmp = (const fcomplex *) pRetrieve;
-	pRetrieve = pTmp + 2;
-	return pTmp->real();
-}
+		return data[RetrieveIndex++*CHANS + nChan];
+	}
 
-inline void CSignalArray<fcomplex, 2>::SetComplexAt(const Complex & value, int nIndex)
-{
-	ASSERT(pArray != NULL);
-	ASSERT(nIndex >= 0 && nIndex < nSize);
-	((fcomplex *) pArray)[nIndex * 2 + nChan] = value;
-}
+	virtual double GetDoubleAt(int nIndex) const
+	{
+		ASSERT(FALSE);
+		ASSERT(nIndex >= 0 && nIndex < data_size());
+		return data[nIndex * CHANS + nChan].real();
+	}
 
-inline void CSignalArray<fcomplex, 2>::SetNextComplex(const Complex & value)
-{
-	ASSERT(pStore >= pArray && pStore < nSize * 2 + (fcomplex*)pArray);
-	*((fcomplex * ) pStore) = value;
-	((fcomplex * & ) pStore) += 2;
-}
+	virtual double GetNextDouble()
+	{
+		ASSERT(FALSE);
+		ASSERT(RetrieveIndex < data_size());
+		return data[RetrieveIndex++*CHANS + nChan].real();
+	}
 
-template<class T, int CHANS>
-inline CSignalArray<T,CHANS>::CSignalArray()
-	:nChan(0)
-{
-	nItemSize = sizeof (T) * CHANS;
-	ASSERT(CHANS == 1 || CHANS == 2);
-}
+	virtual void SetComplexAt(const Complex & value, int nIndex)
+	{
+		ASSERT(nIndex >= 0 && nIndex < data_size());
+		data[nIndex * CHANS + nChan] = value;
+	}
 
-template<class T, int CHANS>
-inline void CSignalArray<T,CHANS>::SetDoubleAt(double value, int nIndex)
-{
-	ASSERT(pArray != NULL);
-	ASSERT(nIndex >= 0 && nIndex < nSize);
-	((T *) pArray)[nIndex * CHANS + nChan] = T(value);
-}
+	virtual void SetNextComplex(const Complex & value)
+	{
+		ASSERT(StoreIndex < data_size());
+		data[StoreIndex++*CHANS + nChan] = value;
+	}
 
-template<class T, int CHANS>
-inline void CSignalArray<T,CHANS>::SetNextDouble(double value)
-{
-	ASSERT(pStore >= pArray && pStore < nSize * CHANS + (T *)pArray);
-	*(T *) pStore = T(value);
-	pStore = (T *) pStore + CHANS;
-}
+	virtual void SetChannel(int Chan)  // 0-based channel
+	{
+		ASSERT(Chan >= 0 && Chan < CHANS);
+		nChan = Chan;
+	}
+};
 
-template<class T, int CHANS>
-inline Complex CSignalArray<T,CHANS>::GetComplexAt(int nIndex) const
+template<class T, int CHANS=1>
+class CSignalArray: public CSignalArrayMain<T, CHANS, CSignalArrayVector<T, CHANS> >
 {
-	ASSERT(pArray != NULL);
-	ASSERT(nIndex >= 0 && nIndex < nSize);
-	return ((T *) pArray)[nIndex * CHANS + nChan];
-}
+public:
+	CSignalArray() {}
+	~CSignalArray() {}
+};
 
-template<class T, int CHANS>
-inline Complex CSignalArray<T,CHANS>::GetNextComplex()
+template<typename T, int CHANS>
+class CMappedSignalArrayBase : public CSignalArrayBase
 {
-	ASSERT(pRetrieve >= pArray && pRetrieve < nSize * CHANS + (T *)pArray);
-	const T * pTmp = (const T *) pRetrieve;
-	pRetrieve = pTmp + CHANS;
-	return *pTmp;
-}
+protected:
+	CMappedSignalArrayBase()
+		: data(NULL), nSize(0)
+	{
+	}
 
-template<class T, int CHANS>
-inline double CSignalArray<T,CHANS>::GetDoubleAt(int nIndex) const
-{
-	ASSERT(pArray != NULL);
-	ASSERT(nIndex >= 0 && nIndex < nSize);
-	return ((T *) pArray)[nIndex * CHANS + nChan];
-}
+	T * data;
+	int nSize;
+	int data_size() const { return nSize; }
+};
 
-template<class T, int CHANS>
-inline double CSignalArray<T,CHANS>::GetNextDouble()
-{
-	ASSERT(pRetrieve >= pArray && pRetrieve < (T*)pArray + nSize * CHANS);
-	const T * pTmp = (const T *) pRetrieve;
-	pRetrieve = pTmp + CHANS;
-	return *pTmp;
-}
-
-template<class T, int CHANS>
-inline void CSignalArray<T,CHANS>::SetComplexAt(const Complex &, int )
-{
-	ASSERT(FALSE);
-}
-
-template<class T, int CHANS>
-inline void CSignalArray<T,CHANS>::SetNextComplex(const Complex & )
-{
-	ASSERT(FALSE);
-}
-
-template <class T, int CHANS=1>
-class CMappedSignalArray : public CSignalArray<T, CHANS>
+template <typename T, int CHANS>
+class CMappedSignalArray : public CSignalArrayMain<T, CHANS, CMappedSignalArrayBase<T, CHANS> >
 {
 public:
 	virtual BOOL Allocate(int Size)
 	{
-		if (pArray != NULL)
+		if (data != NULL)
 		{
 			nSize = Size;
+			RetrieveIndex = 0;
+			StoreIndex = 0;
 			return TRUE;
 		}
 		else
@@ -546,12 +458,12 @@ public:
 	}
 	virtual ~CMappedSignalArray()
 	{
-		pArray = NULL;  // to prevent deleting mapped memory
 	}
-	CMappedSignalArray(void * pBuf)
+	CMappedSignalArray(T * pBuf, int Size)
 	{
 		ASSERT(pBuf != NULL);
-		pArray = pBuf;
+		data = pBuf;
+		nSize = Size;
 	}
 };
 
