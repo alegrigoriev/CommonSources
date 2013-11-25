@@ -204,15 +204,20 @@ struct CSignalWave : CSignal
 	BOOL Open(LPCTSTR szFilename);
 	void Close();
 	// attributes
-	int GetSamplesCount() { return nWaveSamples; }
+	int GetSamplesCount() const { return nWaveSamples; }
+	int GetNumberOfChannels() const { return wfFormat.wf.nChannels; }
 	void SetChannel(int);
-	int GetChannel() { return nCurrChannel; }
+	int GetChannel() const { return nCurrChannel; }
 	virtual double SignalLength();
-
+	bool IsOpen() const
+	{
+		return m_IsOpen;
+	}
 	CFilterband * CreateFilterband(double dLowFreq, double dHighFreq);
 
 private:
 	CFile m_File;
+	bool m_IsOpen;
 	HANDLE hMemoryMapping;
 	LPVOID pFileBase;
 	LPVOID pDataAddress;

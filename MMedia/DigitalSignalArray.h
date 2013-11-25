@@ -91,7 +91,7 @@ public:
 	virtual void SetRetrieveIndex(int nIndex) const
 	{
 		ASSERT(nIndex >= 0);
-		ASSERT(nIndex < data_size());
+		ASSERT(nIndex <= data_size());
 
 		RetrieveIndex = (unsigned) nIndex;
 	}
@@ -99,7 +99,7 @@ public:
 	virtual void SetStoreIndex(int nIndex)
 	{
 		ASSERT(nIndex >= 0);
-		ASSERT(nIndex < data_size());
+		ASSERT(nIndex <= data_size());
 
 		StoreIndex = (unsigned) nIndex;
 	}
@@ -428,13 +428,11 @@ class CMappedSignalArrayBase : public CSignalArrayBase
 {
 protected:
 	CMappedSignalArrayBase()
-		: data(NULL), nSize(0)
+		: data(NULL)
 	{
 	}
 
 	T * data;
-	int nSize;
-	int data_size() const { return nSize; }
 };
 
 template <typename T, int CHANS>

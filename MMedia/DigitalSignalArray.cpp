@@ -2,7 +2,7 @@
 
 #include "DigitalSignalArray.h"
 
-#if 1
+#if 0
 // template compilation test
 CSignalArray<__int16,1> a1;
 CSignalArray<__int16,2> a2;

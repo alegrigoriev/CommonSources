@@ -340,7 +340,7 @@ double CSignalTransparent::GetDelay(double dFrequency) const
 CSignalWave::CSignalWave()
 	:hMemoryMapping(INVALID_HANDLE_VALUE), pFileBase(NULL),
 	nTotalSize(NULL), dwFlags(NULL), pDataAddress(NULL),
-	nCurrChannel(0), nWaveSamples(0)
+	nCurrChannel(0), nWaveSamples(0), m_IsOpen(false)
 {
 }
 
@@ -352,6 +352,7 @@ CSignalWave::~CSignalWave()
 void CSignalWave::Close()
 {
 	// unmap file view
+	m_IsOpen = false;
 	if (pFileBase != NULL)
 	{
 		UnmapViewOfFile(pFileBase);
@@ -543,6 +544,7 @@ BOOL CSignalWave::Open(LPCTSTR szFilename)
 
 	SetChannel(0);
 	CreateDecimators(8);
+	m_IsOpen = true;
 	return TRUE;
 }
 
