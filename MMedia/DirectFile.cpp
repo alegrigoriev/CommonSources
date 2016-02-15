@@ -38,7 +38,7 @@ typedef NUM_volatile<DWORD> SUBBLOCK_MASK;
 #define FILE_LENGTH_TO_WRITTEN_MASK_LENGTH(length) \
 	(unsigned((length + (1 << (BLOCK_SIZE_SHIFT + 3)) - 1) >> (BLOCK_SIZE_SHIFT + 3)))
 
-#define MEMORY_FILE_SIZE_LIMIT 0x100000UL
+#define MEMORY_FILE_SIZE_LIMIT 0x1000000UL
 #define MAX_PREFETCH_REGIONS    6
 
 #ifdef _DEBUG
@@ -1235,10 +1235,6 @@ CDirectFileCache::CDirectFileCache()
 	m_MaxBlocksToPrefetch(2),
 	m_FlushRequest(0)
 {
-	if (0 == (GetVersion() & 0x80000000))
-	{
-//        UseOverlappedIo = TRUE;
-	}
 	m_hEvent = CreateEvent(NULL, FALSE, FALSE, NULL);
 	// this is manual reset event
 	m_hThreadSuspendedEvent = CreateEvent(NULL, TRUE, FALSE, NULL);
@@ -2399,7 +2395,7 @@ void File::ReadDataBuffer(BufferHeader * pBuf, DWORD MaskToRead, DWORD Requested
 						ToRead = DWORD(m_UseSourceFileLength) - DWORD(StartFilePtr);
 					}
 
-					CSimpleCriticalSectionLock lock(m_pSourceFile->m_FileLock);
+					CSimpleCriticalSectionLock lock1(m_pSourceFile->m_FileLock);
 
 					DebugTimeStamp time;
 
@@ -2525,7 +2521,7 @@ void File::ReadDataBuffer(BufferHeader * pBuf, DWORD MaskToRead, DWORD Requested
 	::SetThreadPriority(GetCurrentThread(), OldPriority);
 }
 
-void File::FlushDirtyBuffers(BufferHeader * pDirtyBuf, BLOCK_INDEX MaxKey)
+void DirectFileCache::File::FlushDirtyBuffers(BufferHeader * pDirtyBuf, BLOCK_INDEX MaxKey)
 {
 	// flush all unlocked dirty buffers in sequence with pBuf;
 
@@ -2559,7 +2555,7 @@ void File::FlushDirtyBuffers(BufferHeader * pDirtyBuf, BLOCK_INDEX MaxKey)
 		{
 			key = pBuf->PositionKey;
 
-			CSimpleCriticalSectionLock lock(m_FileLock);
+			CSimpleCriticalSectionLock lock2(m_FileLock);
 			LONGLONG StartFilePtr = ULONGLONG(pBuf->PositionKey) << BLOCK_SIZE_SHIFT;
 
 			unsigned char * buf = (unsigned char *) pBuf->pBuf;
@@ -2835,9 +2831,9 @@ unsigned CDirectFileCache::_ThreadProc()
 			}
 		}
 		// reset bit 0x80000000, but only if not equal ~0
-		long tmp;
-		while ((tmp = m_ThreadRunState) != ~0UL
-				&& tmp != m_ThreadRunState.CompareExchange(tmp & ~ 0x80000000, tmp));
+		long tmp1;
+		while ((tmp1 = m_ThreadRunState) != ~0UL
+				&& tmp1 != m_ThreadRunState.CompareExchange(tmp1 & ~ 0x80000000, tmp1));
 	}
 #ifdef _DEBUG
 	GetThreadTimes(GetCurrentThread(), & tmp, & tmp, & tmp, & EndTime);

@@ -4,7 +4,7 @@
 #include "WmaFile.h"
 #include <wmsysprf.h>
 #include "KInterlocked.h"
-#define TRACE_WMA_DECODER 1
+#define TRACE_WMA_DECODER 0
 
 HRESULT STDMETHODCALLTYPE CDirectFileStream::Read(
 												/* [length_is][size_is][out] */ void __RPC_FAR *pv,
@@ -299,6 +299,10 @@ bool CWmaDecoder::DeliverNextSample()
 	if (m_dwAudioOutputNum != dwOutputNum)
 	{
 		if (TRACE_WMA_DECODER) TRACE(_T("Thread:%08X CWmaDecoder::OnSample m_dwAudioOutputNum != dwOutputNum\n"), GetCurrentThreadId());
+		if (pSample != NULL)
+		{
+			pSample->Release();
+		}
 		return true;
 	}
 
@@ -312,6 +316,7 @@ bool CWmaDecoder::DeliverNextSample()
 
 	if( FAILED( hr ) )
 	{
+		pSample->Release();
 		Stop();
 		return false;
 	}
@@ -347,6 +352,7 @@ bool CWmaDecoder::DeliverNextSample()
 	// ask for next buffer
 	m_CurrentStreamTime = cnsSampleTime + cnsSampleDuration;
 
+	pSample->Release();
 	return IsStarted();
 }
 
@@ -510,7 +516,7 @@ HRESULT CWmaDecoder::Open(CDirectFile & file)
 
 		pHeaderInfo->GetAttributeCount(stream, & AttributeCount);
 		TRACE("HeaderInfo::stream=%d, %d attributes\n", stream, AttributeCount);
-		for (WORD i = 0; i < AttributeCount; i++)
+		for (WORD ii = 0; i < AttributeCount; ii++)
 		{
 			WCHAR name[1024];
 			name[0] = 0;
@@ -518,10 +524,10 @@ HRESULT CWmaDecoder::Open(CDirectFile & file)
 			WMT_ATTR_DATATYPE Type;
 			BYTE value[1024];
 			WORD Length=1024;
-			if (SUCCEEDED(pHeaderInfo->GetAttributeByIndex(i,
+			if (SUCCEEDED(pHeaderInfo->GetAttributeByIndex(ii,
 															&stream, name, & NameLen, & Type, value, & Length)))
 			{
-				TRACE(L"Attribute %d name=%s\n", i, name);
+				TRACE(L"Attribute %d name=%s\n", ii, name);
 			}
 		}
 #endif

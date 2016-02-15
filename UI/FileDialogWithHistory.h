@@ -10,7 +10,7 @@
 #include "ApplicationProfile.h"
 ////////////////////////////////////////////////////////////////////////////
 // CFileDialogWithHistory dialog
-
+#if _WIN32_WINNT < 0x0600	// XP
 class CResizableFileDialog : public CFileDialog
 {
 	DECLARE_DYNAMIC(CResizableFileDialog)
@@ -24,7 +24,7 @@ public:
 						CWnd* pParentWnd = NULL)
 		: BaseClass(bOpenFileDialog, lpszDefExt,
 					lpszFileName, dwFlags | OFN_EXPLORER, lpszFilter, pParentWnd,
-					OpenfilenameSize(), FALSE),
+					sizeof (OPENFILENAME), FALSE),
 		m_pResizeItems(NULL),
 		m_ResizeItemsCount(0)
 	{
@@ -34,10 +34,7 @@ public:
 	}
 	CString GetNextPathName(POSITION& pos) const;
 
-	static bool SupportsV5FileDialog();
-
 protected:
-	static DWORD OpenfilenameSize();
 
 	CSize m_PrevSize;
 	enum
@@ -104,7 +101,9 @@ protected:
 	//}}AFX_MSG
 	DECLARE_MESSAGE_MAP()
 };
-
+#else
+typedef CFileDialog CFileDialogWithHistory;
+#endif
 //{{AFX_INSERT_LOCATION}}
 // Microsoft Visual C++ will insert additional declarations immediately before the previous line.
 

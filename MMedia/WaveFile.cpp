@@ -1635,21 +1635,21 @@ BOOL CWaveFile::InstanceDataWav::SetWaveMarker(WAVEREGIONINFO * pInfo)
 		// add region length
 		if (info.Length != 0)
 		{
-			WaveRegionMarker item;
+			WaveRegionMarker wrm;
 			if (NULL != info.Ltxt)
 			{
-				item.Name = info.Ltxt;
+				wrm.Name = info.Ltxt;
 			}
 
-			item.Codepage = 0;  // TODO
-			item.Country = 0;
-			item.CuePointID = info.MarkerCueID;
-			item.Dialect = 0;
-			item.Language = 0; //0x409;
-			item.Purpose = mmioFOURCC('r', 'g', 'n', ' ');
-			item.SampleLength = info.Length;
+			wrm.Codepage = 0;  // TODO
+			wrm.Country = 0;
+			wrm.CuePointID = info.MarkerCueID;
+			wrm.Dialect = 0;
+			wrm.Language = 0; //0x409;
+			wrm.Purpose = mmioFOURCC('r', 'g', 'n', ' ');
+			wrm.SampleLength = info.Length;
 
-			m_RegionMarkers.push_back(item);
+			m_RegionMarkers.push_back(wrm);
 		}
 		// continue
 		// set label, comment, length, etc
@@ -3068,13 +3068,25 @@ bool operator ==(FILETIME const & t1, FILETIME const & t2)
 CPath CWaveFile::MakePeakFileName(LPCTSTR FileName)
 {
 	CPath path(FileName);
+	CPath AppDataPath;
+
+
+#if _WIN32_WINNT >= 0x0600	// XP
 	LPWSTR pFolderPath = NULL;
-
-	if (S_OK != SHGetKnownFolderPath(FOLDERID_LocalAppData, 0, NULL, & pFolderPath))
+	if (S_OK == SHGetKnownFolderPath(FOLDERID_LocalAppData, 0, NULL, & pFolderPath))
 	{
-		CPath AppDataPath(pFolderPath);
+		AppDataPath = pFolderPath;
 		CoTaskMemFree(pFolderPath);
-
+	}
+#else
+	TCHAR FolderPath[MAX_PATH];
+	if (S_OK == SHGetFolderPath(NULL, CSIDL_LOCAL_APPDATA | CSIDL_FLAG_CREATE, NULL, 0, FolderPath))
+	{
+		AppDataPath = FolderPath;
+	}
+#endif
+	if ( ! ((CString&)AppDataPath).IsEmpty())
+	{
 		AppDataPath.Append(L"WaveSoap");
 		VerifyCreateDirectory(AppDataPath);
 
