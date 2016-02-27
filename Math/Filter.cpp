@@ -1592,10 +1592,10 @@ void CDigitalFilter::Dump(CDumpContext & dc)
 				if (tmp > dMaxPole)
 					dMaxPole = tmp;
 			}
-			s.Format("Max Pole Quality = %f\n",
+			s.Format(L"Max Pole Quality = %f\n",
 					1./ (1. - dMaxPole));
 			dc << s;
-			s.Format("Trail Length = %d samples (for 90 dB decay)",
+			s.Format(L"Trail Length = %d samples (for 90 dB decay)",
 					TrailLength());
 			dc << s;
 		}
