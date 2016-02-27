@@ -424,7 +424,7 @@ BOOL CScaledGraphView::OnNeedText( UINT id, NMHDR * pNotifyStruct, LRESULT * res
 		PointToDoubleDev(p, x, y);
 		PrepareData(x, x, 1);   // Prepare output data
 		CString s(GetString(x, Evaluate(x, 0)));
-		strncpy(lpttt->szText, s, sizeof lpttt->szText);
+		_tcsncpy(lpttt->szText, s, sizeof lpttt->szText);
 		lpttt->szText[sizeof lpttt->szText - 1] = 0;
 		*result = 0;
 		UnprepareData();    // free resources allocated by PrepareData();
