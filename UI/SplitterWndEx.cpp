@@ -2,22 +2,22 @@
 #include "stdafx.h"
 #include "SplitterWndEx.h"
 
-IMPLEMENT_DYNAMIC(CSplitterWndEx, CSplitterWnd)
+IMPLEMENT_DYNAMIC(CSplitterWnd2, CSplitterWnd)
 
 IMPLEMENT_DYNCREATE(CEmptyPane, CView)
 
-BEGIN_MESSAGE_MAP(CSplitterWndEx, CSplitterWnd)
-	//{{AFX_MSG_MAP(CSplitterWndEx)
+BEGIN_MESSAGE_MAP(CSplitterWnd2, CSplitterWnd)
+	//{{AFX_MSG_MAP(CSplitterWnd2)
 	//}}AFX_MSG_MAP
 END_MESSAGE_MAP()
 
-CSplitterWndEx::CSplitterWndEx()
+CSplitterWnd2::CSplitterWnd2()
 {
 }
 
 // DeleteRow and DeleteColumn are provided only to
 // avoid ASSERT(GetStyle() & SPLS_DYNAMIC_SPLIT);
-void CSplitterWndEx::DeleteRow(int rowDelete)
+void CSplitterWnd2::DeleteRow(int rowDelete)
 {
 #ifdef _DEBUG
 	DWORD dwOldStyle = GetStyle();
@@ -32,7 +32,7 @@ void CSplitterWndEx::DeleteRow(int rowDelete)
 #endif
 }
 
-void CSplitterWndEx::DeleteColumn(int colDelete)
+void CSplitterWnd2::DeleteColumn(int colDelete)
 {
 #ifdef _DEBUG
 	DWORD dwOldStyle = GetStyle();
@@ -47,7 +47,7 @@ void CSplitterWndEx::DeleteColumn(int colDelete)
 #endif
 }
 
-void CSplitterWndEx::InsertRow(int rowInsert)
+void CSplitterWnd2::InsertRow(int rowInsert)
 {
 	ASSERT_VALID(this);
 	ASSERT(m_nRows < m_nMaxRows);
@@ -87,7 +87,7 @@ void CSplitterWndEx::InsertRow(int rowInsert)
 	// RecalcLayout();
 }
 
-void CSplitterWndEx::InsertColumn(int colInsert)
+void CSplitterWnd2::InsertColumn(int colInsert)
 {
 	ASSERT_VALID(this);
 	ASSERT(m_nCols < m_nMaxCols);
@@ -127,7 +127,7 @@ void CSplitterWndEx::InsertColumn(int colInsert)
 	// RecalcLayout();
 }
 
-BOOL CSplitterWndEx::CreateStaticEx(CWnd* pParentWnd,
+BOOL CSplitterWnd2::CreateStaticEx(CWnd* pParentWnd,
 									int nMaxRows, int nMaxCols,
 									int nRows, int nCols,
 									DWORD dwStyle,
@@ -156,7 +156,7 @@ BOOL CSplitterWndEx::CreateStaticEx(CWnd* pParentWnd,
 	return TRUE;
 }
 
-void CSplitterWndEx::FillEmptyPanes()
+void CSplitterWnd2::FillEmptyPanes()
 {
 	for (int row = 0; row < GetRowCount(); row++)
 	{
@@ -176,7 +176,7 @@ void CSplitterWndEx::FillEmptyPanes()
 	}
 
 }
-CView * CSplitterWndEx::ReplacePane(CView * pView,
+CView * CSplitterWnd2::ReplacePane(CView * pView,
 									int row, int col)
 {
 	CWnd * pWnd = GetPane(row, col);

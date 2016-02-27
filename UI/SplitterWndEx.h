@@ -4,13 +4,13 @@
 // The class allows dynamic creation of additional
 // views of different type for the static splitter window
 
-class CSplitterWndEx : public CSplitterWnd
+class CSplitterWnd2 : public CSplitterWnd
 {
-	DECLARE_DYNAMIC(CSplitterWndEx)
+	DECLARE_DYNAMIC(CSplitterWnd2)
 	// Construction
 public:
 	void FillEmptyPanes();
-	CSplitterWndEx();
+	CSplitterWnd2();
 
 	// Create a multiple view type splitter with static layout
 	BOOL CreateStaticEx(CWnd* pParentWnd,
@@ -27,7 +27,7 @@ public:
 	virtual void InsertRow(int rowInsert);
 	virtual void InsertColumn(int colInsert);
 	CView * ReplacePane(CView * pView, int row, int col);
-	//{{AFX_MSG(CSplitterWndEx)
+	//{{AFX_MSG(CSplitterWnd2)
 	//}}AFX_MSG
 
 	DECLARE_MESSAGE_MAP()
