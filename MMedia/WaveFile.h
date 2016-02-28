@@ -26,6 +26,7 @@ helper.
 #include "WaveSupport.h"
 #include <atlbase.h>
 #include <atlpath.h>
+#include <exception>
 
 typedef long SAMPLE_INDEX;
 typedef long NUMBER_OF_SAMPLES; // MUST BE SIGNED!
@@ -500,6 +501,18 @@ protected:
 
 #pragma warning(push)
 #pragma warning(disable : 4521 4522)
+class bad_get_waveformat
+	: public std::exception
+{
+public:
+	bad_get_waveformat()
+		: exception("bad GetWaveFormat", 1)
+	{
+	}
+
+
+private:
+};
 
 class CWaveFile : public CMmioFile
 {
@@ -736,7 +749,7 @@ public:
 
 	LPMMCKINFO GetDataChunk() const;
 
-	WAVEFORMATEX * GetWaveFormat() const;
+	CWaveFormat & GetWaveFormat() const;
 	// save all changes in wave format and data chunk size
 	BOOL CommitChanges();
 	MMCKINFO * GetFmtChunk() const;

@@ -9,6 +9,7 @@
 #include <algorithm>
 #include <atlfile.h>
 #include "resource.h"
+#include <typeinfo.h>
 
 #define DEBUG_RESCAN_PEAKS 0
 
@@ -2435,7 +2436,7 @@ void CWaveFile::SetFactNumberOfSamples(NUMBER_OF_SAMPLES samples)
 
 BOOL CWaveFile::SetFileLengthSamples(NUMBER_OF_SAMPLES length)
 {
-// FIXME    ASSERT(WAVE_FORMAT_PCM == GetWaveFormat()->wFormatTag);
+	ASSERT(GetWaveFormat().IsPcm());
 
 	return SetDatachunkLength(length * SampleSize());
 }
@@ -2462,7 +2463,7 @@ NUMBER_OF_SAMPLES CWaveFile::NumberOfSamples() const
 	return MulDiv(cd->datack.cksize, 8, cd->wf.NumChannels() * cd->wf.BitsPerSample());
 }
 
-WAVEFORMATEX * CWaveFile::GetWaveFormat() const
+CWaveFormat& CWaveFile::GetWaveFormat() const
 {
 	InstanceDataWav * pInstData = GetInstanceData();
 	if (pInstData)
@@ -2471,7 +2472,7 @@ WAVEFORMATEX * CWaveFile::GetWaveFormat() const
 	}
 	else
 	{
-		return NULL;
+		throw bad_get_waveformat();
 	}
 }
 
@@ -2523,12 +2524,15 @@ CWavePeaks * CWaveFile::GetWavePeaks() const
 
 NUMBER_OF_CHANNELS CWaveFile::Channels() const
 {
-	WAVEFORMATEX * pWf = GetWaveFormat();
-	if (NULL == pWf)
+	InstanceDataWav * pInstData = GetInstanceData();
+	if (pInstData)
+	{
+		return pInstData->wf.NumChannels();
+	}
+	else
 	{
 		return 1;
 	}
-	return pWf->nChannels;
 }
 
 WAVEFORMATEX * CWaveFile::AllocateWaveformat(unsigned FormatSize)
@@ -2559,10 +2563,10 @@ CHANNEL_MASK CWaveFile::ChannelsMask() const
 
 unsigned CWaveFile::SampleRate() const
 {
-	WAVEFORMATEX * pWf = GetWaveFormat();
-	if (pWf)
+	InstanceDataWav * pInstData = GetInstanceData();
+	if (pInstData)
 	{
-		return pWf->nSamplesPerSec;
+		return pInstData->wf.SampleRate();
 	}
 	else
 	{
@@ -2572,10 +2576,10 @@ unsigned CWaveFile::SampleRate() const
 
 WORD CWaveFile::BitsPerSample() const
 {
-	WAVEFORMATEX * pWf = GetWaveFormat();
-	if (pWf)
+	InstanceDataWav * pInstData = GetInstanceData();
+	if (pInstData)
 	{
-		return pWf->wBitsPerSample;
+		return pInstData->wf.BitsPerSample();
 	}
 	else
 	{
@@ -2632,7 +2636,7 @@ BOOL CWaveFile::CommitChanges()
 	{
 		Seek(fmtck->dwDataOffset);
 
-		Write(GetWaveFormat(), fmtck->cksize);
+		Write((PWAVEFORMATEX)GetWaveFormat(), fmtck->cksize);
 		fmtck->dwFlags &= ~MMIO_DIRTY;
 	}
 
@@ -3028,7 +3032,7 @@ BOOL CWaveFile::CheckAndLoadPeakFile()
 
 			&& 0 == memcmp(& pfh.wfFormat, GetWaveFormat(), sizeof (PCMWAVEFORMAT))
 			&& (WAVE_FORMAT_PCM == pfh.wfFormat.wFormatTag
-				|| pfh.wfFormat.cbSize == GetWaveFormat()->cbSize)
+				|| pfh.wfFormat.cbSize == PWAVEFORMATEX(GetWaveFormat())->cbSize)
 			&& pPeakInfo->GetGranularity() == pfh.Granularity
 			&& pfh.PeakInfoSize == CalculatePeakInfoSize() * sizeof (WavePeak)
 			)
