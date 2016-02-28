@@ -90,13 +90,13 @@ public:
 	{
 		m_File = file;
 	}
-	DWORD GetLength()
+	MEDIA_FILE_POSITION GetLength()
 	{
-		return (DWORD)m_File.GetLength();
+		return m_File.GetLength();
 	}
-	DWORD GetPos()
+	MEDIA_FILE_POSITION GetPos()
 	{
-		return (DWORD)m_File.Seek(0, FILE_CURRENT);
+		return m_File.Seek(0, FILE_CURRENT);
 	}
 
 private:
