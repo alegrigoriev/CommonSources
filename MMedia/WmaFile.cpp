@@ -1821,7 +1821,7 @@ HRESULT STDMETHODCALLTYPE CDirectShowDecoder::QueryPinInfo(
 	{
 		return E_POINTER;
 	}
-	wcsncpy(pInfo->achName, L"WaveSoap consumer pin", countof(pInfo->achName));
+	wcsncpy_s(pInfo->achName, L"WaveSoap consumer pin", countof(L"WaveSoap consumer pin"));
 	pInfo->dir = PINDIR_INPUT;
 	pInfo->pFilter = this;
 	AddRef();
@@ -2117,7 +2117,8 @@ HRESULT STDMETHODCALLTYPE CDirectShowDecoder::QueryFilterInfo(
 	{
 		return E_POINTER;
 	}
-	wcsncpy(pInfo->achName, m_FilterName, countof(pInfo->achName));
+
+	wcsncpy_s(pInfo->achName, m_FilterName, countof(pInfo->achName));
 	pInfo->pGraph = m_FilterGraph;
 	if (pInfo->pGraph)
 	{
