@@ -1894,14 +1894,26 @@ BOOL CWaveFile::CreateWaveFile(CWaveFile * pTemplateFile, WAVEFORMATEX const * p
 	}
 
 	NUMBER_OF_CHANNELS nNumChannels = wf.NumChannelsFromMask(Channels);
+	unsigned NewSampleSize = 1;
+	if (flags & CreateWaveFilePcmFormat)
+	{
+		// force 16 bits per sample
+		wf.InitFormat(SampleType16bit, wf.SampleRate(), nNumChannels);
+	}
+	else if (wf.IsPcm() && wf.NumChannels() != nNumChannels)
+	{
+		// keep given number of bts per sample
+		wf.InitFormat(wf.GetSampleType(), wf.SampleRate(), nNumChannels);
+	}
+
+	if (0 == (flags & CreateWaveFileSizeSpecified))
+	{
+		NewSampleSize = wf.SampleSize();
+	}
 
 	if (flags & CreateWaveFileAllowMemoryFile)
 	{
-		// check file size
-		int nSampleSize =
-			sizeof (WAVE_SAMPLE) * nNumChannels;
-
-		LONGLONG size = SizeOrSamples * nSampleSize;
+		LONGLONG size = SizeOrSamples * NewSampleSize;
 		if (size > pApp->m_MaxMemoryFileSize * 1024)
 		{
 			flags &= ~CreateWaveFileAllowMemoryFile;
@@ -2013,22 +2025,7 @@ BOOL CWaveFile::CreateWaveFile(CWaveFile * pTemplateFile, WAVEFORMATEX const * p
 		return FALSE;
 	}
 
-	if (flags & CreateWaveFilePcmFormat)
-	{
-		// force 16 bits per sample
-		pInst->wf.InitFormat(WAVE_FORMAT_PCM, wf.SampleRate(),
-							nNumChannels, 16);
-	}
-	else if (WAVE_FORMAT_PCM == wf.FormatTag())
-	{
-		// keep given number of bts per sample
-		pInst->wf.InitFormat(WAVE_FORMAT_PCM, wf.SampleRate(),
-							nNumChannels, wf.BitsPerSample());
-	}
-	else
-	{
-		pInst->wf = wf;
-	}
+	pInst->wf = wf;
 
 	// RIFF created in Open()
 	MMCKINFO * pfck = GetFmtChunk();
@@ -2069,9 +2066,9 @@ BOOL CWaveFile::CreateWaveFile(CWaveFile * pTemplateFile, WAVEFORMATEX const * p
 		}
 		else
 		{
-			unsigned DataLength = SizeOrSamples * SampleSize();
-			SetFileLength(pDatachunk->dwDataOffset + DataLength);
-			Seek(LONG(DataLength), SEEK_CUR);
+			unsigned DataLength = pDatachunk->dwDataOffset + SizeOrSamples * NewSampleSize;
+			SetFileLength(DataLength);
+			Seek(DataLength, SEEK_CUR);
 		}
 	}
 	Ascend( * pDatachunk);
