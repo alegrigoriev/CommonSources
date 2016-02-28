@@ -275,14 +275,16 @@ public:
 
 	WaveSampleType GetSampleType() const;
 
-	bool IsPcm16() const
+	bool IsPcm() const
 	{
-		return SampleType16bit == GetSampleType();
-	}
+		WaveSampleType type = GetSampleType();
 
-	bool IsFloat32() const
-	{
-		return SampleTypeFloat32 == GetSampleType();
+		return SampleType16bit == type
+				|| SampleType8bit == type
+				|| SampleType24bit == type
+				|| SampleType32bit == type
+				|| SampleTypeFloat32 == type
+				|| SampleTypeFloat64 == type;
 	}
 
 	NUMBER_OF_CHANNELS NumChannelsFromMask(CHANNEL_MASK Channels) const;
