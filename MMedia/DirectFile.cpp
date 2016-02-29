@@ -720,7 +720,11 @@ BOOL File::Commit(DWORD flags)
 			m_pSourceFile = NULL;
 		}
 
-		VERIFY(Flush());
+		if (!Flush())
+		{
+			// some data buffers were still locked
+			return FALSE;
+		}
 
 	}
 	if (m_FileLength != m_RealFileLength)

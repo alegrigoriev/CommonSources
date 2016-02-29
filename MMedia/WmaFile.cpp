@@ -561,6 +561,7 @@ protected:
 
 	NUMBER_OF_SAMPLES m_CurrentSamples;
 	DWORD m_dwAudioOutputNum;
+	// this is decoded audio format. It's used as m_OriginalWaveFormat for these files
 	CWaveFormat m_DstWf;
 	CWaveFormat m_SrcWf;
 	DWORD m_Bitrate;

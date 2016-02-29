@@ -57,16 +57,19 @@ enum
 #pragma pack(push, 2)
 struct PeakFileHeader
 {
-	enum { pfhSignature = 'KPSW', pfhMaxVersion = 5};
-	DWORD dwSignature;
-	WORD wSize;
-	WORD dwVersion;
-	FILETIME WaveFileTime;
-	MEDIA_FILE_SIZE dwWaveFileSize;   // WAV file is less than 4G
-	DWORD Granularity;      // number of WAV samples for each PeakFile value
+	enum { pfhSignatureHigh = 'KAEP',
+		pfhSignatureLow = 'EVAW', pfhMaxVersion = 1};
+	DWORD dwSignatureLow;
+	DWORD dwSignatureHigh;
+	DWORD dwVersion;
+	DWORD wSize;
 	DWORD PeakInfoSize;
-	NUMBER_OF_SAMPLES NumOfSamples;
+	FILETIME WaveFileTime;
+	ULARGE_INTEGER WaveFileSize;
+	DWORD Granularity;      // number of WAV samples for each PeakFile value
+	ULONG NumOfSamples;
 	WAVEFORMATEX wfFormat;
+	UCHAR ExtraFormat[1];
 };
 
 #pragma pack(pop)
@@ -565,9 +568,12 @@ public:
 		return (NumberOfSamples() + Granularity - 1) / Granularity * Channels();
 	}
 	void SetPeakData(PEAK_INDEX index, WAVE_PEAK low, WAVE_PEAK high);
-	BOOL LoadPeaksForCompressedFile(CWaveFile & OriginalWaveFile, ULONG NumberOfSamples);
-
+	BOOL LoadPeaksForOriginalFile(CWaveFile & OriginalWaveFile, ULONG NumberOfSamples);
 	BOOL CheckAndLoadPeakFile();
+
+	// the peak info from 'this' file is saved to the name for SavedWaveFile.
+	// the timestamp is set to the saved file, and the waveformat will match the saved file.
+	// the peak info must not be saved if number of channels and/or sample rate doesn't match
 	void SavePeakInfo(CWaveFile & SavedWaveFile);
 
 	CSimpleCriticalSection & GetPeakLock()

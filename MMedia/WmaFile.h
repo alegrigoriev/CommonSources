@@ -188,6 +188,7 @@ protected:
 
 	NUMBER_OF_SAMPLES m_CurrentSamples;
 	DWORD m_dwAudioOutputNum;
+	// this is decoded audio format. It's used as m_OriginalWaveFormat for these files
 	CWaveFormat m_DstWf;
 	CWaveFormat m_SrcWf;
 	DWORD m_Bitrate;
@@ -406,6 +407,7 @@ protected:
 	CComPtr<IFilterGraph> m_FilterGraph;
 	CDirectShowDecoderDataSink * m_DataSink;
 
+	// this is decoded audio format. It's used as m_OriginalWaveFormat for these files
 	CWaveFormat m_DstWf;
 	FILTER_STATE m_FilterState;
 	DecoderState m_DecoderState;
