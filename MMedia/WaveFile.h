@@ -569,7 +569,7 @@ public:
 	}
 	void SetPeakData(PEAK_INDEX index, WAVE_PEAK low, WAVE_PEAK high);
 	BOOL LoadPeaksForOriginalFile(CWaveFile & OriginalWaveFile, ULONG NumberOfSamples);
-	BOOL CheckAndLoadPeakFile();
+	BOOL LoadPeakFile();
 
 	// the peak info from 'this' file is saved to the name for SavedWaveFile.
 	// the timestamp is set to the saved file, and the waveformat will match the saved file.

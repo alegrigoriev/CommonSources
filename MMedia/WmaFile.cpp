@@ -694,7 +694,7 @@ HRESULT CWmaDecoderSync::Open(CDirectFile & file)
 		m_BufferLengthTime = MulDiv(MaxSampleSize, 10000000, m_DstWf.BytesPerSec());
 		m_BufferLengthTime -= m_BufferLengthTime % 10000;   // round to miliseconds
 
-		if (m_DstWf.FormatTag() != WAVE_FORMAT_PCM)
+		if (! m_DstWf.IsPcm())
 		{
 			hr = E_UNEXPECTED;
 		}

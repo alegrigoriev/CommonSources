@@ -489,6 +489,11 @@ BOOL CWaveFile::LoadWaveformat()
 		if (ck.cksize == (DWORD) Read(pWf, (LONG)ck.cksize))
 		{
 			Ascend(ck);
+			if (pWf->cbSize + sizeof(WAVEFORMATEX) > ck.cksize)
+			{
+				// chunk size too small
+				return FALSE;
+			}
 			// try to find 'fact' chunk
 			MMCKINFO * pFact = GetFactChunk();
 			pFact->ckid = mmioFOURCC('f', 'a', 'c', 't');
@@ -3003,7 +3008,7 @@ CPath CWaveFile::MakePeakFileName(LPCTSTR FileName)
 	return path;
 }
 
-BOOL CWaveFile::CheckAndLoadPeakFile()
+BOOL CWaveFile::LoadPeakFile()
 {
 	return LoadPeaksForOriginalFile(*this, NumberOfSamples());
 }
