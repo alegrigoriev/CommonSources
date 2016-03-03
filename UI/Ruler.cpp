@@ -332,7 +332,7 @@ int CHorizontalRuler::OnCreate(LPCREATESTRUCT lpCreateStruct)
 
 int CHorizontalRuler::CalculateHeight()
 {
-	CWindowDC dc(GetDesktopWindow());   // FIXME: Why DesktopWindow?
+	CWindowDC dc(AfxGetMainWnd());
 	CGdiObjectSave OldFont(dc, dc.SelectStockObject(ANSI_VAR_FONT));
 
 	int height = dc.GetTextExtent(_T("0"), 1).cy;
