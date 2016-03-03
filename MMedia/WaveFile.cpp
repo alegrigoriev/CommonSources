@@ -486,10 +486,13 @@ BOOL CWaveFile::LoadWaveformat()
 
 	if (NULL != pWf)
 	{
-		if (ck.cksize == (DWORD) Read(pWf, (LONG)ck.cksize))
+		if (ck.cksize == (DWORD)Read(pWf, (LONG)ck.cksize))
 		{
 			Ascend(ck);
-			if (pWf->cbSize + sizeof(WAVEFORMATEX) > ck.cksize)
+			if (pWf->wFormatTag == WAVE_FORMAT_PCM
+				&& ck.cksize < sizeof PCMWAVEFORMAT
+				|| pWf->wFormatTag != WAVE_FORMAT_PCM
+				&& ck.cksize < SizeOfFormatEx(pWf))
 			{
 				// chunk size too small
 				return FALSE;
@@ -2036,7 +2039,7 @@ BOOL CWaveFile::CreateWaveFile(CWaveFile * pTemplateFile, WAVEFORMATEX const * p
 	MMCKINFO * pfck = GetFmtChunk();
 	pfck->ckid = mmioFOURCC('f', 'm', 't', ' ');
 	CreateChunk(* pfck, 0);
-	Write(LPWAVEFORMATEX(pInst->wf), pInst->wf.FormatSize());
+	Write(PWAVEFORMATEX(pInst->wf), pInst->wf.FormatSize());
 	Ascend(* pfck);
 
 	// write fact chunk
@@ -2073,7 +2076,7 @@ BOOL CWaveFile::CreateWaveFile(CWaveFile * pTemplateFile, WAVEFORMATEX const * p
 		{
 			unsigned DataLength = pDatachunk->dwDataOffset + SizeOrSamples * NewSampleSize;
 			SetFileLength(DataLength);
-			Seek(DataLength, SEEK_CUR);
+			Seek(DataLength, FILE_BEGIN);
 		}
 	}
 	Ascend( * pDatachunk);
@@ -3040,22 +3043,30 @@ BOOL CWaveFile::LoadPeaksForOriginalFile(CWaveFile & OriginalWaveFile,
 		return FALSE;
 	}
 	// read the whole header
-	if (offsetof(PeakFileHeader, ExtraFormat[0])
-		!= PeakFile.Read(&pfh, (UINT)offsetof(PeakFileHeader, ExtraFormat[0])))
+	unsigned SizeOfHeader = sizeof pfh;
+	if (SizeOfHeader != PeakFile.Read(&pfh, SizeOfHeader))
 	{
 		return FALSE;
 	}
+
 	CWaveFormat wf;
-	WAVEFORMATEX * pwf = wf.Allocate(pfh.wfFormat.cbSize);
+	unsigned SizeOfFormat = SizeOfFormatEx(&pfh.wfFormat);
+	WAVEFORMATEX * pwf = wf.Allocate(sizeof(WAVEFORMATEX) + pfh.wfFormat.cbSize);
 	if (NULL == pwf)
 	{
 		return FALSE;
 	}
 
+	unsigned SizeWithFormat = offsetof(PeakFileHeader, wfFormat) + SizeOfFormat;
+	if (SizeWithFormat > SizeOfHeader)
+	{
+		SizeOfHeader = (SizeWithFormat + 7) & -8;
+	}
+
 	if (PeakFileHeader::pfhSignatureLow != pfh.dwSignatureLow
 		|| PeakFileHeader::pfhSignatureHigh != pfh.dwSignatureHigh
 		|| pfh.dwVersion != PeakFileHeader::pfhMaxVersion
-		&& pfh.wSize != ((-8) & (offsetof(PeakFileHeader, ExtraFormat[pfh.wfFormat.cbSize]) + 7)))
+		&& pfh.wSize != SizeOfHeader)
 	{
 		return FALSE;
 	}
@@ -3063,33 +3074,39 @@ BOOL CWaveFile::LoadPeaksForOriginalFile(CWaveFile & OriginalWaveFile,
 	if ( ! (pfh.WaveFileTime == OriginalWaveFile.GetFileInformation().ftLastWriteTime)
 		// check source file size
 		|| pfh.WaveFileSize.LowPart != OriginalWaveFile.GetFileInformation().nFileSizeLow
-		|| pfh.WaveFileSize.HighPart != OriginalWaveFile.GetFileInformation().nFileSizeHigh
-		// check PCM number of channels and sampling rate
-		|| pPeakInfo->GetGranularity() != pfh.Granularity
+		|| pfh.WaveFileSize.HighPart != OriginalWaveFile.GetFileInformation().nFileSizeHigh)
+	{
+		return FALSE;
+	}
+	// check PCM number of channels and sampling rate
+	if (pPeakInfo->GetGranularity() != pfh.Granularity
 		|| pfh.NumOfSamples != NumberOfSamples)
 	{
 		return FALSE;
 	}
-	// read the rest of format
-	*pwf = pfh.wfFormat;
-	if (pfh.wfFormat.cbSize != 0)
+	// read the format
+	if (SizeOfHeader > sizeof pfh)
 	{
-		// read the rest of the format and compare it
-		if (pfh.wfFormat.cbSize != PeakFile.Read(pwf + 1, pfh.wfFormat.cbSize))
+		PeakFile.Seek(offsetof(PeakFileHeader, wfFormat), CFile::begin);
+
+		if (SizeOfFormat != PeakFile.Read(pwf, SizeOfFormat))
 		{
 			return FALSE;
 		}
+
+		PeakFile.Seek(SizeOfHeader, CFile::begin);
+	}
+	else
+	{
+		*pwf = pfh.wfFormat;
 	}
 
-	if (sizeof(WAVEFORMATEX) + pwf->cbSize != GetWaveFormat().FormatSize()
-		|| memcmp(pwf, (PWAVEFORMATEX)GetWaveFormat(), sizeof(WAVEFORMATEX) + pwf->cbSize))
+	if (SizeOfFormat != GetWaveFormat().FormatSize()
+		|| memcmp(pwf, (PWAVEFORMATEX)GetWaveFormat(), SizeOfFormat))
 	{
 		return FALSE;
 	}
-	if (offsetof(PeakFileHeader, ExtraFormat[pfh.wfFormat.cbSize]) & 7)
-	{
-		PeakFile.Seek(8 - (offsetof(PeakFileHeader, ExtraFormat[pfh.wfFormat.cbSize]) & 7), CFile::current);
-	}
+
 	// allocate data and read it
 	WavePeak * pPeaks = pPeakInfo->AllocatePeakData(pfh.NumOfSamples, Channels());
 	if (NULL == pPeaks)
@@ -3123,31 +3140,41 @@ void CWaveFile::SavePeakInfo(CWaveFile & SavedWaveFile)
 
 	PeakFileHeader pfh = { 0 };
 
-	pfh.wfFormat = *SavedWaveFile.GetWaveFormat();
-	if (WAVE_FORMAT_PCM == pfh.wfFormat.wFormatTag)
+	CWaveFormat wf = SavedWaveFile.GetWaveFormat();
+	PWAVEFORMATEX pwf = wf;
+	if (WAVE_FORMAT_PCM == pwf->wFormatTag)
 	{
-		pfh.wfFormat.cbSize = 0;
+		pwf->cbSize = 0;
+	}
+	unsigned SizeOfFormat = wf.FormatSize();
+	pfh.wfFormat = *pwf;
+
+	unsigned SizeOfHeader = sizeof pfh;
+	unsigned SizeWithFormat = SizeOfFormat + offsetof(PeakFileHeader, wfFormat);
+	if (SizeWithFormat > SizeOfHeader)
+	{
+		SizeOfHeader = (SizeWithFormat + 7) & -8;
 	}
 
 	pfh.dwSignatureLow = pfh.pfhSignatureLow;
 	pfh.dwSignatureHigh = pfh.pfhSignatureHigh;
 	pfh.dwVersion = pfh.pfhMaxVersion;
-	pfh.wSize = (offsetof(PeakFileHeader, ExtraFormat[pfh.wfFormat.cbSize]) + 7) & -8;
+	pfh.wSize = SizeOfHeader;
 	pfh.PeakInfoSize = CalculatePeakInfoSize() * sizeof (WavePeak);
 	pfh.WaveFileTime = SavedWaveFile.GetFileInformation().ftLastWriteTime;
 	pfh.WaveFileSize.LowPart = SavedWaveFile.GetFileSize(&pfh.WaveFileSize.HighPart);
 	pfh.Granularity = GetPeakGranularity();
 	pfh.NumOfSamples = NumberOfSamples();
 
-	PeakFile.Write( & pfh, sizeof pfh);
-	if (pfh.wfFormat.cbSize != 0)
+	if (SizeOfHeader == sizeof pfh)
 	{
-		PeakFile.Write(1 + (PWAVEFORMATEX)SavedWaveFile.GetWaveFormat(), pfh.wfFormat.cbSize);
+		PeakFile.Write(&pfh, sizeof pfh);
 	}
-	// align by 8
-	if (offsetof(PeakFileHeader, ExtraFormat[pfh.wfFormat.cbSize]) & 7)
+	else
 	{
-		PeakFile.Seek(8 - (offsetof(PeakFileHeader, ExtraFormat[pfh.wfFormat.cbSize]) & 7), CFile::current);
+		PeakFile.Write(&pfh, offsetof(PeakFileHeader, wfFormat));
+		PeakFile.Write(pwf, SizeOfFormat);
+		PeakFile.Seek(SizeOfHeader, CFile::begin);
 	}
 
 	PeakFile.Write(GetWavePeaks()->GetPeakArray(), pfh.PeakInfoSize);
