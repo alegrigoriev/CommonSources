@@ -58,7 +58,7 @@ enum
 struct PeakFileHeader
 {
 	enum { pfhSignatureHigh = 'KAEP',
-		pfhSignatureLow = 'EVAW', pfhMaxVersion = 1};
+		pfhSignatureLow = 'EVAW', pfhMaxVersion = 2};
 	DWORD dwSignatureLow;
 	DWORD dwSignatureHigh;
 	DWORD dwVersion;
@@ -69,7 +69,6 @@ struct PeakFileHeader
 	DWORD Granularity;      // number of WAV samples for each PeakFile value
 	ULONG NumOfSamples;
 	WAVEFORMATEX wfFormat;
-	UCHAR ExtraFormat[1];
 };
 
 #pragma pack(pop)

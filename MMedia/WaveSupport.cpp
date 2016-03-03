@@ -720,8 +720,8 @@ CWaveFormat & CWaveFormat::operator =(WAVEFORMATEX const * pWf)
 		}
 		else
 		{
-			Allocate(pWf->cbSize + sizeof (WAVEFORMATEX));
-			memcpy(m_pWf, pWf, pWf->cbSize + sizeof (WAVEFORMATEX));
+			Allocate(SizeOfFormatEx(pWf));
+			memcpy(m_pWf, pWf, SizeOfFormatEx(pWf));
 		}
 	}
 	return *this;
@@ -752,7 +752,7 @@ int CWaveFormat::MatchFormat(WAVEFORMATEX const * pwf)
 		else
 		{
 			if (pwf->cbSize == m_pWf->cbSize
-				&& 0 == memcmp(pwf, m_pWf, pwf->cbSize + sizeof (WAVEFORMATEX)))
+				&& 0 == memcmp(pwf, m_pWf, SizeOfFormatEx(pwf)))
 			{
 				// exact match found
 				return WaveFormatAllFieldsMatch;
@@ -1646,7 +1646,7 @@ CString CAudioCompressionManager::GetFormatName(HACMDRIVER had, WAVEFORMATEX con
 	afd.dwFormatTag = pWf->wFormatTag;
 	afd.fdwSupport = 0;
 	afd.pwfx = const_cast<WAVEFORMATEX*>(pWf);
-	afd.cbwfx = sizeof (WAVEFORMATEX) + pWf->cbSize;
+	afd.cbwfx = SizeOfFormatEx(pWf);
 	if (WAVE_FORMAT_PCM == pWf->wFormatTag)
 	{
 		afd.cbwfx = sizeof (PCMWAVEFORMAT);

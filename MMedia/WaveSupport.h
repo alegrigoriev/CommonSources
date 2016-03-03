@@ -146,6 +146,11 @@ struct WaveFormatTagEx
 	}
 };
 
+inline unsigned SizeOfFormatEx(const WAVEFORMATEX * pwf)
+{
+	return sizeof(WAVEFORMATEX) + pwf->cbSize;
+}
+
 struct CWaveFormat
 {
 private:
@@ -255,6 +260,8 @@ public:
 		return m_pWf + 1;
 	}
 
+	// FormatSize is used as the size to read, write, copy and compare WAVEFORMATEX, and as the minimum FMT chunk size
+	// Format is always allocated at least sizeof WAVEFORMATEX
 	unsigned FormatSize() const
 	{
 		if (NULL == m_pWf)
@@ -265,7 +272,7 @@ public:
 		{
 			return sizeof (PCMWAVEFORMAT);
 		}
-		return sizeof (WAVEFORMATEX) + m_pWf->cbSize;
+		return SizeOfFormatEx(m_pWf);
 	}
 
 	bool IsCompressed() const
@@ -316,7 +323,7 @@ public:
 		return m_pWf->cbSize == cmp.m_pWf->cbSize
 				&& 0 == memcmp(m_pWf, cmp.m_pWf,
 								(WAVE_FORMAT_PCM == m_pWf->wFormatTag) ?
-									sizeof (PCMWAVEFORMAT) : sizeof (WAVEFORMATEX) + m_pWf->cbSize);
+									sizeof (PCMWAVEFORMAT) : SizeOfFormatEx(m_pWf));
 	}
 	CString GetFormatNameString(HACMDRIVER had = NULL);
 	CString GetFormatTagNameString(HACMDRIVER had = NULL);
@@ -328,7 +335,7 @@ inline bool operator ==(WAVEFORMATEX const & wf1, WAVEFORMATEX const & wf2)
 	return wf1.cbSize == wf2.cbSize
 			&& 0 == memcmp( & wf1, & wf2,
 							(WAVE_FORMAT_PCM == wf1.wFormatTag) ?
-								sizeof (PCMWAVEFORMAT) : sizeof (WAVEFORMATEX) + wf1.cbSize);
+								sizeof (PCMWAVEFORMAT) : SizeOfFormatEx(&wf1));
 }
 
 class CWaveDevice

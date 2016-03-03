@@ -1131,7 +1131,7 @@ BOOL WmaEncoder::SetDestinationFormat(WAVEFORMATEX const * pDstWfx)
 
 #endif
 	pType->pbFormat = PBYTE(pDstWfx);
-	pType->cbFormat = sizeof (WAVEFORMATEX) + pDstWfx->cbSize;
+	pType->cbFormat = SizeOfFormatEx(pDstWfx);
 
 	if (TRACE_WMA_DECODER) TRACE(_T("MediaType: wFormatTag=%d, BytesPerSec = %d\n"),
 								pDstWfx->wFormatTag, pDstWfx->nAvgBytesPerSec);
@@ -1454,8 +1454,8 @@ HRESULT STDMETHODCALLTYPE CWmaDecoderAsync::OnStatus( /* [in] */ WMT_STATUS Stat
 	case WMT_ERROR:
 		TRACE(_T("CWmaDecoder::OnStatus WMT_ERROR, HRESULT=%X\n"), hr);
 		break;
-		m_bStarted = false;
-		m_StartedEvent.Set();
+		//m_bStarted = false;
+		//m_StartedEvent.Set();
 		break;
 
 	case WMT_END_OF_FILE:
