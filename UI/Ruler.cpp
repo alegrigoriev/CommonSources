@@ -142,20 +142,6 @@ int CHorizontalRuler::OnMouseActivate(CWnd* pDesktopWnd, UINT nHitTest, UINT mes
 	return CWnd::OnMouseActivate(pDesktopWnd, nHitTest, message);
 }
 
-BOOL CHorizontalRuler::OnScrollBy(CSize sizeScroll, BOOL /*bDoScroll*/)
-{
-
-	// the function scrolls the real image, and modifies dOrgX, dOrgY.
-	BaseClass::OnScrollBy(sizeScroll, TRUE);
-	if (//sizeScroll.cx != 0 ||
-		sizeScroll.cy != 0)
-	{
-		// force window redraw, but don't erase it
-		Invalidate(FALSE);
-	}
-	return TRUE;
-}
-
 void CHorizontalRuler::OnCaptureChanged(CWnd *pWnd)
 {
 	m_bIsTrackingSelection = FALSE;
@@ -287,19 +273,6 @@ int CVerticalRuler::OnMouseActivate(CWnd* pDesktopWnd, UINT nHitTest, UINT messa
 {
 	// don't call CView function, to avoid getting focus to the window
 	return CWnd::OnMouseActivate(pDesktopWnd, nHitTest, message);
-}
-
-BOOL CVerticalRuler::OnScrollBy(CSize sizeScroll, BOOL /*bDoScroll*/)
-{
-
-	// the function scrolls the real image, and modifies dOrgX, dOrgY.
-	BaseClass::OnScrollBy(sizeScroll, TRUE);
-	if (sizeScroll.cx != 0 || sizeScroll.cy != 0)
-	{
-		// force window redraw, but don't erase it
-		Invalidate(FALSE);
-	}
-	return TRUE;
 }
 
 void CVerticalRuler::OnCaptureChanged(CWnd *pWnd)

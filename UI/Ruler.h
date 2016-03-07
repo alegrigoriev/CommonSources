@@ -30,7 +30,6 @@ public:
 protected:
 	virtual void OnDraw(CDC* pDC);      // overridden to draw this view
 	virtual BOOL PreCreateWindow(CREATESTRUCT& cs);
-	virtual BOOL OnScrollBy(CSize sizeScroll, BOOL bDoScroll = TRUE);
 	//}}AFX_VIRTUAL
 	virtual void HorizontalScrollByPixels(int Pixels) = 0;	// Pixels >0 - picture moves to the right, pixels <0 - picture moves to the left
 	virtual void BeginMouseTracking();
@@ -85,7 +84,6 @@ public:
 protected:
 	virtual void OnDraw(CDC* pDC);      // overridden to draw this view
 	virtual BOOL PreCreateWindow(CREATESTRUCT& cs);
-	virtual BOOL OnScrollBy(CSize sizeScroll, BOOL bDoScroll = TRUE);
 	//}}AFX_VIRTUAL
 	virtual void VerticalScrollByPixels(int Pixels) = 0;
 	virtual void BeginMouseTracking();
