@@ -2039,7 +2039,7 @@ BOOL CWaveFile::CreateWaveFile(CWaveFile * pTemplateFile, WAVEFORMATEX const * p
 	MMCKINFO * pfck = GetFmtChunk();
 	pfck->ckid = mmioFOURCC('f', 'm', 't', ' ');
 	CreateChunk(* pfck, 0);
-	Write(PWAVEFORMATEX(pInst->wf), pInst->wf.FormatSize());
+	Write(PWAVEFORMATEX(pInst->wf), (pInst->wf.FormatSize() + 3) & ~3);		// align the chunks after it to 4
 	Ascend(* pfck);
 
 	// write fact chunk

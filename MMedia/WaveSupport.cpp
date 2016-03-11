@@ -582,14 +582,15 @@ CWaveFormat::~CWaveFormat()
 
 WAVEFORMATEX * CWaveFormat::Allocate(unsigned Size, bool bCopy)
 {
-	if (Size > 0xFFFF)
+	if (Size > 0xFFFC)
 	{
-		Size = 0xFFFF;
+		Size = 0xFFFC;
 	}
 	if (Size < sizeof(WAVEFORMATEX))
 	{
 		Size = sizeof(WAVEFORMATEX);
 	}
+	Size = (Size + 3) & ~3;		// round to 4
 
 	if (m_AllocatedSize >= Size)
 	{
@@ -600,16 +601,15 @@ WAVEFORMATEX * CWaveFormat::Allocate(unsigned Size, bool bCopy)
 	{
 		return NULL;
 	}
+	memset(NewBuf, 0, Size);
+
 	ASSERT(m_pWf != NULL);
 
 	if (bCopy)
 	{
 		memcpy(NewBuf, m_pWf, m_AllocatedSize);
 	}
-	else
-	{
-		memset(NewBuf, 0, Size);
-	}
+
 	if (m_pWf != &wfx.Format)
 	{
 		delete[](char*) m_pWf;
