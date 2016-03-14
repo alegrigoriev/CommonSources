@@ -1990,8 +1990,8 @@ BOOL LowpassFilter::CreateElliptic(double PassFreq, double PassLoss,
 
 	m_Order = (int)pDecomposed->GetSize();
 
-	int chebyshev_order = EstimateChebyshev2FilterOrder(OmegaPass, PassLoss, OmegaStop, StopLoss);
-	TRACE("Pass loss=%f, stop loss=%f, EllipticOrder=%d, chebyshev order=%d\n", PassLoss, StopLoss, m_Order, chebyshev_order);
+	//int chebyshev_order = EstimateChebyshev2FilterOrder(OmegaPass, PassLoss, OmegaStop, StopLoss);
+	TRACE("Pass loss=%f, stop loss=%f, EllipticOrder=%d\n", PassLoss, StopLoss, m_Order);
 
 	for (int i = 0; i < pDecomposed->GetSize(); i++)
 	{
