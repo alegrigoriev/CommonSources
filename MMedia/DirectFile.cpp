@@ -1308,6 +1308,8 @@ void CDirectFileCache::InitCache(unsigned MaxCacheSize)
 
 CDirectFileCache::~CDirectFileCache()
 {
+	ASSERT(m_FileList.IsEmpty());
+
 	if (NULL != m_hEvent)
 	{
 		CloseHandle(m_hEvent);
