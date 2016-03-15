@@ -15,31 +15,21 @@ template<class T>
 void FFTPostProc(complex<T> * x, const int count)
 {
 	ASSERT(count > 0 && count % 2 == 0);
-	double angle = -M_PI / count;
-	double rot_r = cos(angle);
-	double rot_i = -sin(angle);
-	double u_r = 0., u_i = 1.;
+	double angle = M_PI / count;
+	complex<double> rot(cos(angle), -sin(angle));
+	complex<double> u(0., -1.);
 
 	x[count] = x[0];
 
 	for (int i = 0, k = count; i <= count / 2; i++, k--)
 	{
-		double tmp_r = real(x[k]) + real(x[i]);
-		double tmp_i = imag(x[k]) - imag(x[i]); // -sign omitted
-		double tmp2_r = real(x[k]) - real(x[i]);
-		double tmp2_i = imag(x[k]) + imag(x[i]); // -sign omitted
-		double tmp3 = u_r * tmp2_r + u_i * tmp2_i;   // tmp2_r
+		complex<double> tmp = x[k] + conj(x[i]);
+		complex<double> tmp2 = x[k] - conj(x[i]);
 
-		tmp2_i = u_i * tmp2_r - u_r * tmp2_i;
-
-		x[i].real(T(0.5 * (tmp3 + tmp_r)));
-		x[i].imag(T(0.5 * (tmp2_i - tmp_i)));
-		x[k].real(T(0.5 * (tmp_r - tmp3)));
-		x[k].imag(T(0.5 * (tmp2_i + tmp_i)));
-
-		tmp_r = u_r * rot_r - u_i * rot_i;
-		u_i = u_r * rot_i + u_i * rot_r;
-		u_r = tmp_r;
+		tmp2 = tmp2 * u;
+		x[i] = conj(0.5 * (tmp + tmp2));
+		x[k] = 0.5 * (tmp - tmp2);
+		u *= rot;
 	}
 }
 
@@ -83,112 +73,116 @@ void FastFourierTransformCore(const T * src, T * dst,
 							const int order_power,
 							const int reverse_fft)
 {
+	// The source and destimation arrays are float/double pairs (complex numbers),
+	// total 2^order_power complex numbers, or 2*2^order_power of float/double items
 	int i;
 	int n = 1 << (order_power + 1);
 	if (src != dst)
 	{
+		// the transform is done in place. If the pointers are not equal, copy the array
 		for (i = 0; i < n; i ++)
 		{
 			dst[i] = src[i];
 		}
 	}
-	for (int L = 0; L < order_power; L++)
+	for (int L = 0; L < order_power-1; L++)
 	{
-
+		// f iterates from 2^order_power to 4
 		int f = 1 << (order_power - L);
 
-		if (f <= 2)
+		double z = M_PI / f * 2.;
+
+		double c = cos(z);
+		int e = f * 2;
+		double s = sin(z);
+		if (reverse_fft) s = -s;
+
+		double u = 1.;
+		double v = 0.;
+
+		for (int j = 0; j < f; j += 2)
 		{
-			for(i = 0; i < n; i += 4)
+			for(i = j; i < n; i += e)
 			{
-				T p, q;
+				double r, t;
 				int o = i + f;
 				ASSERT(o < n);
-				p = dst[i] + dst[o];
-				q = dst[i + 1] + dst[o + 1];
-				dst[o] = dst[i] - dst[o];
-				dst[i] = p;
-				dst[o + 1] = dst[i + 1] - dst[o + 1];
-				dst[i + 1] = q;
+				//p = dst[i] + dst[o];
+				r = dst[i] - dst[o];
+				//q = dst[i + 1] + dst[o + 1];
+				t = dst[i + 1] - dst[o + 1];
+				dst[i] = dst[i] + dst[o];
+				dst[o] = T(r * u - t * v);
+				dst[i + 1] = dst[i + 1] + dst[o + 1];
+				dst[o + 1] = T(t * u + r * v);
 			} // i-loop
-		}
-		else
-		{
-			T z = (T)(M_PI / f * 2.);
-
-			T c = (T)(cos(z));
-			int e = f * 2;
-			T s = (T)(sin(z));
-			if (reverse_fft) s = -s;
-
-			T u = 1.;
-			T v = 0.;
-
-			for (int j = 0; j < f; j += 2)
-			{
-				for(i = j; i < n; i += e)
-				{
-					double r, t;
-					int o = i + f;
-					ASSERT(o < n);
-					//p = dst[i] + dst[o];
-					r = dst[i] - dst[o];
-					//q = dst[i + 1] + dst[o + 1];
-					t = dst[i + 1] - dst[o + 1];
-					dst[i] = dst[i] + dst[o];
-					dst[o] = T(r * u - t * v);
-					dst[i + 1] = dst[i + 1] + dst[o + 1];
-					dst[o + 1] = T(t * u + r * v);
-				} // i-loop
-				double p = u * c - v * s;
-				v = v * c + u * s;
-				u = (T)p;
-			}  // j - loop
-		}
+			double p = u * c - v * s;
+			v = v * c + u * s;
+			u = p;
+		}  // j - loop
 	} // L - loop
 
-	int j;
-	for (i = 0, j = 0; i < n >> 1; i +=4)
+	// last pass
+	for(i = 0; i <= n - 4; i += 4)
 	{
+		T p;
+		p = dst[i] + dst[i + 2];
+		dst[i + 2] = dst[i] - dst[i + 2];
+		dst[i] = p;
+		p = dst[i + 1] + dst[i + 3];
+		dst[i + 3] = dst[i + 1] - dst[i + 3];
+		dst[i + 1] = p;
+	} // i-loop
+	int j;
+	int m = n >> 1;
+	T * dst_m = dst + m;
+	for (i = 0, j = 0; i < m; i +=4)
+	{
+		// j is a bit reverse of i
 		T t[2];
-		if (i <= j)
+		// exchange 0..i..1 and 1..j..0
+		t[0] = dst_m[j];
+		t[1] = dst_m[j + 1];
+		dst_m[j] = dst[i + 2];
+		dst_m[j + 1] = dst[i + 3];
+		dst[i + 2] = t[0];
+		dst[i + 3] = t[1];
+
+		if (i > j)
 		{
-			// exchange 0..i..1 and 1..j..0
-			memcpy(t, & dst[j + (n >> 1)], 2 * sizeof dst[j]);
-			memcpy(& dst[j + (n >> 1)], & dst[i + 2], 2 * sizeof dst[j]);
-			memcpy(& dst[i + 2], t, 2 * sizeof dst[j]);
-		}
-		else
-		{
-			memcpy(t, & dst[j + (n >> 1)], 2 * sizeof dst[j]);
-			memcpy(& dst[j + (n >> 1)], & dst[i + 2], 2 * sizeof dst[j]);
-			memcpy(& dst[i + 2], t, 2 * sizeof dst[j]);
 			// exchange 0..i..0 and 0..j..0
-			memcpy(t, & dst[j], 2 * sizeof dst[j]);
-			memcpy(& dst[j], & dst[i], 2 * sizeof dst[j]);
-			memcpy(& dst[i], t, 2 * sizeof dst[j]);
+			t[0] = dst[j];
+			t[1] = dst[j + 1];
+			dst[j] = dst[i];
+			dst[j + 1] = dst[i + 1];
+			dst[i] = t[0];
+			dst[i + 1] = t[1];
 			// exchange 1..i..1 and 1..j..1
-			memcpy(t, & dst[j + 2 + (n >> 1)], 2 * sizeof dst[j]);
-			memcpy(& dst[j + 2 + (n >> 1)], & dst[i + 2 + (n >> 1)], 2 * sizeof dst[j]);
-			memcpy(& dst[i + 2 + (n >> 1)], t, 2 * sizeof dst[j]);
+			t[0] = dst_m[j + 2];
+			t[1] = dst_m[j + 3];
+			dst_m[j + 2] = dst_m[i + 2];
+			dst_m[j + 3] = dst_m[i + 3];
+			dst_m[i + 2] = t[0];
+			dst_m[i + 3] = t[1];
 		}
 		// n = 2*number of complex numbers
 		int k = n >> 2;
+		// simulate increment on reverse bit pattern by propagating the carry from most to least significant bit
 		while(k & j)
 		{
 			j ^= k;
 			k >>= 1;
 		}
 		j += k;
+		ASSERT(0 == (j & 1));
 	}
 
 	if (! reverse_fft) return;
 
 	T a = (T)(2.0 / n);
-	for (int k = 0; k < n; k += 2)
+	for (int k = 0; k < n; k ++)
 	{
 		dst[k] *= a;
-		dst[k + 1] *= a;
 	}
 
 	return;
