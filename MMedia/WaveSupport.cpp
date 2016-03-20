@@ -2661,7 +2661,7 @@ static WAVE_SAMPLE Float32to16(float src)
 	{
 		return SHORT_MAX;
 	}
-	return short(src * 32768.);
+	return (short)round(src * 32768.);
 }
 
 void CopySamplesFloat32to16(WAVE_SAMPLE * pDst, CHANNEL_MASK DstChannels,
