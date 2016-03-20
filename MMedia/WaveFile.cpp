@@ -3682,6 +3682,19 @@ long CWaveFile::WriteSamples(CHANNEL_MASK DstChannels,
 	ASSERT(0 != SrcChannels);
 
 	int const DstSampleSize = SampleSize();
+	int SrcSampleSize = sizeof(SHORT) * NumSrcChannels;
+	switch (type)
+	{
+	case SampleType16bit:
+		SrcSampleSize = sizeof(SHORT) * NumSrcChannels;
+		break;
+	case SampleType32bit:
+	case SampleTypeFloat32:
+		SrcSampleSize = sizeof(LONG) * NumSrcChannels;
+		break;
+	default:
+		ASSERT(type == SampleType16bit || type == SampleType32bit || type == SampleTypeFloat32);
+	}
 	NUMBER_OF_CHANNELS const NumFileChannels = Channels();
 
 	if (type == GetSampleType()
@@ -3693,7 +3706,7 @@ long CWaveFile::WriteSamples(CHANNEL_MASK DstChannels,
 		return Written / DstSampleSize;
 	}
 
-	WAVE_SAMPLE tmp[MAX_NUMBER_OF_CHANNELS];
+	LONG tmp[MAX_NUMBER_OF_CHANNELS];
 	// write some of channels
 	if (Samples > 0)
 	{
@@ -3723,7 +3736,7 @@ long CWaveFile::WriteSamples(CHANNEL_MASK DstChannels,
 			}
 
 			unsigned SamplesWritten = WasLockedForWrite / DstSampleSize;
-			WAVE_SAMPLE * pDst = (WAVE_SAMPLE *) pOriginalDstBuf;
+			void * pDst = pOriginalDstBuf;
 
 			if (0 == SamplesWritten)
 			{
@@ -3738,8 +3751,8 @@ long CWaveFile::WriteSamples(CHANNEL_MASK DstChannels,
 				SamplesWritten = 1;
 			}
 
-			WAVE_SAMPLE const * pSrc = (WAVE_SAMPLE const *) pBuf;
-			pBuf = pSrc + NumSrcChannels * SamplesWritten;
+			void const * pSrc = pBuf;
+			pBuf = (PUCHAR)pBuf + SrcSampleSize * SamplesWritten;
 
 			CopyWaveSamples(pDst, DstChannels, NumFileChannels,
 							pSrc, SrcChannels, NumSrcChannels, SamplesWritten,
@@ -3795,7 +3808,7 @@ long CWaveFile::WriteSamples(CHANNEL_MASK DstChannels,
 			}
 
 			unsigned SamplesWritten = -WasLockedForWrite / DstSampleSize;
-			WAVE_SAMPLE * pDst = (WAVE_SAMPLE *) pOriginalDstBuf;
+			void * pDst = pOriginalDstBuf;
 
 			if (0 == SamplesWritten)
 			{
@@ -3811,16 +3824,13 @@ long CWaveFile::WriteSamples(CHANNEL_MASK DstChannels,
 			}
 			else
 			{
-				pDst -= SamplesWritten * NumFileChannels;
+				pDst = (PUCHAR)pDst - SamplesWritten * DstSampleSize;
 			}
 
-			WAVE_SAMPLE const * pSrc = (WAVE_SAMPLE const *) pBuf;
-			pSrc -= SamplesWritten * NumSrcChannels;
-
-			pBuf = pSrc;
+			pBuf = (PUCHAR)pBuf - SamplesWritten * SrcSampleSize;
 
 			CopyWaveSamples(pDst, DstChannels, NumFileChannels,
-							pSrc, SrcChannels, NumSrcChannels, SamplesWritten,
+							pBuf, SrcChannels, NumSrcChannels, SamplesWritten,
 							GetSampleType(), type);
 
 			if (-WasLockedForWrite < DstSampleSize)
