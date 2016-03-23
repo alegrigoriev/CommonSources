@@ -3672,7 +3672,7 @@ long CWaveFile::WriteSamples(CHANNEL_MASK DstChannels,
 	CHANNEL_MASK const FileChannelsMask = ChannelsMask();
 	DstChannels &= FileChannelsMask;
 
-	CHANNEL_MASK const SrcChannelsMask = ~((~0UL) << NumSrcChannels);
+	CHANNEL_MASK const SrcChannelsMask = CWaveFormat::ChannelsMaskFromNumberOfChannels(NumSrcChannels);
 
 	SrcChannels &= SrcChannelsMask;
 
@@ -3814,7 +3814,7 @@ long CWaveFile::WriteSamples(CHANNEL_MASK DstChannels,
 			{
 				ReturnDataBuffer(pOriginalDstBuf, WasLockedForWrite, 0);
 
-				if (DstSampleSize != ReadAt(tmp + NumFileChannels, -DstSampleSize, Pos))
+				if (DstSampleSize != ReadAt(tmp, DstSampleSize, Pos - DstSampleSize))
 				{
 					return TotalSamplesWritten;
 				}
@@ -3835,8 +3835,8 @@ long CWaveFile::WriteSamples(CHANNEL_MASK DstChannels,
 
 			if (-WasLockedForWrite < DstSampleSize)
 			{
-				LONG Written = WriteAt(tmp + NumFileChannels, -DstSampleSize, Pos);
-				if (Written != -DstSampleSize)
+				LONG Written = WriteAt(tmp, DstSampleSize, Pos - DstSampleSize);
+				if (Written != DstSampleSize)
 				{
 					return TotalSamplesWritten;
 				}
