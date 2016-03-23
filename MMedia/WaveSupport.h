@@ -297,6 +297,10 @@ public:
 	NUMBER_OF_CHANNELS NumChannelsFromMask(CHANNEL_MASK Channels) const;
 	// mask of all channels
 	CHANNEL_MASK ChannelsMask() const;
+	static CHANNEL_MASK ChannelsMaskFromNumberOfChannels(NUMBER_OF_CHANNELS channels)
+	{
+		return 0xFFFFFFFFUL >> (32 - channels);
+	}
 
 	ULONG ValidateFormat() const;
 

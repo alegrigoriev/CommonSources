@@ -903,7 +903,7 @@ CHANNEL_MASK CWaveFormat::ChannelsMask() const
 		return 0;
 	}
 
-	return ~((~0) << m_pWf->nChannels);
+	return ChannelsMaskFromNumberOfChannels(m_pWf->nChannels);
 }
 
 ULONG CWaveFormat::ValidateFormat() const
@@ -2225,17 +2225,23 @@ void CopySamples16to16(WAVE_SAMPLE * pDst, CHANNEL_MASK DstChannels,
 		return;
 	}
 
+	ASSERT(NumSrcChannelsToCopy == NumDstChannelsToCopy);
 	for (i = 0; i < Samples; i++, pSrc += NumSrcChannels, pDst += NumDstChannels)
 	{
 		unsigned k = 0;
-		for (j = 0, mask = SrcChannels, dst_mask = DstChannels; mask != 0; j++, k++, mask >>= 1, dst_mask >>= 1)
+		for (j = 0, mask = SrcChannels, dst_mask = DstChannels; mask != 0; j++, mask >>= 1)
 		{
-			while (0 == (dst_mask & 1))
+			if (mask & 1)
 			{
+				while (0 == (dst_mask & 1))
+				{
+					dst_mask >>= 1;
+					k++;
+				}
+				pDst[k] = pSrc[j];
 				dst_mask >>= 1;
 				k++;
 			}
-			pDst[k] = pSrc[j];
 		}
 	}
 }
@@ -2316,17 +2322,23 @@ void CopySamples32to32(LONG32 * pDst, CHANNEL_MASK DstChannels,
 		return;
 	}
 
+	ASSERT(NumSrcChannelsToCopy == NumDstChannelsToCopy);
 	for (i = 0; i < Samples; i++, pSrc += NumSrcChannels, pDst += NumDstChannels)
 	{
 		unsigned k = 0;
-		for (j = 0, mask = SrcChannels, dst_mask = DstChannels; mask != 0; j++, k++, mask >>= 1, dst_mask >>= 1)
+		for (j = 0, mask = SrcChannels, dst_mask = DstChannels; mask != 0; j++, mask >>= 1)
 		{
-			while (0 == (dst_mask & 1))
+			if (mask & 1)
 			{
+				while (0 == (dst_mask & 1))
+				{
+					dst_mask >>= 1;
+					k++;
+				}
+				pDst[k] = pSrc[j];
 				dst_mask >>= 1;
 				k++;
 			}
-			pDst[k] = pSrc[j];
 		}
 	}
 }
@@ -2407,17 +2419,23 @@ void CopySamplesFloat32toFloat32(float * pDst, CHANNEL_MASK DstChannels,
 		return;
 	}
 
+	ASSERT(NumSrcChannelsToCopy == NumDstChannelsToCopy);
 	for (i = 0; i < Samples; i++, pSrc += NumSrcChannels, pDst += NumDstChannels)
 	{
 		unsigned k = 0;
-		for (j = 0, mask = SrcChannels, dst_mask = DstChannels; mask != 0; j++, k++, mask >>= 1, dst_mask >>= 1)
+		for (j = 0, mask = SrcChannels, dst_mask = DstChannels; mask != 0; j++, mask >>= 1)
 		{
-			while (0 == (dst_mask & 1))
+			if (mask & 1)
 			{
+				while (0 == (dst_mask & 1))
+				{
+					dst_mask >>= 1;
+					k++;
+				}
+				pDst[k] = pSrc[j];
 				dst_mask >>= 1;
 				k++;
 			}
-			pDst[k] = pSrc[j];
 		}
 	}
 }
@@ -2500,17 +2518,23 @@ void CopySamples16to32(LONG32 * pDst, CHANNEL_MASK DstChannels,
 		return;
 	}
 
+	ASSERT(NumSrcChannelsToCopy == NumDstChannelsToCopy);
 	for (i = 0; i < Samples; i++, pSrc += NumSrcChannels, pDst += NumDstChannels)
 	{
 		unsigned k = 0;
-		for (j = 0, mask = SrcChannels, dst_mask = DstChannels; mask != 0; j++, k++, mask >>= 1, dst_mask >>= 1)
+		for (j = 0, mask = SrcChannels, dst_mask = DstChannels; mask != 0; j++, mask >>= 1)
 		{
-			while (0 == (dst_mask & 1))
+			if (mask & 1)
 			{
+				while (0 == (dst_mask & 1))
+				{
+					dst_mask >>= 1;
+					k++;
+				}
+				pDst[k] = SAMPLE16TO32(pSrc[j]);
 				dst_mask >>= 1;
 				k++;
 			}
-			pDst[k] = SAMPLE16TO32(pSrc[j]);
 		}
 	}
 }
@@ -2629,17 +2653,23 @@ void CopySamples32to16(WAVE_SAMPLE * pDst, CHANNEL_MASK DstChannels,
 		return;
 	}
 
+	ASSERT(NumSrcChannelsToCopy == NumDstChannelsToCopy);
 	for (i = 0; i < Samples; i++, pSrc += NumSrcChannels, pDst += NumDstChannels)
 	{
 		unsigned k = 0;
-		for (j = 0, mask = SrcChannels, dst_mask = DstChannels; mask != 0; j++, k++, mask >>= 1, dst_mask >>= 1)
+		for (j = 0, mask = SrcChannels, dst_mask = DstChannels; mask != 0; j++, mask >>= 1)
 		{
-			while (0 == (dst_mask & 1))
+			if (mask & 1)
 			{
+				while (0 == (dst_mask & 1))
+				{
+					dst_mask >>= 1;
+					k++;
+				}
+				pDst[k] = SAMPLE32TO16(pSrc[j]);
 				dst_mask >>= 1;
 				k++;
 			}
-			pDst[k] = SAMPLE32TO16(pSrc[j]);
 		}
 	}
 }
@@ -2740,17 +2770,23 @@ void CopySamplesFloat32to16(WAVE_SAMPLE * pDst, CHANNEL_MASK DstChannels,
 		return;
 	}
 
+	ASSERT(NumSrcChannelsToCopy == NumDstChannelsToCopy);
 	for (i = 0; i < Samples; i++, pSrc += NumSrcChannels, pDst += NumDstChannels)
 	{
 		unsigned k = 0;
-		for (j = 0, mask = SrcChannels, dst_mask = DstChannels; mask != 0; j++, k++, mask >>= 1, dst_mask >>= 1)
+		for (j = 0, mask = SrcChannels, dst_mask = DstChannels; mask != 0; j++, mask >>= 1)
 		{
-			while (0 == (dst_mask & 1))
+			if (mask & 1)
 			{
+				while (0 == (dst_mask & 1))
+				{
+					dst_mask >>= 1;
+					k++;
+				}
+				pDst[k] = Float32to16(pSrc[j]);
 				dst_mask >>= 1;
 				k++;
 			}
-			pDst[k] = Float32to16(pSrc[j]);
 		}
 	}
 }
@@ -2851,17 +2887,23 @@ void CopySamplesFloat32to32(LONG32 * pDst, CHANNEL_MASK DstChannels,
 		return;
 	}
 
+	ASSERT(NumSrcChannelsToCopy == NumDstChannelsToCopy);
 	for (i = 0; i < Samples; i++, pSrc += NumSrcChannels, pDst += NumDstChannels)
 	{
 		unsigned k = 0;
-		for (j = 0, mask = SrcChannels, dst_mask = DstChannels; mask != 0; j++, k++, mask >>= 1, dst_mask >>= 1)
+		for (j = 0, mask = SrcChannels, dst_mask = DstChannels; mask != 0; j++, mask >>= 1)
 		{
-			while (0 == (dst_mask & 1))
+			if (mask & 1)
 			{
+				while (0 == (dst_mask & 1))
+				{
+					dst_mask >>= 1;
+					k++;
+				}
+				pDst[k] = Float32to32(pSrc[j]);
 				dst_mask >>= 1;
 				k++;
 			}
-			pDst[k] = Float32to32(pSrc[j]);
 		}
 	}
 }
@@ -2944,17 +2986,23 @@ void CopySamples16toFloat32(float * pDst, CHANNEL_MASK DstChannels,
 		return;
 	}
 
+	ASSERT(NumSrcChannelsToCopy == NumDstChannelsToCopy);
 	for (i = 0; i < Samples; i++, pSrc += NumSrcChannels, pDst += NumDstChannels)
 	{
 		unsigned k = 0;
-		for (j = 0, mask = SrcChannels, dst_mask = DstChannels; mask != 0; j++, k++, mask >>= 1, dst_mask >>= 1)
+		for (j = 0, mask = SrcChannels, dst_mask = DstChannels; mask != 0; j++, mask >>= 1)
 		{
-			while (0 == (dst_mask & 1))
+			if (mask & 1)
 			{
+				while (0 == (dst_mask & 1))
+				{
+					dst_mask >>= 1;
+					k++;
+				}
+				pDst[k] = SAMPLE16TOFLOAT32(pSrc[j]);
 				dst_mask >>= 1;
 				k++;
 			}
-			pDst[k] = SAMPLE16TOFLOAT32(pSrc[j]);
 		}
 	}
 }
@@ -3037,17 +3085,23 @@ void CopySamples32toFloat32(float * pDst, CHANNEL_MASK DstChannels,
 		return;
 	}
 
+	ASSERT(NumSrcChannelsToCopy == NumDstChannelsToCopy);
 	for (i = 0; i < Samples; i++, pSrc += NumSrcChannels, pDst += NumDstChannels)
 	{
 		unsigned k = 0;
-		for (j = 0, mask = SrcChannels, dst_mask = DstChannels; mask != 0; j++, k++, mask >>= 1, dst_mask >>= 1)
+		for (j = 0, mask = SrcChannels, dst_mask = DstChannels; mask != 0; j++, mask >>= 1)
 		{
-			while (0 == (dst_mask & 1))
+			if (mask & 1)
 			{
+				while (0 == (dst_mask & 1))
+				{
+					dst_mask >>= 1;
+					k++;
+				}
+				pDst[k] = SAMPLE32TOFLOAT32(pSrc[j]);
 				dst_mask >>= 1;
 				k++;
 			}
-			pDst[k] = SAMPLE32TOFLOAT32(pSrc[j]);
 		}
 	}
 }
@@ -3060,12 +3114,12 @@ void CopyWaveSamples(void * pDstBuf, CHANNEL_MASK DstChannels,
 					WaveSampleType DstType, WaveSampleType SrcType)
 {
 	// Used by CCopyContext, CMoveContext, WriteFileSamples,
-	CHANNEL_MASK const DstChannelsMask = ~((~0UL) << NumDstChannels);
+	CHANNEL_MASK const DstChannelsMask = CWaveFormat::ChannelsMaskFromNumberOfChannels(NumDstChannels);
 
 	DstChannels &= DstChannelsMask;
 	ASSERT(0 != DstChannels);
 
-	CHANNEL_MASK const SrcChannelsMask = ~((~0UL) << NumSrcChannels);
+	CHANNEL_MASK const SrcChannelsMask = CWaveFormat::ChannelsMaskFromNumberOfChannels(NumSrcChannels);
 
 	SrcChannels &= SrcChannelsMask;
 	ASSERT(0 != SrcChannels);
