@@ -102,6 +102,13 @@ struct WaveFormatTagEx
 		return Tag == wfx.Tag
 				&& (Tag != WAVE_FORMAT_EXTENSIBLE || SubFormat == wfx.SubFormat);
 	}
+	bool IsWma() const
+	{
+		return WAVE_FORMAT_MSAUDIO1 == Tag
+				|| WAVE_FORMAT_WMAUDIO2 == Tag
+				|| WAVE_FORMAT_WMAUDIO3 == Tag
+				|| WAVE_FORMAT_WMAUDIO_LOSSLESS == Tag;
+	}
 	bool IsCompressed() const
 	{
 		if (WAVE_FORMAT_PCM == Tag
@@ -297,7 +304,7 @@ public:
 	NUMBER_OF_CHANNELS NumChannelsFromMask(CHANNEL_MASK Channels) const;
 	// mask of all channels
 	CHANNEL_MASK ChannelsMask() const;
-	static CHANNEL_MASK ChannelsMaskFromNumberOfChannels(NUMBER_OF_CHANNELS channels)
+	static CHANNEL_MASK ChannelsMaskFromNumberOfChannels(int channels)
 	{
 		return 0xFFFFFFFFUL >> (32 - channels);
 	}
@@ -547,7 +554,7 @@ public:
 	static CString GetFormatName(HACMDRIVER had, WAVEFORMATEX const * pWf);
 	static CString GetFormatTagName(HACMDRIVER had, DWORD Tag);
 
-	int FillFormatsCombo(CComboBox * pCombo, CWaveFormat & Wf,
+	int GetFormatsStrings(std::vector<CString> &Strings, CWaveFormat & Wf,
 						WaveFormatTagEx SelectedTag, int SelectedBitrate);
 protected:
 	static BOOL _stdcall FormatTestEnumCallback(
