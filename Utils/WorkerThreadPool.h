@@ -4,44 +4,69 @@
 class WorkerThreadPoolJob;
 class WorkerThreadPool
 {
-	WorkerThreadPool(int NumberOfThreads = 0); // default: number of CPUs (including hyperthreads), up to 64
+public:
+	WorkerThreadPool();
 	~WorkerThreadPool();
+	// default: number of CPUs (including hyperthreads), up to 64
+	// returns number of created threads
+	int Start(int NumberOfThreads = 0, int Priority = THREAD_PRIORITY_BELOW_NORMAL);
 	void ShutDown();	// shut down threads
 
 	bool AddJob(WorkerThreadPoolJob * job);
 
+private:
 	int m_NumberOfThreads;
-	HANDLE m_Thread[64];
+	HANDLE m_Thread[MAXIMUM_WAIT_OBJECTS];
 	HANDLE m_StopEvent;		// manual reset; is set in ShutDown to stop all threads
+	HANDLE m_WorkAvailableEvent;
 	HANDLE m_JobsAvailableSemaphore;
 
 	CSimpleCriticalSection m_cs;
-	UINT WorkerThreadProc();
+	unsigned _WorkerThread();
 	ListHead<WorkerThreadPoolJob> m_QueuedJobs;
-	ListHead<WorkerThreadPoolJob> m_RetiredJobs;
+	//ListHead<WorkerThreadPoolJob> m_RetiredJobs;
+	static unsigned __stdcall WorkerThread(void *);
+	LONG m_JobsMasterLock;	// whichever thread gets it, will wait for
+
 };
 
-typedef bool WorkItemProc(void * Context1, void * Context2);
+class WorkerThreadPoolItem;
 
-class WorkerThreadPoolJob : ListItem<WorkerThreadPoolJob>
+// job consists of multiple workitems. Workitems can be executed in parallel. Jobs are executed in serial.
+class WorkerThreadPoolJob;
+typedef bool WorkerItemProc(WorkerThreadPoolItem * workitem);
+class WorkerThreadPoolItem : public ListItem<WorkerThreadPoolItem>
 {
+public:
+	virtual ~WorkerThreadPoolItem() {}
+	WorkerThreadPoolItem()
+		: DeleteOnRetire(false)
+		, m_Job(NULL)
+		, Proc(NULL)
+		, Context1(NULL)
+		, Context2(NULL)
+	{
+	}
+	bool DeleteOnRetire;
+	WorkerThreadPoolJob * m_Job;
+	WorkerItemProc * Proc;
+	void * Context1;
+	void * Context2;
+};
+
+class WorkerThreadPoolJob : public ListItem<WorkerThreadPoolJob>
+{
+public:
 	WorkerThreadPoolJob();
 	~WorkerThreadPoolJob();
 	bool WaitForCompletion(DWORD timeout = INFINITE);
 
-	void AddWorkitem(class WorkerItem * Item);
+	void AddWorkitem(class WorkerThreadPoolItem * Item);
 
-	HANDLE CompletionEvent;
-	WorkerThreadPool m_Pool;
-	ListHead<WorkerItem> m_Items;
-	ListHead<WorkerItem> m_DoneItems;
+	HANDLE m_CompletionEvent;
+	LONG m_WorkitemsPending;
+	WorkerThreadPool * m_Pool;
+	ListHead<WorkerThreadPoolItem> m_Items;
+	ListHead<WorkerThreadPoolItem> m_DoneItems;
 };
 
-class WorkerItem : ListItem<WorkerItem>
-{
-public:
-	WorkerThreadPoolJob * m_Job;
-	WorkItemProc * Proc;
-	void * Context1;
-	void * Context2;
-};
