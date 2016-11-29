@@ -87,7 +87,7 @@ CString SampleToString(SAMPLE_INDEX Sample, int nSamplesPerSec, int Flags)
 		{
 			pFormat = _T("%s%c%03d");
 		}
-		s.Format(pFormat, LtoaCS(sec), GetApp()->m_DecimalPoint, ms);
+		s.Format(pFormat, static_cast<LPCTSTR>(LtoaCS(sec)), GetApp()->m_DecimalPoint, ms);
 		return s;
 	}
 		break;
