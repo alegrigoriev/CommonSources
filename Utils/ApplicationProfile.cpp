@@ -5,6 +5,7 @@
 #include <afxpriv.h>
 #include <vector>
 
+#define HISTORY_DEBUG 0
 class CApplicationProfileItem : public ListItem<CApplicationProfileItem>
 {
 protected:
@@ -1408,7 +1409,7 @@ CStringHistory::~CStringHistory()
 void CStringHistory::Load(LPCTSTR DefaultFirstString)
 {
 	// if it is attached, the history must already be loaded
-	TRACE(_T("CStringHistory::Load: [%s]\n"), LPCTSTR(m_ProfileSection));
+	if (HISTORY_DEBUG) TRACE(_T("CStringHistory::Load: [%s]\n"), LPCTSTR(m_ProfileSection));
 
 	if (m_Flags & AttachedHistory)
 	{
@@ -1420,7 +1421,7 @@ void CStringHistory::Load(LPCTSTR DefaultFirstString)
 		CString s;
 		s.Format(m_KeyFormat, i);
 		m_pProfile->AddItem(m_ProfileSection, s, m_Strings[i], DefaultFirstString);
-		TRACE(_T("Loaded value %s=\"%s\"\n"), LPCTSTR(s), LPCTSTR(m_Strings[i]));
+		if (HISTORY_DEBUG) TRACE(_T("Loaded value %s=\"%s\"\n"), LPCTSTR(s), LPCTSTR(m_Strings[i]));
 		// use default for the first string only
 		DefaultFirstString = _T("");
 
@@ -1433,24 +1434,24 @@ void CStringHistory::Load(LPCTSTR DefaultFirstString)
 
 void CStringHistory::Flush()
 {
-	TRACE(_T("CStringHistory::Flush: [%s] %s \n"), (LPCTSTR)m_ProfileSection, (LPCTSTR)m_KeyFormat);
+	if (HISTORY_DEBUG) TRACE(_T("CStringHistory::Flush: [%s] %s \n"), (LPCTSTR)m_ProfileSection, (LPCTSTR)m_KeyFormat);
 	for (int i = 0; i < m_NumStrings; i++)
 	{
 		CString s;
 		s.Format(m_KeyFormat, i);
 		m_pProfile->FlushItem(m_ProfileSection, s);
-		TRACE(_T("Saved value %s=\"%s\"\n"), LPCTSTR(s), LPCTSTR(m_Strings[i]));
+		if (HISTORY_DEBUG) TRACE(_T("Saved value %s=\"%s\"\n"), LPCTSTR(s), LPCTSTR(m_Strings[i]));
 	}
 }
 
 void CStringHistory::LoadCombo(CComboBox * pCb)
 {
-	TRACE(_T("CStringHistory::LoadCombo: [%s]\n"), (LPCTSTR)m_ProfileSection);
+	if (HISTORY_DEBUG) TRACE(_T("CStringHistory::LoadCombo: [%s]\n"), (LPCTSTR)m_ProfileSection);
 	for (int i = 0; i < m_NumStrings; i++)
 	{
 		if (! m_Strings[i].IsEmpty())
 		{
-			TRACE(_T("Loaded \"%s\"\n"), LPCTSTR(m_Strings[i]));
+			if (HISTORY_DEBUG) TRACE(_T("Loaded \"%s\"\n"), (LPCTSTR)(m_Strings[i]));
 
 			pCb->AddString(m_Strings[i]);
 		}
