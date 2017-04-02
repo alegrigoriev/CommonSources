@@ -55,8 +55,8 @@ protected:
 	}
 	CDialog & m_dlg;
 private:
-	CDialogCall & operator =(const CDialogCall&);
-	CDialogCall(const CDialogCall&);
+	CDialogCall & operator =(const CDialogCall&) = delete;
+	CDialogCall(const CDialogCall&) = delete;
 };
 
 class AfxDialogCall : public MainThreadCall
@@ -75,8 +75,8 @@ protected:
 	UINT const m_Type;
 	UINT const m_IDHelp;
 private:
-	AfxDialogCall & operator =(const AfxDialogCall&);
-	AfxDialogCall(const AfxDialogCall&);
+	AfxDialogCall & operator =(const AfxDialogCall&) = delete;
+	AfxDialogCall(const AfxDialogCall&) = delete;
 };
 
 class AfxDialogCallId : public MainThreadCall
@@ -96,8 +96,8 @@ protected:
 	UINT const m_Type;
 	UINT const m_IDHelp;
 private:
-	AfxDialogCallId & operator =(const AfxDialogCallId&);
-	AfxDialogCallId(const AfxDialogCallId&);
+	AfxDialogCallId & operator =(const AfxDialogCallId&) = delete;
+	AfxDialogCallId(const AfxDialogCallId&) = delete;
 };
 }
 
