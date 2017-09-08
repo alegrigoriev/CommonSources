@@ -27,6 +27,7 @@ helper.
 #include <atlbase.h>
 #include <atlpath.h>
 #include <exception>
+#include <memory>
 
 typedef long SAMPLE_INDEX;
 typedef long NUMBER_OF_SAMPLES; // MUST BE SIGNED!
