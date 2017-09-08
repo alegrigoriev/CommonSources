@@ -323,7 +323,7 @@ void CFolderDialog::OnComboSelendOK()
 	}
 
 	m_HistoryCombo.GetLBText(sel, str);
-	TRACE(_T("CFolderDialog::OnComboSelendOK: %s selected\n"), str);
+	TRACE(_T("CFolderDialog::OnComboSelendOK: %s selected\n"), (LPCTSTR)str);
 	if (str.IsEmpty())
 	{
 		return;

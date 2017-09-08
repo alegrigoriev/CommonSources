@@ -1433,7 +1433,7 @@ void CStringHistory::Load(LPCTSTR DefaultFirstString)
 
 void CStringHistory::Flush()
 {
-	TRACE(_T("CStringHistory::Flush: [%s] %s \n"), m_ProfileSection, m_KeyFormat);
+	TRACE(_T("CStringHistory::Flush: [%s] %s \n"), (LPCTSTR)m_ProfileSection, (LPCTSTR)m_KeyFormat);
 	for (int i = 0; i < m_NumStrings; i++)
 	{
 		CString s;
@@ -1445,12 +1445,12 @@ void CStringHistory::Flush()
 
 void CStringHistory::LoadCombo(CComboBox * pCb)
 {
-	TRACE(_T("CStringHistory::LoadCombo: [%s]\n"), m_ProfileSection);
+	TRACE(_T("CStringHistory::LoadCombo: [%s]\n"), (LPCTSTR)m_ProfileSection);
 	for (int i = 0; i < m_NumStrings; i++)
 	{
 		if (! m_Strings[i].IsEmpty())
 		{
-			TRACE(_T("Loaded \"%s\"\n"), m_Strings[i]);
+			TRACE(_T("Loaded \"%s\"\n"), LPCTSTR(m_Strings[i]));
 
 			pCb->AddString(m_Strings[i]);
 		}
