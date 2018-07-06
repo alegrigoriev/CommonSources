@@ -95,7 +95,7 @@ void CFileDialogWithHistory::OnComboSelendOK()
 	}
 
 	pCb->GetLBText(sel, str);
-	TRACE(_T("CFileDialogWithHistory::OnComboSelendOK: %s selected\n"), str);
+	TRACE(_T("CFileDialogWithHistory::OnComboSelendOK: %s selected\n"), (LPCTSTR)str);
 	if (str.IsEmpty())
 	{
 		return;
@@ -248,7 +248,7 @@ BOOL CFileDialogWithHistory::OnFileNameOK()
 	SendMessage(CDM_GETFOLDERPATH, MAX_PATH, LPARAM(m_LastFolder.GetBuffer(MAX_PATH)));
 	m_LastFolder.ReleaseBuffer();
 
-	TRACE(_T("CFileDialogWithHistory::OnFileNameOK Folder Path=%s\n"), m_LastFolder);
+	TRACE(_T("CFileDialogWithHistory::OnFileNameOK Folder Path=%s\n"), (LPCTSTR)m_LastFolder);
 
 	m_RecentFolders.AddString(m_LastFolder);
 

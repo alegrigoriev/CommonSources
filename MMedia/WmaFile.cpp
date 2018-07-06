@@ -1205,7 +1205,7 @@ BOOL WmaEncoder::Write(void const * Buf, unsigned size)
 			m_pWriterAdvanced->GetWriterTime( & ActualWriterTime);
 
 			if (TRACE_WMA_DECODER) TRACE(_T("Writing src buf %p, time=%d ms, ActualWriterTime=%d ms\n"),
-										m_pBuffer, DWORD(m_SampleTime100ns / 10000), DWORD(ActualWriterTime / 10000));
+				m_pBuffer.operator->(), DWORD(m_SampleTime100ns / 10000), DWORD(ActualWriterTime / 10000));
 #endif
 			if (! SUCCEEDED(m_pWriter->WriteSample(0, m_SampleTime100ns, 0, m_pBuffer)))
 			{
@@ -1588,7 +1588,7 @@ void CWmaDecoderAsync::DeliverNextSample(DWORD timeout)
 		}
 		else
 		{
-			if (TRACE_WMA_DECODER) TRACE(_T("NULL == m_pAdvReader, m_Reader = %X\n"), m_Reader);
+			if (TRACE_WMA_DECODER) TRACE(_T("NULL == m_pAdvReader, m_Reader = %X\n"), m_Reader.operator->());
 		}
 	}
 	else
