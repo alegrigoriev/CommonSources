@@ -305,7 +305,9 @@ void FastFourierTransformCore(const std::complex<T> * src, std::complex<T> * dst
 							const bool reverse_fft)
 {
 	static bool CanUseSSE2 = true;
-	if (CanUseSSE2)
+	if (CanUseSSE2
+		&& 0 == (uintptr_t(src) & 15)
+		&& 0 == (uintptr_t(dst) & 15))
 	{
 		FastFourierTransformCoreSSE2(src, dst, count, reverse_fft);
 		return;
