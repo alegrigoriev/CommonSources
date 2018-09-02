@@ -334,7 +334,14 @@ bool CWmaDecoderSync::DeliverNextSample()
 
 		if (TotalSamplesEstimated > MaxNumberOfSamples)
 		{
+			TRACE("Current estimated samples (%I64d) greater than MaxNumberOfSamples (%d)\n", TotalSamplesEstimated, MaxNumberOfSamples);
 			TotalSamplesEstimated = MaxNumberOfSamples;
+		}
+		if (NUMBER_OF_SAMPLES(TotalSamplesEstimated) < DstCopySample)
+		{
+			TRACE("Current estimated samples (%I64d) less than DstCopySample (%d)\n", TotalSamplesEstimated, DstCopySample);
+			TRACE("SrcPos=%I64X, SrcLength= %I64X\n", SrcPos(), SrcLength());
+			TotalSamplesEstimated = DstCopySample;
 		}
 		if (NUMBER_OF_SAMPLES(TotalSamplesEstimated) < m_CurrentSamples)
 		{
@@ -578,7 +585,7 @@ HRESULT CWmaDecoderSync::Open(CDirectFile & file)
 	{
 		return S_FALSE;
 	}
-#if 0
+#if 1
 	m_InputStream.SetFile(file);
 
 	hr = m_Reader->OpenStream( & m_InputStream);
