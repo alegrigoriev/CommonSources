@@ -33,7 +33,7 @@ typedef long SAMPLE_INDEX;
 typedef long NUMBER_OF_SAMPLES; // MUST BE SIGNED!
 typedef unsigned PEAK_INDEX;
 
-typedef DWORD WAV_FILE_SIZE;
+typedef DWORD64 WAV_FILE_SIZE;
 typedef LONGLONG MEDIA_FILE_SIZE;  // to be expanded to 64 bits
 typedef ULONGLONG MEDIA_FILE_POSITION;
 typedef MEDIA_FILE_POSITION SAMPLE_POSITION;
@@ -77,9 +77,9 @@ struct PeakFileHeader
 typedef struct _MMCKINFO64
 {
 	FOURCC          ckid;           /* chunk ID */
-	DWORD           cksize;         /* chunk size */
 	FOURCC          fccType;        /* form type or list type */
 	DWORD           dwFlags;        /* flags used by MMIO functions */
+	DWORD64         cksize;         /* chunk size */
 	MEDIA_FILE_POSITION  dwDataOffset;   /* offset of data portion of chunk */
 } MMCKINFO64, *PMMCKINFO64, NEAR *NPMMCKINFO64, FAR *LPMMCKINFO64;
 typedef const MMCKINFO64 *LPCMMCKINFO64;
@@ -298,13 +298,13 @@ typedef std::vector<SAMPLE_INDEX> SAMPLE_INDEX_Vector;
 struct CuePointChunkItem
 {
 	DWORD CuePointID;       // unique ID
-	DWORD SamplePosition;   // ordinal sample position in the playlist order (not used)
+	DWORD64 SamplePosition;   // ordinal sample position in the playlist order (not used)
 	FOURCC fccChunk;        // 'data'
-	DWORD dwChunkStart;     // zero for 'data' chunk
-	DWORD dwBlockStart;     // position of the sample in 'data' chunk'
+	DWORD64 dwChunkStart;     // zero for 'data' chunk
+	DWORD64 dwBlockStart;     // position of the sample in 'data' chunk'
 	// for a compressed file, dwBlockStart should be a beginning of a compressed block containing that sample
 	// but how we figure out the cue sample position?
-	DWORD dwSampleOffset;   // sample position of the cue (NOT byte offset) from the block
+	SAMPLE_INDEX dwSampleOffset;   // sample position of the cue (NOT byte offset) from the block
 };
 
 struct WaveFileSegment
@@ -389,7 +389,7 @@ struct WAVEREGIONINFO
 {
 	DWORD Flags;
 	DWORD MarkerCueID;
-	DWORD Sample;
+	SAMPLE_INDEX Sample;
 	DWORD Length;
 	LPCTSTR Label;
 	LPCTSTR Comment;
@@ -559,7 +559,7 @@ public:
 	SAMPLE_INDEX PositionToSample(SAMPLE_POSITION position) const;
 
 	BOOL SetFileLengthSamples(NUMBER_OF_SAMPLES length);
-	BOOL SetDatachunkLength(DWORD Length);
+	BOOL SetDatachunkLength(DWORD64 Length);
 	void SetFactNumberOfSamples(NUMBER_OF_SAMPLES length);
 
 	int CalculatePeakInfoSize() const

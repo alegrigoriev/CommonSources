@@ -1082,13 +1082,13 @@ BOOL CWaveFile::InstanceDataWav::MoveMarkers(SAMPLE_INDEX BeginSample, NUMBER_OF
 
 		if (NULL != pMarker)
 		{
-			DWORD RegionEnd = i->dwSampleOffset + pMarker->SampleLength;
+			SAMPLE_INDEX RegionEnd = i->dwSampleOffset + pMarker->SampleLength;
 
-			if (RegionEnd < unsigned(BeginSample))
+			if (RegionEnd < BeginSample)
 			{
 				// do nothing
 			}
-			else if (RegionEnd == unsigned(BeginSample))
+			else if (RegionEnd == BeginSample)
 			{
 				if (SrcLength == 0
 					&& DstLength != 0
@@ -1098,15 +1098,15 @@ BOOL CWaveFile::InstanceDataWav::MoveMarkers(SAMPLE_INDEX BeginSample, NUMBER_OF
 					HasChanged = TRUE;
 				}
 			}
-			else if (i->dwSampleOffset >= unsigned(BeginSample + SrcLength))
+			else if (i->dwSampleOffset >= BeginSample + SrcLength)
 			{
 				i->dwSampleOffset += DstLength - SrcLength;
 				HasChanged = TRUE;
 			}
-			else if (i->dwSampleOffset <= unsigned(BeginSample))
+			else if (i->dwSampleOffset <= BeginSample)
 			{
 				// change length only
-				if (RegionEnd < unsigned(BeginSample + SrcLength))
+				if (RegionEnd < BeginSample + SrcLength)
 				{
 					pMarker->SampleLength = BeginSample - i->dwSampleOffset;
 				}
@@ -1116,7 +1116,7 @@ BOOL CWaveFile::InstanceDataWav::MoveMarkers(SAMPLE_INDEX BeginSample, NUMBER_OF
 				}
 				HasChanged = TRUE;
 			}
-			else if (RegionEnd >= unsigned(BeginSample + SrcLength))
+			else if (RegionEnd >= BeginSample + SrcLength)
 			{
 				// change length only and the start
 				// the start of region is moved to end of range
@@ -1163,11 +1163,11 @@ BOOL CWaveFile::InstanceDataWav::MoveMarkers(SAMPLE_INDEX BeginSample, NUMBER_OF
 		}
 		else
 		{
-			if (i->dwSampleOffset <= unsigned(BeginSample))
+			if (i->dwSampleOffset <= BeginSample)
 			{
 				// nothing
 			}
-			else if (i->dwSampleOffset >= unsigned(BeginSample + SrcLength))
+			else if (i->dwSampleOffset >= BeginSample + SrcLength)
 			{
 				i->dwSampleOffset += DstLength - SrcLength;
 				HasChanged = TRUE;
@@ -1225,8 +1225,8 @@ BOOL CWaveFile::InstanceDataWav::CopyMarkers(InstanceDataWav const * pSrc,
 		}
 
 		// see if we need to copy it
-		if (SrcInfo.Sample + SrcInfo.Length > DWORD(SrcBegin + Length)
-			|| SrcInfo.Sample < DWORD(SrcBegin))
+		if (SrcInfo.Sample + SrcInfo.Length > SrcBegin + Length
+			|| SrcInfo.Sample < SrcBegin)
 		{
 			// skip it
 			continue;
@@ -1275,28 +1275,28 @@ BOOL CWaveFile::InstanceDataWav::ReverseMarkers(SAMPLE_INDEX BeginSample, NUMBER
 
 		if (NULL != pMarker)
 		{
-			DWORD RegionEnd = i->dwSampleOffset + pMarker->SampleLength;
+			SAMPLE_INDEX RegionEnd = i->dwSampleOffset + pMarker->SampleLength;
 
-			if (RegionEnd <= unsigned(BeginSample)
-				|| i->dwSampleOffset >= unsigned(BeginSample + Length))
+			if (RegionEnd <= BeginSample
+				|| i->dwSampleOffset >= BeginSample + Length)
 			{
 				// do nothing
 			}
-			else if (i->dwSampleOffset >= unsigned(BeginSample)
-					&& RegionEnd <= unsigned(BeginSample + Length))
+			else if (i->dwSampleOffset >= BeginSample
+					&& RegionEnd <= BeginSample + Length)
 			{
 				// the region is all inside the area
 				i->dwSampleOffset = BeginSample * 2 + Length - RegionEnd;
 				HasChanged = TRUE;
 			}
-			else if (RegionEnd < unsigned(BeginSample + Length))
+			else if (RegionEnd < BeginSample + Length)
 			{
 				// the region begins before the area
 				// exclude the area from it
 				pMarker->SampleLength = BeginSample - i->dwSampleOffset;
 				HasChanged = TRUE;
 			}
-			else if (i->dwSampleOffset > unsigned(BeginSample))
+			else if (i->dwSampleOffset > BeginSample)
 			{
 				// the region ends after the area
 				// exclude the area from it
@@ -1307,8 +1307,8 @@ BOOL CWaveFile::InstanceDataWav::ReverseMarkers(SAMPLE_INDEX BeginSample, NUMBER
 		}
 		else
 		{
-			if (i->dwSampleOffset >= unsigned(BeginSample)
-				&& i->dwSampleOffset <= unsigned(BeginSample + Length))
+			if (i->dwSampleOffset >= BeginSample
+				&& i->dwSampleOffset <= BeginSample + Length)
 			{
 				i->dwSampleOffset = BeginSample * 2 + Length - i->dwSampleOffset;
 				HasChanged = TRUE;
@@ -1339,7 +1339,7 @@ BOOL CWaveFile::InstanceDataWav::RescaleMarkers(long OldSampleRate, long NewSamp
 
 		if (NULL != pMarker)
 		{
-			DWORD RegionEnd = i->dwSampleOffset + pMarker->SampleLength;
+			SAMPLE_INDEX RegionEnd = i->dwSampleOffset + pMarker->SampleLength;
 
 			i->dwSampleOffset = MulDiv(i->dwSampleOffset, NewSampleRate, OldSampleRate);
 			RegionEnd = MulDiv(RegionEnd, NewSampleRate, OldSampleRate);
@@ -1385,7 +1385,7 @@ BOOL CWaveFile::LoadListMetadata(MMCKINFO & chunk)
 		{
 			InfoListItemA item;
 			item.fccCode = subchunk.ckid;
-			BOOL res = ReadChunkString(subchunk.cksize, item.Text);
+			BOOL res = ReadChunkString((ULONG)subchunk.cksize, item.Text);
 
 			if ( ! res)
 			{
@@ -1403,7 +1403,7 @@ BOOL CWaveFile::LoadListMetadata(MMCKINFO & chunk)
 		{
 			InfoListItemW item;
 			item.fccCode = subchunk.ckid;
-			BOOL res = ReadChunkStringW(subchunk.cksize, item.Text);
+			BOOL res = ReadChunkStringW((ULONG)subchunk.cksize, item.Text);
 
 			if ( ! res)
 			{
@@ -1436,7 +1436,7 @@ BOOL CWaveFile::LoadListMetadata(MMCKINFO & chunk)
 				if (subchunk.cksize > sizeof (LtxtChunk))
 				{
 					// read the text
-					res = ReadChunkString(subchunk.cksize - sizeof (LtxtChunk), Region.Name);
+					res = ReadChunkString((ULONG)(subchunk.cksize - sizeof(LtxtChunk)), Region.Name);
 				}
 
 				pInstData->m_RegionMarkers.push_back(Region);
@@ -1453,7 +1453,7 @@ BOOL CWaveFile::LoadListMetadata(MMCKINFO & chunk)
 					return FALSE;
 				}
 
-				if (ReadChunkString(subchunk.cksize - 4,
+				if (ReadChunkString((ULONG)subchunk.cksize - 4,
 									labl.Text))
 				{
 					pInstData->m_Labels.push_back(labl);
@@ -1470,7 +1470,7 @@ BOOL CWaveFile::LoadListMetadata(MMCKINFO & chunk)
 					return FALSE;
 				}
 
-				if (ReadChunkString(subchunk.cksize - 4,
+				if (ReadChunkString((ULONG)subchunk.cksize - 4,
 									note.Text))
 				{
 					pInstData->m_Notes.push_back(note);
@@ -2074,7 +2074,7 @@ BOOL CWaveFile::CreateWaveFile(CWaveFile * pTemplateFile, WAVEFORMATEX const * p
 		}
 		else
 		{
-			unsigned DataLength = pDatachunk->dwDataOffset + SizeOrSamples * NewSampleSize;
+			ULONGLONG DataLength = pDatachunk->dwDataOffset + SizeOrSamples * NewSampleSize;
 			SetFileLength(DataLength);
 			Seek(DataLength, FILE_BEGIN);
 		}
@@ -2408,7 +2408,7 @@ DWORD CWaveFile::GetMetadataLength() const
 	return size;
 }
 
-BOOL CWaveFile::SetDatachunkLength(DWORD Length)
+BOOL CWaveFile::SetDatachunkLength(DWORD64 Length)
 {
 	LPMMCKINFO pck = GetDataChunk();
 	if (NULL == pck)
@@ -2416,7 +2416,7 @@ BOOL CWaveFile::SetDatachunkLength(DWORD Length)
 		return FALSE;
 	}
 
-	if ( ! SetFileLength(((Length + 1) & ~1UL) + pck->dwDataOffset + ((GetMetadataLength() + 1) & ~1UL)))
+	if (!SetFileLength(((Length + 1) & ~1ULL) + pck->dwDataOffset + ((GetMetadataLength() + 1) & ~1ULL)))
 	{
 		return FALSE;
 	}
@@ -2465,7 +2465,7 @@ NUMBER_OF_SAMPLES CWaveFile::NumberOfSamples() const
 	{
 		return 0;
 	}
-	return MulDiv(cd->datack.cksize, 8, cd->wf.NumChannels() * cd->wf.BitsPerSample());
+	return (NUMBER_OF_SAMPLES)MulDiv64(cd->datack.cksize, 8, cd->wf.NumChannels() * cd->wf.BitsPerSample());
 }
 
 CWaveFormat& CWaveFile::GetWaveFormat() const
@@ -2641,7 +2641,7 @@ BOOL CWaveFile::CommitChanges()
 	{
 		Seek(fmtck->dwDataOffset);
 
-		Write((PWAVEFORMATEX)GetWaveFormat(), fmtck->cksize);
+		Write((PWAVEFORMATEX)GetWaveFormat(), (long)fmtck->cksize);
 		fmtck->dwFlags &= ~MMIO_DIRTY;
 	}
 
@@ -3189,9 +3189,9 @@ SAMPLE_POSITION CWaveFile::SampleToPosition(SAMPLE_INDEX sample) const
 	}
 	if (LAST_SAMPLE == sample)
 	{
-		return SAMPLE_POSITION(datack->dwDataOffset + datack->cksize);
+		return datack->dwDataOffset + datack->cksize;
 	}
-	return SAMPLE_POSITION(datack->dwDataOffset + sample * SampleSize());
+	return datack->dwDataOffset + (SAMPLE_POSITION)sample * SampleSize();
 }
 
 SAMPLE_INDEX CWaveFile::PositionToSample(SAMPLE_POSITION position) const
@@ -3203,7 +3203,7 @@ SAMPLE_INDEX CWaveFile::PositionToSample(SAMPLE_POSITION position) const
 	}
 	if (LAST_SAMPLE_POSITION == position)
 	{
-		return datack->cksize / SampleSize();
+		return (SAMPLE_INDEX)(datack->cksize / SampleSize());
 	}
 
 	ASSERT(position >= datack->dwDataOffset);

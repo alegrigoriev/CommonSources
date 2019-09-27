@@ -421,7 +421,7 @@ void CFileTimesCombo::FillFileTimes()
 		{
 			SAMPLE_INDEX end = i->dwSampleOffset + pMarker->SampleLength;
 
-			if (i->dwSampleOffset <= unsigned(FileLength))
+			if (i->dwSampleOffset <= FileLength)
 			{
 				LPCTSTR pTitle = pLabel;
 
