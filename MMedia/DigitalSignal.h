@@ -4,7 +4,7 @@
 
 
 #ifndef __FILTER_H
-#include "Filter.h"
+#include "DigitalFilter.h"
 #endif
 #include "mmsystem.h"
 

@@ -1,6 +1,6 @@
 // Filter.cpp
 
-#include "Filter.h"
+#include "DigitalFilter.h"
 #include "FilterMath.h"
 //#include "PianoString.h"
 
@@ -9,19 +9,6 @@
 #undef THIS_FILE
 static char THIS_FILE[] = __FILE__;
 #endif
-
-//#if 0
-//class a
-	//{
-	//typedef int (a::*f_ptr)(void);
-	//public:
-		//f_ptr  Func;
-		//int b() { return 1; }
-	//};
-
-//a::a()
-	//{ Func=b; }
-//#endif
 
 BOOL CDigitalFilter::Create(NewFilterData * pFD)
 {

@@ -1,6 +1,6 @@
-// filter.h
-#ifndef __FILTER_H
-#define __FILTER_H
+// DigitalFilter.h
+#ifndef __DIGITAL_FILTER_H
+#define __DIGITAL_FILTER_H
 
 #if !defined(_INC_POLYRATIO)
 #include "PolyRatio.h"
@@ -279,4 +279,4 @@ protected:
 
 #pragma pack (pop)
 
-#endif // #ifndef __FILTER_H
+#endif // #ifndef __DIGITAL_FILTER_H
