@@ -1307,7 +1307,7 @@ int CDigitalFilter::TemporalResponce(
 	// a common buffer for numerator/denominator orders
 	int nNumerCountsArray[128];
 	int nDenomCountsArray[128];
-	const int nNumOfCells = m_aRatios.GetSize();
+	const INT_PTR nNumOfCells = m_aRatios.GetSize();
 	VERIFY(nNumOfCells <= 128);
 	// 1. Allocate a common buffer for filter coefficients (Complex, of exact size)
 	int nCoeffArraySize = 0;
@@ -1546,13 +1546,13 @@ void CDigitalFilter::Dump(CDumpContext & dc)
 	CString s;
 	if (Flags(FILTER_IIR))
 	{
-		s = "Infinite impulse response filter\n";
+		s = _T("Infinite impulse response filter\n");
 	}
 	else
 	{
-		s = "Finite impulse response filter\n";
+		s = _T("Finite impulse response filter\n");
 	}
-	s += "[Numerator coeffs]\n";
+	s += _T("[Numerator coeffs]\n");
 	MakeCanonical();
 	dc << s;
 	m_prCanonical.numer().Dump(dc);
@@ -1579,10 +1579,10 @@ void CDigitalFilter::Dump(CDumpContext & dc)
 				if (tmp > dMaxPole)
 					dMaxPole = tmp;
 			}
-			s.Format(L"Max Pole Quality = %f\n",
-					1./ (1. - dMaxPole));
+			s.Format(_T("Max Pole Quality = %f\n"),
+					1. / (1. - dMaxPole));
 			dc << s;
-			s.Format(L"Trail Length = %d samples (for 90 dB decay)",
+			s.Format(_T("Trail Length = %d samples (for 90 dB decay)"),
 					TrailLength());
 			dc << s;
 		}
