@@ -205,7 +205,7 @@ public:
 	POLY_ROOTS & Zeros() { return m_Zeros; }
 	const POLY_ROOTS & Poles() const { return m_Poles; }
 	POLY_ROOTS & Poles() { return m_Poles; }
-	int RatioCount() const { return m_aRatios.GetSize(); }
+	int RatioCount() const { return (int)m_aRatios.GetSize(); }
 	const POLY_RATIO & PolyRatio(int n) const
 	{ return *(m_aRatios[n]); }
 	POLY_RATIO & PolyRatio(int n)
