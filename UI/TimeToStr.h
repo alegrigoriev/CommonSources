@@ -12,8 +12,8 @@ enum
 	TimeToHhMmSs_NeedsMm = 0x400, // gives minutes field, even though it may be 0
 	TimeToHhMmSs_Frames75 = 0x1000,  // time % 75 is a frame count, not milliseconds
 };
-CString TimeToHhMmSs(unsigned TimeMs, int Flags = TimeToHhMmSs_NeedsMs);
-CString SampleToString(SAMPLE_INDEX Sample, int nSamplesPerSec,
-						int Flags = SampleToString_HhMmSs
-									| TimeToHhMmSs_NeedsHhMm
-									| TimeToHhMmSs_NeedsMs);
+CString TimeToHhMmSs(ULONGLONG TimeMs, int Flags = TimeToHhMmSs_NeedsMs);
+CString SampleToString(ULONGLONG Sample, unsigned nSamplesPerSec,
+						unsigned Flags = SampleToString_HhMmSs
+										| TimeToHhMmSs_NeedsHhMm
+										| TimeToHhMmSs_NeedsMs);

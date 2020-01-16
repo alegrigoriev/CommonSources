@@ -1,15 +1,16 @@
 #include "StdAfx.h"
 #include "TimeToStr.h"
+#include "LocaleUtilities.h"
 
-CString TimeToHhMmSs(unsigned TimeMs, int Flags)
+CString TimeToHhMmSs(ULONGLONG TimeMs, int Flags)
 {
-	int hh = TimeMs / 3600000;
+	unsigned hh = (unsigned)(TimeMs / 3600000);
 	TimeMs -= hh * 3600000;
-	int mm = TimeMs / 60000;
+	unsigned mm = (unsigned)TimeMs / 60000;
 	TimeMs -= mm * 60000;
-	int ss = TimeMs / 1000;
+	unsigned ss = (unsigned)TimeMs / 1000;
 	TimeMs -= ss * 1000;
-	int ms = TimeMs;
+	unsigned ms = (unsigned)TimeMs;
 	CString s;
 	LPCTSTR TimeSeparator = LocaleParameters::TimeSeparator();
 	LPCTSTR DecimalPoint = LocaleParameters::DecimalPoint();
@@ -18,18 +19,18 @@ CString TimeToHhMmSs(unsigned TimeMs, int Flags)
 
 	if (Flags & TimeToHhMmSs_Frames75)
 	{
-		_stprintf_s(StrMs, 16, _T("%02df"), ms);
+		_stprintf_s(StrMs, countof(StrMs), _T("%02uf"), ms);
 	}
 	else
 	{
-		_stprintf_s(StrMs, 16, _T("%03d"), ms);
+		_stprintf_s(StrMs, countof(StrMs), _T("%03u"), ms);
 	}
 
 	if (Flags & (TimeToHhMmSs_NeedsMs | TimeToHhMmSs_Frames75))
 	{
 		if (hh != 0 || (Flags & TimeToHhMmSs_NeedsHhMm))
 		{
-			s.Format(_T("%d%s%02d%s%02d%s%s"),
+			s.Format(_T("%u%s%02u%s%02u%s%s"),
 					hh, TimeSeparator,
 					mm, TimeSeparator,
 					ss, DecimalPoint,
@@ -37,14 +38,14 @@ CString TimeToHhMmSs(unsigned TimeMs, int Flags)
 		}
 		else if (mm != 0 || (Flags & TimeToHhMmSs_NeedsMm))
 		{
-			s.Format(_T("%d%s%02d%s%s"),
+			s.Format(_T("%u%s%02u%s%s"),
 					mm, TimeSeparator,
 					ss, DecimalPoint,
 					StrMs);
 		}
 		else
 		{
-			s.Format(_T("%d%s%s"),
+			s.Format(_T("%u%s%s"),
 					ss, DecimalPoint,
 					StrMs);
 		}
@@ -54,14 +55,14 @@ CString TimeToHhMmSs(unsigned TimeMs, int Flags)
 		if (hh != 0
 			|| 0 != (Flags & TimeToHhMmSs_NeedsHhMm))
 		{
-			s.Format(_T("%d%s%02d%s%02d"),
+			s.Format(_T("%u%s%02u%s%02u"),
 					hh, TimeSeparator,
 					mm, TimeSeparator,
 					ss);
 		}
 		else
 		{
-			s.Format(_T("%d%s%02d"),
+			s.Format(_T("%u%s%02u"),
 					mm, TimeSeparator,
 					ss);
 		}
@@ -69,7 +70,7 @@ CString TimeToHhMmSs(unsigned TimeMs, int Flags)
 	return s;
 }
 
-CString SampleToString(SAMPLE_INDEX Sample, int nSamplesPerSec, int Flags)
+CString SampleToString(ULONGLONG Sample, unsigned nSamplesPerSec, unsigned Flags)
 {
 	switch (Flags & SampleToString_Mask)
 	{
@@ -79,15 +80,15 @@ CString SampleToString(SAMPLE_INDEX Sample, int nSamplesPerSec, int Flags)
 	case SampleToString_Seconds:
 	{
 		CString s;
-		unsigned ms = unsigned(Sample * 1000. / nSamplesPerSec);
-		int sec = ms / 1000;
+		ULONGLONG ms = ULONGLONG(Sample * 1000. / nSamplesPerSec);
+		unsigned sec = unsigned(ms / 1000);
 		ms = ms % 1000;
 		TCHAR * pFormat = _T("%s%s0");
 		if (Flags & TimeToHhMmSs_NeedsMs)
 		{
-			pFormat = _T("%s%s%03d");
+			pFormat = _T("%s%s%03u");
 		}
-		s.Format(pFormat, static_cast<LPCTSTR>(LtoaCS(sec)), LocaleParameters::DecimalPoint(), ms);
+		s.Format(pFormat, static_cast<LPCTSTR>(LtoaCS(sec)), LocaleParameters::DecimalPoint(), (unsigned)ms);
 		return s;
 	}
 		break;
@@ -99,8 +100,8 @@ CString SampleToString(SAMPLE_INDEX Sample, int nSamplesPerSec, int Flags)
 
 	case SampleToString_HhMmSsFf:
 	{
-		unsigned Seconds = Sample / nSamplesPerSec;
-		unsigned Frames = (Sample % nSamplesPerSec) / (nSamplesPerSec / 75);
+		unsigned Seconds = unsigned(Sample / nSamplesPerSec);
+		unsigned Frames = (Sample % nSamplesPerSec) * 75 / nSamplesPerSec;
 		return TimeToHhMmSs(Seconds * 1000 + Frames, Flags | TimeToHhMmSs_Frames75);
 	}
 		break;
