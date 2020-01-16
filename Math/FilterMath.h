@@ -1,8 +1,5 @@
-#ifndef _INC_FILTERMATH
-#define _INC_FILTERMATH
 #pragma once
 
-//#include "windows.h"
 #define _USE_MATH_DEFINES   // for M_PI definition
 #include <math.h>
 #include <complex>
@@ -227,5 +224,3 @@ public:
 	int     m_Order;    // low pass filter order
 	double  m_Coeffs[MaxFilterOrder][6];
 };
-
-#endif // ifndef _INC_FILTERMATH

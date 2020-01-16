@@ -1,15 +1,8 @@
 // Copyright Alexander Grigoriev, 1997-2002, All Rights Reserved
-#if !defined(AFX_FOLDERDIALOG_H__D77B1122_F648_11D1_B1C9_00A0244CBB12__INCLUDED_)
-#define AFX_FOLDERDIALOG_H__D77B1122_F648_11D1_B1C9_00A0244CBB12__INCLUDED_
-
-#if _MSC_VER >= 1000
 #pragma once
-#endif // _MSC_VER >= 1000
 // FolderDialog.h : header file
 //
-//#ifndef _SHLOBJ_H_
 #include <shlobj.h>
-//#endif
 /////////////////////////////////////////////////////////////////////////////
 // CFolderDialog dialog
 
@@ -89,4 +82,3 @@ protected:
 //{{AFX_INSERT_LOCATION}}
 // Microsoft Developer Studio will insert additional declarations immediately before the previous line.
 
-#endif // !defined(AFX_FOLDERDIALOG_H__D77B1122_F648_11D1_B1C9_00A0244CBB12__INCLUDED_)

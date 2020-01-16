@@ -1,10 +1,7 @@
 // ScaledGraphView.h
-#ifndef __SCALED_GRAPH_VIEW_H__
-#define __SCALED_GRAPH_VIEW_H__
+##pragma once
 
-#ifndef __SCALED_SCROLL_VIEW_H__
 #include "ScaledScrollView.h"
-#endif
 
 /////////////////////////////////////////////////////////////////////////////
 // CScaledGraphView view
@@ -71,5 +68,3 @@ protected:
 	//}}AFX_MSG
 	DECLARE_MESSAGE_MAP()
 };
-
-#endif  //#ifndef __SCALED_GRAPH_VIEW_H__

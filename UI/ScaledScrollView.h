@@ -1,6 +1,5 @@
 // Copyright Alexander Grigoriev, 1997-2002, All Rights Reserved
-#ifndef __SCALED_SCROLL_VIEW_H__
-#define __SCALED_SCROLL_VIEW_H__
+#pragma once
 // ScaledScrollView.h : header file
 //
 
@@ -289,4 +288,3 @@ protected:
 };
 
 /////////////////////////////////////////////////////////////////////////////
-#endif //#ifndef __SCALED_SCROLL_VIEW_H__

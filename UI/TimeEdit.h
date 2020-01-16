@@ -1,10 +1,5 @@
 // Copyright Alexander Grigoriev, 1997-2002, All Rights Reserved
-#if !defined(AFX_TIMEEDIT_H__8CFD06E0_6A44_11D4_9ADD_00C0F0583C4B__INCLUDED_)
-#define AFX_TIMEEDIT_H__8CFD06E0_6A44_11D4_9ADD_00C0F0583C4B__INCLUDED_
-
-#if _MSC_VER > 1000
 #pragma once
-#endif // _MSC_VER > 1000
 // TimeEdit.h : header file
 //
 #include <vector>
@@ -158,4 +153,3 @@ protected:
 //{{AFX_INSERT_LOCATION}}
 // Microsoft Visual C++ will insert additional declarations immediately before the previous line.
 
-#endif // !defined(AFX_TIMEEDIT_H__8CFD06E0_6A44_11D4_9ADD_00C0F0583C4B__INCLUDED_)

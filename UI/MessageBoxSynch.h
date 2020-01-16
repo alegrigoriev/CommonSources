@@ -3,7 +3,6 @@
 // It then runs in the context of the main thread
 // Make sure not to keep any critical sections entered when calling any of those
 #pragma once
-//#include "MessageMapT.h"
 
 enum
 {

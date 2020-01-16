@@ -1,11 +1,8 @@
 // Signal.h
-#ifndef __DIGITAL_SIGNAL_H__
-#define __DIGITAL_SIGNAL_H__
+#pragma once
 
-
-#ifndef __FILTER_H
 #include "DigitalFilter.h"
-#endif
+
 #include "mmsystem.h"
 
 #include "DigitalSignalArray.h"
@@ -384,5 +381,3 @@ inline double CFilterband::GetFrequency(int nSample)
 		return 0.;
 	}
 }
-
-#endif //#ifndef __DIGITAL_SIGNAL_H__

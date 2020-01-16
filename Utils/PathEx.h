@@ -1,7 +1,7 @@
 // CPathEx Extends CPathT
+#pragma once
 #include <shlwapi.h>
 #include <atlpath.h>
-#pragma once
 
 template<typename StringType>
 class CPathExT : public ATL::CPathT<StringType>

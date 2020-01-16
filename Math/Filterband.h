@@ -1,10 +1,7 @@
 // Filterband.h
-#ifndef __FILTERBAND_H__
-#define __FILTERBAND_H__
+#pragma once
 
-#ifndef __DIGITAL_SIGNAL_H__
 #include "DigitalSignal.h"
-#endif
 
 class CFilterband : public CSignal_Filtered
 {
@@ -71,5 +68,3 @@ protected:
 	int nAmplArraySize;
 	BOOL bAmplArrayValid;
 };
-
-#endif  //#ifndef __FILTERBAND_H__

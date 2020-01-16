@@ -1,8 +1,8 @@
 // Copyright Alexander Grigoriev, 1997-2002, All Rights Reserved
 // WaveSupport.h
 
-#ifndef WAVESUPPORT_H__
-#define WAVESUPPORT_H__
+#pragma once
+
 #include <vector>
 #include <mmsystem.h>
 #include <mmreg.h>
@@ -515,7 +515,7 @@ public:
 	struct FormatItem
 	{
 		FormatItem() {}
-		FormatItem(WAVEFORMATEX const * pwf, LPCTSTR name, int index)
+		FormatItem(WAVEFORMATEX const* pwf, LPCTSTR name, int index)
 			: Wf(pwf), Name(name), TagIndex(index) {}
 		CWaveFormat Wf;
 		CString Name;
@@ -679,5 +679,3 @@ void CopyWaveSamples(void * pDstBuf, CHANNEL_MASK DstChannels,
 					NUMBER_OF_CHANNELS NumSrcChannels,
 					unsigned Samples,
 					WaveSampleType DstType = SampleType16bit, WaveSampleType SrcType = SampleType16bit);
-
-#endif // #ifndef WAVESUPPORT_H__

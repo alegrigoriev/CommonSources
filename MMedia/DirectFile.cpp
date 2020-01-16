@@ -12,7 +12,6 @@
 #include "LastError.h"
 #include "ElapsedTime.h"
 #include "PathEx.h"
-//#include <new>
 
 typedef DWORD BLOCK_INDEX;
 typedef NUM_volatile<DWORD> SUBBLOCK_MASK;

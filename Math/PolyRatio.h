@@ -1,10 +1,7 @@
 // PolyRatioMath
-#if !defined(_INC_POLYRATIO)
- #define _INC_POLYRATIO
+#pragma once
 
-#if !defined(_INC_POLYMATH)
- #include "PolyMath.h"
-#endif
+#include "PolyMath.h"
 
 #include <afxtempl.h>
 
@@ -100,7 +97,5 @@ protected:
 	poly m_denom, m_numer;
 };
 
-std::ostream & __stdcall operator<<(std::ostream &, const polyRatio &);
-std::istream & __stdcall operator>>(std::istream &, polyRatio &);
-
-#endif // _INC_POLYRATIO
+std::ostream& __stdcall operator<<(std::ostream&, const polyRatio&);
+std::istream& __stdcall operator>>(std::istream&, polyRatio&);

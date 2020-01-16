@@ -1,6 +1,5 @@
 // DigitalSignalArray.h
-#ifndef DIGITAL_SIGNAL_ARRAY__H__
-#define DIGITAL_SIGNAL_ARRAY__H__
+#pragma once
 #pragma pack(push, 8)
 
 #ifndef __AFX_H__
@@ -466,4 +465,3 @@ public:
 };
 
 #pragma pack(pop)
-#endif  //#ifndef DIGITAL_SIGNAL_ARRAY__H__

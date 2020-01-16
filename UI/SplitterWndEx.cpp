@@ -176,8 +176,7 @@ void CSplitterWnd2::FillEmptyPanes()
 	}
 
 }
-CView * CSplitterWnd2::ReplacePane(CView * pView,
-									int row, int col)
+CView* CSplitterWnd2::ReplacePane(CView* pView, int row, int col)
 {
 	CWnd * pWnd = GetPane(row, col);
 	CView * pOldView = DYNAMIC_DOWNCAST(CView, pWnd);

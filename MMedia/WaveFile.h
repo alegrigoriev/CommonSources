@@ -1,10 +1,6 @@
 // Copyright Alexander Grigoriev, 1997-2002, All Rights Reserved
 // WaveFile.h
-#ifndef WAVE_FILE__H__
-#define WAVE_FILE__H__
-#if _MSC_VER > 1000
 #pragma once
-#endif // _MSC_VER > 1000
 #include <vector>
 /*
 Class CWaveFile serves as a WAV file input/output
@@ -771,5 +767,3 @@ private:
 };
 
 #pragma warning( pop )
-
-#endif //#ifndef WAVE_FILE__H__

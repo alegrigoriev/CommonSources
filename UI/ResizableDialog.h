@@ -1,10 +1,5 @@
 // Copyright Alexander Grigoriev, 1997-2002, All Rights Reserved
-#if !defined(AFX_RESIZABLEDIALOG_H__1E590ECD_BEE6_4C1C_9E9C_A8F58A8FA54A__INCLUDED_)
-#define AFX_RESIZABLEDIALOG_H__1E590ECD_BEE6_4C1C_9E9C_A8F58A8FA54A__INCLUDED_
-
-#if _MSC_VER > 1000
 #pragma once
-#endif // _MSC_VER > 1000
 // ResizableDialog.h : header file
 //
 #include "UiUpdatedDlg.h"
@@ -413,5 +408,3 @@ END_MESSAGE_MAP()
 typedef CResizableDialogT<> CResizableDialog;
 //{{AFX_INSERT_LOCATION}}
 // Microsoft Visual C++ will insert additional declarations immediately before the previous line.
-
-#endif // !defined(AFX_RESIZABLEDIALOG_H__1E590ECD_BEE6_4C1C_9E9C_A8F58A8FA54A__INCLUDED_)

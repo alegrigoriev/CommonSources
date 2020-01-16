@@ -4,11 +4,7 @@
 
 /////////////////////////////////////////////////////////////////////////////
 // CNumEdit window
-#ifndef __NUMEDIT_H__
-#define __NUMEDIT_H__
-#if _MSC_VER >= 1000
 #pragma once
-#endif // _MSC_VER >= 1000
 
 #include <float.h>
 
@@ -78,4 +74,3 @@ void DDX_Number(CDataExchange* pDX, UINT nID, double & num,
 				double dLowLimit, double dHighLimit);
 
 /////////////////////////////////////////////////////////////////////////////
-#endif  //#ifndef __NUMEDIT_H__

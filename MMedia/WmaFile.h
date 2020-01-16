@@ -1,15 +1,13 @@
 // Copyright Alexander Grigoriev, 1997-2002, All Rights Reserved
-#ifndef __WMAFILE_H_INCLUDED
-#define __WMAFILE_H_INCLUDED
+#pragma once
+
 #include <wtypes.h>
 #include <wmsdk.h>
 #include <atlsync.h>
 #define _INC_WINDOWSX	// DO NOT PARSE windowsx.h
 #include <dshow.h>
 
-#pragma once
-
-class CDirectFileStream: public IStream
+class CDirectFileStream : public IStream
 {
 	//
 	//Methods of IUnknown
@@ -513,5 +511,3 @@ private:
 	CComQIPtr<IWMHeaderInfo> m_pHeaderInfo;
 	CComPtr<INSSBuffer> m_pBuffer;
 };
-
-#endif

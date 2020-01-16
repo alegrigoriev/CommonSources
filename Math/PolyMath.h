@@ -1,6 +1,5 @@
 // PolyMath.h
-#if !defined(_INC_POLYMATH)
- #define _INC_POLYMATH
+#pragma once
 
  #include "assert.h"
 #if defined(_WINDOWS) || defined(WIN32)
@@ -207,5 +206,3 @@ std::istream & __stdcall operator>>(std::istream &, poly &);
 
 int __stdcall PolyRoots(Complex * roots, const poly & src,
 						Complex cmStart = Complex(0., 0.), int iIter = 100);
-
-#endif // _INC_POLYMATH

@@ -1,6 +1,6 @@
 // Copyright Alexander Grigoriev, 1997-2016, All Rights Reserved
 // fft.h, copyright Alex Grigoriev, alegrigoriev@gmail.com
-
+#pragma once
 #include <complex>
 #include "fft.inl"
 

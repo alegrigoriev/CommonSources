@@ -1,10 +1,5 @@
 // Copyright Alexander Grigoriev, 1997-2002, All Rights Reserved
-#if !defined(AFX_RULER_H__0AB440C1_3E09_11D4_9ADD_00C0F0583C4B__INCLUDED_)
-#define AFX_RULER_H__0AB440C1_3E09_11D4_9ADD_00C0F0583C4B__INCLUDED_
-
-#if _MSC_VER > 1000
 #pragma once
-#endif // _MSC_VER > 1000
 // Ruler.h : header file
 //
 
@@ -31,7 +26,8 @@ protected:
 	virtual void OnDraw(CDC* pDC);      // overridden to draw this view
 	virtual BOOL PreCreateWindow(CREATESTRUCT& cs);
 	//}}AFX_VIRTUAL
-	virtual void HorizontalScrollByPixels(int Pixels) = 0;	// Pixels >0 - picture moves to the right, pixels <0 - picture moves to the left
+	// Pixels >0 - picture moves to the right, pixels <0 - picture moves to the left
+	virtual void HorizontalScrollByPixels(int Pixels) = 0;
 	virtual void BeginMouseTracking();
 
 // Implementation
@@ -117,4 +113,3 @@ protected:
 //{{AFX_INSERT_LOCATION}}
 // Microsoft Visual C++ will insert additional declarations immediately before the previous line.
 
-#endif // !defined(AFX_RULER_H__0AB440C1_3E09_11D4_9ADD_00C0F0583C4B__INCLUDED_)

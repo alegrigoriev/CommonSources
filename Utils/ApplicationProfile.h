@@ -1,7 +1,5 @@
 // Copyright Alexander Grigoriev, 1997-2002, All Rights Reserved
 // CApplicationProfile
-#ifndef APPLICATIONPROFILE_H
-#define APPLICATIONPROFILE_H
 #pragma once
 #include "KListEntry.h"
 
@@ -157,5 +155,3 @@ protected:
 	ULONG m_Flags;
 private:
 };
-
-#endif

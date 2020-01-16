@@ -615,7 +615,7 @@ polyRoots poly::roots(Complex start, int iIter) const
 		}
 		if ( i >  0)
 		{
-// найти корни r2 - это кратные корни
+			// найти корни r2 - это кратные корни
 			int oldRootCount = rootCounter;
 			polyRoots roots2 = r2.roots(start, iIter);
 			int newRootCount = roots2.count();

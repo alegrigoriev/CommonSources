@@ -1,22 +1,14 @@
 // DigitalFilter.h
-#ifndef __DIGITAL_FILTER_H
-#define __DIGITAL_FILTER_H
+#pragma once
 
-#if !defined(_INC_POLYRATIO)
 #include "PolyRatio.h"
-#endif
+
 #include <afxtempl.h>
 #define _USE_MATH_DEFINES   // for M_PI definition
 #include <math.h>
 #include <float.h>
 
-#ifndef DIGITAL_SIGNAL_ARRAY__H__
 #include "DigitalSignalArray.h"
-#endif
-
-#ifndef PIANOSTRING_H_
-//#include "PianoString.h"
-#endif
 
 #pragma pack(push, 8)
 
@@ -278,5 +270,3 @@ protected:
 };
 
 #pragma pack (pop)
-
-#endif // #ifndef __DIGITAL_FILTER_H

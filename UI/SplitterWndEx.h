@@ -1,6 +1,5 @@
 // SplitterWndEx.h
-#ifndef SPLITTER_WND_EX_H__
-#define SPLITTER_WND_EX_H__
+#pragma once
 // The class allows dynamic creation of additional
 // views of different type for the static splitter window
 
@@ -44,4 +43,3 @@ public:
 	virtual void OnDraw(CDC* pDC) {}  // draw nothing
 	virtual ~CEmptyPane() {}
 };
-#endif //#ifndef SPLITTER_WND_EX_H__
