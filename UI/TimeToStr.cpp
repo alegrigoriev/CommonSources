@@ -19,11 +19,11 @@ CString TimeToHhMmSs(ULONGLONG TimeMs, int Flags)
 
 	if (Flags & TimeToHhMmSs_Frames75)
 	{
-		_stprintf_s(StrMs, countof(StrMs), _T("%02uf"), ms);
+		_stprintf_s(StrMs, _countof(StrMs), _T("%02uf"), ms);
 	}
 	else
 	{
-		_stprintf_s(StrMs, countof(StrMs), _T("%03u"), ms);
+		_stprintf_s(StrMs, _countof(StrMs), _T("%03u"), ms);
 	}
 
 	if (Flags & (TimeToHhMmSs_NeedsMs | TimeToHhMmSs_Frames75))

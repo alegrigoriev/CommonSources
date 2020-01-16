@@ -1778,7 +1778,7 @@ BOOL CScaledScrollView::OnNeedText( UINT_PTR /*id*/, NMHDR * pNotifyStruct, LRES
 	if (lpttt != NULL)
 	{
 		lpttt->hinst = NULL;
-		_tcscpy_s(lpttt->szText, countof(lpttt->szText), _T(" "));
+		_tcscpy_s(lpttt->szText, _countof(lpttt->szText), _T(" "));
 		*result = 0;
 		return TRUE;    // the message is handled
 	}
