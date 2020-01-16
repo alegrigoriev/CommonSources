@@ -9,7 +9,6 @@
 #include <algorithm>
 #include <atlfile.h>
 #include "resource.h"
-#include <typeinfo.h>
 
 #define DEBUG_RESCAN_PEAKS 0
 
