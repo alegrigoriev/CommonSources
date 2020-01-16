@@ -4,13 +4,13 @@
 LocaleParameters LocaleParameters::singleton;
 
 // long to string, thousands separated by commas
-CString LtoaCS(long num)
+CString LtoaCS(LONGLONG num)
 {
-	TCHAR s[20];
+	TCHAR s[32];
 	CString s1;
 	TCHAR * p = s;
 	LPCTSTR ThousandSeparator = LocaleParameters::ThousandSeparator();
-	_ltot_s(num, s, 20, 10);
+	_i64tot_s(num, s, 20, 10);
 	if (0 == ThousandSeparator[0])
 	{
 		return s;

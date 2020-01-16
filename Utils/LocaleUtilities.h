@@ -42,4 +42,4 @@ private:
 	static LocaleParameters singleton;
 };
 
-CString LtoaCS(long num);
+CString LtoaCS(LONGLONG num);
