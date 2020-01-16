@@ -7,12 +7,12 @@ double CSignal::GetDelay(double ) const
 	return 0.;
 }
 
-double CSignal::SamplingRate()
+double CSignal::SamplingRate() const
 {
 	return dSamplingRate;
 }
 
-double CSignal::SignalLength()
+double CSignal::SignalLength() const
 {
 	return (iSamplesAvailable + iFirstSample) / SamplingRate();
 }
@@ -295,12 +295,12 @@ double CSignal_Filtered::GetDelay(double dFrequency) const
 			+ pFilter->GroupDelay(dFrequency) / pSourceSignal->SamplingRate();
 }
 
-double CSignal_Filtered::SignalLength()
+double CSignal_Filtered::SignalLength() const
 {
 	return pSourceSignal->SignalLength();
 }
 
-double CSignal_Filtered::SamplingRate()
+double CSignal_Filtered::SamplingRate() const
 {
 	if (pSourceSignal != NULL)
 	{
@@ -318,12 +318,12 @@ CSignalIterator * CSignalTransparent::GetSignal(int iStart, int iLength)
 	return tmp;
 }
 
-double CSignalTransparent::SignalLength()
+double CSignalTransparent::SignalLength() const
 {
 	return pSourceSignal->SignalLength();
 }
 
-double CSignalTransparent::SamplingRate()
+double CSignalTransparent::SamplingRate() const
 {
 	if (pSourceSignal != NULL)
 	{
@@ -663,7 +663,7 @@ void CSignalWave::SetChannel(int nChan)
 	Invalidate();  // invalidate the data
 }
 
-double CSignalWave::SignalLength()
+double CSignalWave::SignalLength() const
 {
 	return nWaveSamples / SamplingRate();
 }
@@ -799,12 +799,12 @@ double CSignalDecimator::GetDelay(double dFrequency) const
 	return DecimFilter.GetDelay(dFrequency);
 }
 
-double CSignalDecimator::SignalLength()
+double CSignalDecimator::SignalLength() const
 {
 	return DecimFilter.SignalLength();
 }
 
-double CSignalDecimator::SamplingRate()
+double CSignalDecimator::SamplingRate() const
 {
 	dSamplingRate = DecimFilter.SamplingRate() / nDecimFactor;
 	return dSamplingRate;
@@ -828,22 +828,22 @@ void CSignalWave::CreateDecimators(int nCount)
 	}
 }
 
-BOOL CSignal::IsValid()
+BOOL CSignal::IsValid() const
 {
 	return bValid;
 }
 
-BOOL CSignal_Filtered::IsValid()
+BOOL CSignal_Filtered::IsValid() const
 {
 	return bValid && pSourceSignal->IsValid();
 }
 
-BOOL CSignalDecimator::IsValid()
+BOOL CSignalDecimator::IsValid() const
 {
 	return bValid && DecimFilter.IsValid();
 }
 
-BOOL CSignalTransparent::IsValid()
+BOOL CSignalTransparent::IsValid() const
 {
 	return pSourceSignal->IsValid();
 }
@@ -891,17 +891,17 @@ void CSignal_Filtered::SetSourceSignal(CSignal * pSignal)
 }
 
 #ifdef _DEBUG
-void CSignal::Dump(CDumpContext & dc)
+void CSignal::Dump(CDumpContext& dc) const
 {
 	// no action
 }
 
-void CSignal_Filtered::Dump(CDumpContext & dc)
+void CSignal_Filtered::Dump(CDumpContext& dc) const
 {
 	pFilter->Dump(dc);
 }
 
-void CFilterband::Dump(CDumpContext & dc)
+void CFilterband::Dump(CDumpContext& dc) const
 {
 	CString s;
 	s.Format("Low Freq = %f Hz\n"

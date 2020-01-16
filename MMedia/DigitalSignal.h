@@ -38,16 +38,16 @@ struct CSignal
 		iSamplesAvailable = 0;
 	}
 
-	double dSamplingRate;
+	mutable double dSamplingRate;
 public:
 #ifdef _DEBUG
-	virtual void Dump(CDumpContext & = afxDump);
+	virtual void Dump(CDumpContext & = afxDump) const;
 #endif
-	virtual BOOL IsValid();
+	virtual BOOL IsValid() const;
 	void Invalidate() { bValid = FALSE; }
-	virtual double SignalLength();
-	virtual double SamplingRate();
-	DWORD Flags(DWORD mask=0xFFFFFFFF)
+	virtual double SignalLength() const;
+	virtual double SamplingRate() const;
+	DWORD Flags(DWORD mask = 0xFFFFFFFF) const
 	{
 		ASSERT(pInSignal != NULL);
 		return pInSignal->Flags(mask);
@@ -157,19 +157,19 @@ struct CSignal_Filtered : CSignal
 		:pFilter(filter), pSourceSignal(signal)
 	{
 	}
-	virtual double SignalLength();
-	virtual double SamplingRate();
+	virtual double SignalLength() const;
+	virtual double SamplingRate() const;
 public:
 #ifdef _DEBUG
-	virtual void Dump(CDumpContext & = afxDump);
+	virtual void Dump(CDumpContext & = afxDump) const;
 #endif
-	virtual BOOL IsValid();
-	void SetFilter(CDigitalFilter * pSourceFilter);
-	void SetSourceSignal(CSignal * pSignal);
-//    BOOL CreateFilter(NewFilterData * pNfd)
-//        {
-//        return pFilter->Create(pNfd);
-//        }
+	virtual BOOL IsValid() const;
+	void SetFilter(CDigitalFilter* pSourceFilter);
+	void SetSourceSignal(CSignal* pSignal);
+	//    BOOL CreateFilter(NewFilterData * pNfd)
+	//        {
+	//        return pFilter->Create(pNfd);
+	//        }
 protected:
 	CDigitalFilter * pFilter;
 	CSignal * pSourceSignal;
@@ -184,10 +184,10 @@ struct CSignalTransparent : CSignal
 		:pSourceSignal(NULL)
 	{
 	}
-	virtual double SignalLength();
-	virtual double SamplingRate();
+	virtual double SignalLength() const;
+	virtual double SamplingRate() const;
 public:
-	virtual BOOL IsValid();
+	virtual BOOL IsValid() const;
 };
 
 class CFilterband;
@@ -205,7 +205,7 @@ struct CSignalWave : CSignal
 	int GetNumberOfChannels() const { return wfFormat.wf.nChannels; }
 	void SetChannel(int);
 	int GetChannel() const { return nCurrChannel; }
-	virtual double SignalLength();
+	virtual double SignalLength() const;
 	bool IsOpen() const
 	{
 		return m_IsOpen;
@@ -243,11 +243,11 @@ struct CSignalDecimator : CSignal
 			double dSafetyBand = 0.9,
 			double dPassbandLossDB = 0.5,
 			double dStopbandLossDB = 70.);
-	virtual double SignalLength();
-	virtual double SamplingRate();
+	virtual double SignalLength() const;
+	virtual double SamplingRate() const;
 public:
-	virtual BOOL IsValid();
-	void SetSourceSignal(CSignal * pSourceSignal);
+	virtual BOOL IsValid() const;
+	void SetSourceSignal(CSignal* pSourceSignal);
 protected:
 	CSignalTransparent InSignal;
 	CSignal_Filtered DecimFilter;
@@ -280,7 +280,7 @@ public:
 	void Set0dBLevel(double level);    // set 0 dB level
 	double Get0dBLevel() const { return d0dBLevel; }
 #ifdef _DEBUG
-	virtual void Dump(CDumpContext & = afxDump);
+	virtual void Dump(CDumpContext & = afxDump) const;
 #endif
 
 protected:
