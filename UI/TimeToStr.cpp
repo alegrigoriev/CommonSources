@@ -11,8 +11,8 @@ CString TimeToHhMmSs(unsigned TimeMs, int Flags)
 	TimeMs -= ss * 1000;
 	int ms = TimeMs;
 	CString s;
-	TCHAR TimeSeparator = GetApp()->m_TimeSeparator;
-	TCHAR DecimalPoint = GetApp()->m_DecimalPoint;
+	LPCTSTR TimeSeparator = LocaleParameters::TimeSeparator();
+	LPCTSTR DecimalPoint = LocaleParameters::DecimalPoint();
 
 	TCHAR StrMs[16];
 
@@ -29,7 +29,7 @@ CString TimeToHhMmSs(unsigned TimeMs, int Flags)
 	{
 		if (hh != 0 || (Flags & TimeToHhMmSs_NeedsHhMm))
 		{
-			s.Format(_T("%d%c%02d%c%02d%c%s"),
+			s.Format(_T("%d%s%02d%s%02d%s%s"),
 					hh, TimeSeparator,
 					mm, TimeSeparator,
 					ss, DecimalPoint,
@@ -37,14 +37,14 @@ CString TimeToHhMmSs(unsigned TimeMs, int Flags)
 		}
 		else if (mm != 0 || (Flags & TimeToHhMmSs_NeedsMm))
 		{
-			s.Format(_T("%d%c%02d%c%s"),
+			s.Format(_T("%d%s%02d%s%s"),
 					mm, TimeSeparator,
 					ss, DecimalPoint,
 					StrMs);
 		}
 		else
 		{
-			s.Format(_T("%d%c%s"),
+			s.Format(_T("%d%s%s"),
 					ss, DecimalPoint,
 					StrMs);
 		}
@@ -54,14 +54,14 @@ CString TimeToHhMmSs(unsigned TimeMs, int Flags)
 		if (hh != 0
 			|| 0 != (Flags & TimeToHhMmSs_NeedsHhMm))
 		{
-			s.Format(_T("%d%c%02d%c%02d"),
+			s.Format(_T("%d%s%02d%s%02d"),
 					hh, TimeSeparator,
 					mm, TimeSeparator,
 					ss);
 		}
 		else
 		{
-			s.Format(_T("%d%c%02d"),
+			s.Format(_T("%d%s%02d"),
 					mm, TimeSeparator,
 					ss);
 		}
@@ -82,12 +82,12 @@ CString SampleToString(SAMPLE_INDEX Sample, int nSamplesPerSec, int Flags)
 		unsigned ms = unsigned(Sample * 1000. / nSamplesPerSec);
 		int sec = ms / 1000;
 		ms = ms % 1000;
-		TCHAR * pFormat = _T("%s%c0");
+		TCHAR * pFormat = _T("%s%s0");
 		if (Flags & TimeToHhMmSs_NeedsMs)
 		{
-			pFormat = _T("%s%c%03d");
+			pFormat = _T("%s%s%03d");
 		}
-		s.Format(pFormat, static_cast<LPCTSTR>(LtoaCS(sec)), GetApp()->m_DecimalPoint, ms);
+		s.Format(pFormat, static_cast<LPCTSTR>(LtoaCS(sec)), LocaleParameters::DecimalPoint(), ms);
 		return s;
 	}
 		break;

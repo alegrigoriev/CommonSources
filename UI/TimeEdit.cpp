@@ -92,11 +92,12 @@ SAMPLE_INDEX CTimeEdit::GetTimeSample()
 	{
 		return m_Sample;
 	}
+
+	// remove thousand separators
+	m_OriginalString = s;
+	s.Replace(LocaleParameters::ThousandSeparator(), _T(""));
 	if (SampleToString_Sample == (m_TimeFormat & SampleToString_Mask))
 	{
-		// remove thousand separators
-		m_OriginalString = s;
-		s.Remove(GetApp()->m_ThousandSeparator);
 		TCHAR * endptr;
 		long num = _tcstoul(s, & endptr, 10);
 		if (num < 0 || *endptr != 0)
@@ -107,16 +108,13 @@ SAMPLE_INDEX CTimeEdit::GetTimeSample()
 	}
 	else
 	{
-		m_OriginalString = s;
-		s.Remove(GetApp()->m_ThousandSeparator);
-
 		int mult = 1000;
 		int mult1 = 1000;
 		double time = 0;    // in miliseconds
 		BOOL SepFound = false;
 
-		TCHAR const DecimalSeparator = GetApp()->m_DecimalPoint;
-		TCHAR const TimeSeparator = GetApp()->m_TimeSeparator;
+		LPCTSTR DecimalPoint = LocaleParameters::DecimalPoint();
+		LPCTSTR TimeSeparator = LocaleParameters::TimeSeparator();
 
 		int idx = s.GetLength() - 1;
 		BOOL UseFrames = SampleToString_HhMmSsFf == (m_TimeFormat & SampleToString_Mask);
@@ -132,7 +130,7 @@ SAMPLE_INDEX CTimeEdit::GetTimeSample()
 
 		for ( ; idx >= 0; idx--)
 		{
-			if (s[idx] == DecimalSeparator)
+			if (s[idx] == DecimalPoint[0])
 			{
 				if (SepFound)
 				{
@@ -151,7 +149,7 @@ SAMPLE_INDEX CTimeEdit::GetTimeSample()
 					mult = 1000;
 				}
 			}
-			else if (s[idx] == TimeSeparator)
+			else if (s[idx] == TimeSeparator[0])
 			{
 				SepFound = true;
 				mult1 *= 60;
@@ -436,7 +434,7 @@ void CFileTimesCombo::FillFileTimes()
 			}
 
 			if (end <= FileLength
-				&& unsigned(end) > i->dwSampleOffset)
+				&& end > i->dwSampleOffset)
 			{
 				LPCTSTR pTitle = pLabel;
 
