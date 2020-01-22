@@ -396,7 +396,7 @@ BOOL CSignalWave::Open(LPCTSTR szFilename)
 	}
 	nTotalSize = m_File.GetLength();
 
-	HANDLE hMapping = CreateFileMapping((HANDLE)m_File.m_hFile,
+	HANDLE hMapping = CreateFileMapping(m_File.m_hFile,
 										NULL,
 										PAGE_READONLY,
 										0, 0, NULL);
@@ -427,7 +427,7 @@ BOOL CSignalWave::Open(LPCTSTR szFilename)
 	}
 	else
 	{
-		mmio.cchBuffer = nTotalSize;
+		mmio.cchBuffer = (LONG)nTotalSize;
 	}
 
 	HMMIO hmmio = mmioOpen(NULL, &mmio, MMIO_READ);
@@ -445,7 +445,7 @@ BOOL CSignalWave::Open(LPCTSTR szFilename)
 	if (mmioDescend(hmmio, (LPMMCKINFO) &mmckinfoParent, NULL,
 					MMIO_FINDRIFF))
 	{
-		AfxMessageBox("This is not a waveform-audio file.");
+		AfxMessageBox(_T("This is not a waveform-audio file."));
 		mmioClose(hmmio, 0);
 		Close();
 		return FALSE;
@@ -456,7 +456,7 @@ BOOL CSignalWave::Open(LPCTSTR szFilename)
 	if (mmioDescend(hmmio, &mmckinfoSubchunk, &mmckinfoParent,
 					MMIO_FINDCHUNK))
 	{
-		AfxMessageBox("Waveform-audio file has no \"FMT\" chunk.");
+		AfxMessageBox(_T("Waveform-audio file has no \"FMT\" chunk."));
 		mmioClose(hmmio, 0);
 		Close();
 		return FALSE;
@@ -475,7 +475,7 @@ BOOL CSignalWave::Open(LPCTSTR szFilename)
 		&& wfFormat.wf.nChannels != 2
 		|| wfFormat.wf.nSamplesPerSec == 0)
 	{
-		AfxMessageBox("Failed to read format chunk.");
+		AfxMessageBox(_T("Failed to read format chunk."));
 		mmioClose(hmmio, 0);
 		Close();
 		return FALSE;
@@ -491,7 +491,7 @@ BOOL CSignalWave::Open(LPCTSTR szFilename)
 	if (mmioDescend(hmmio, &mmckinfoSubchunk, &mmckinfoParent,
 					MMIO_FINDCHUNK))
 	{
-		AfxMessageBox("Waveform-audio file has no data chunk.");
+		AfxMessageBox(_T("Waveform-audio file has no data chunk."));
 		mmioClose(hmmio, 0);
 		Close();
 		return FALSE;
@@ -501,7 +501,7 @@ BOOL CSignalWave::Open(LPCTSTR szFilename)
 	dwDataSize = mmckinfoSubchunk.cksize;
 	if (dwDataSize == 0L)
 	{
-		AfxMessageBox("The data chunk contains no data.");
+		AfxMessageBox(_T("The data chunk contains no data."));
 		mmioClose(hmmio, 0);
 		Close();
 		return FALSE;
@@ -563,16 +563,11 @@ CFilterband * CSignalWave::CreateFilterband
 	pFilterband->dPassLoss = 1.;
 	// find appropriate decimated signal source
 
-	CSignal * pSignal;
+	CSignal* pSignal = this;
 #if 0
-	if ((dHighFreq - dLowFreq) * 10. >= SamplingRate() * 0.5)
+	if ((dHighFreq - dLowFreq) * 10. < SamplingRate() * 0.5)
 	{
-		pSignal = this;
-	}
-	else
-	{
-		for (int subband = 0; subband
-			< aDecimators.GetUpperBound(); subband++)
+		for (int subband = 0; subband < aDecimators.GetUpperBound(); subband++)
 		{
 			CSignalDecimator * pDecimator = aDecimators[subband];
 			if ((dHighFreq - dLowFreq) * 10. >= pDecimator->dBandwidth
@@ -586,21 +581,14 @@ CFilterband * CSignalWave::CreateFilterband
 	}
 
 #else
-	int subband;
-	for (subband = 0; subband
-		< aDecimators.GetUpperBound(); subband++)
+	for (int subband = 0; subband < aDecimators.GetUpperBound(); subband++)
 	{
-		CSignalDecimator * pDecimator = aDecimators[subband];
-		if (dHighFreq < aDecimators[subband]->dBandwidth)
+		CSignalDecimator* pDecimator = aDecimators[subband];
+		if (dHighFreq < pDecimator->dBandwidth)
 		{
-			pSignal = aDecimators[subband];
+			pSignal = pDecimator;
 			break;
 		}
-	}
-
-	if (subband == aDecimators.GetUpperBound())
-	{
-		pSignal = this;
 	}
 
 #endif
@@ -891,7 +879,7 @@ void CSignal_Filtered::SetSourceSignal(CSignal * pSignal)
 }
 
 #ifdef _DEBUG
-void CSignal::Dump(CDumpContext& dc) const
+void CSignal::Dump(CDumpContext& /*dc*/) const
 {
 	// no action
 }
@@ -904,11 +892,11 @@ void CSignal_Filtered::Dump(CDumpContext& dc) const
 void CFilterband::Dump(CDumpContext& dc) const
 {
 	CString s;
-	s.Format("Low Freq = %f Hz\n"
-			"High Freq = %f Hz\n"
-			"Pass Loss = %f dB\n"
-			"Stop Loss = %f db\n"
-			"Transition width = %f\n",
+	s.Format(_T("Low Freq = %f Hz\n"
+				"High Freq = %f Hz\n"
+				"Pass Loss = %f dB\n"
+				"Stop Loss = %f db\n"
+				"Transition width = %f\n"),
 			dLowFreq, dHighFreq, dPassLoss, dStopLoss,
 			dTransitionWidth);
 	dc << s;

@@ -292,19 +292,19 @@ public:
 	virtual double GetDoubleAt(int nIndex) const
 	{
 		ASSERT(nIndex >= 0 && nIndex < data_size());
-		return (int(data[nIndex * CHANS + nChan]) - 128) << 8;
+		return (int(data[nIndex * CHANS + nChan]) - 128) * 256.;
 	}
 
 	virtual double GetNextDouble()
 	{
 		ASSERT(RetrieveIndex < data_size());
-		return (int(data[nChan + CHANS * RetrieveIndex++]) - 128) << 8;
+		return (int(data[nChan + CHANS * RetrieveIndex++]) - 128) * 256.;
 	}
 
 	virtual Complex GetComplexAt(int nIndex) const
 	{
 		ASSERT(nIndex >= 0 && nIndex < data_size());
-		return float((int(data[nIndex * CHANS + nChan]) - 128) << 8);
+		return (int(data[nIndex * CHANS + nChan]) - 128) * 256.;
 	}
 
 	virtual Complex GetNextComplex()
@@ -318,13 +318,13 @@ public:
 	virtual void SetDoubleAt(double value, int nIndex)
 	{
 		ASSERT(nIndex >= 0 && nIndex < data_size());
-		data[nIndex * CHANS + nChan] = int(value + 128.5);
+		data[nIndex * CHANS + nChan] = unsigned __int8(value / 256 + 128.5);
 	}
 
 	virtual void SetNextDouble(double value)
 	{
 		ASSERT(StoreIndex < data_size());
-		data[StoreIndex++*CHANS+nChan] = int(value + 128.5);
+		data[StoreIndex++ * CHANS + nChan] = unsigned __int8(value / 256 + 128.5);
 	}
 
 	virtual void SetComplexAt(const Complex &, int )

@@ -1000,12 +1000,11 @@ int CDigitalFilter::TemporalResponce(COMPLEX * dst,
 	const int nDenomOrder = m_prCanonical.denom().order();
 	const int nDenomLength = nDenomOrder + 1;
 
-	COMPLEX * pPrevInArray = new COMPLEX [2 * nNumerLength];
-	COMPLEX * pPrevOutArray = new COMPLEX[2 * nDenomLength];
-	int i;
-	for (i = 0; i < 2 * nNumerLength; i++)
+	COMPLEX* pPrevInArray = new COMPLEX[2 * nNumerLength];
+	COMPLEX* pPrevOutArray = new COMPLEX[2 * nDenomLength];
+	for (int i = 0; i < 2 * nNumerLength; i++)
 		pPrevInArray[i] = 0.;
-	for (i = 0; i < 2 * nDenomOrder; i++)
+	for (int i = 0; i < 2 * nDenomOrder; i++)
 		pPrevOutArray[i] = 0.;
 	// pPrevInArray and pPrevOutArray are used as
 	// the history for the first few samples
@@ -1091,7 +1090,7 @@ int CDigitalFilter::TemporalResponce(COMPLEX * dst,
 			if (iSample < nNumerLength)
 			{
 				// shift the information in pPrevInArray
-				for (i = 1; i < nNumerLength; i++)
+				for (int i = 1; i < nNumerLength; i++)
 				{
 					pPrevInArray[i - 1] = pPrevInArray[i];
 				}
@@ -1114,7 +1113,7 @@ int CDigitalFilter::TemporalResponce(COMPLEX * dst,
 			{
 				tmp = src[iSample] * cNormCoeff;
 				// process conjugated zeros
-
+				int i;
 				for (i = nNumerOrder; i > nSingleZeros; i -= 2)
 				{
 					// tmp - current input sample
@@ -1139,7 +1138,7 @@ int CDigitalFilter::TemporalResponce(COMPLEX * dst,
 			}
 			else
 			{
-				for (i = 0; i < nNumerLength; i++)
+				for (int i = 0; i < nNumerLength; i++)
 				{
 					tmp += pPrevInSampl[-i] * pNumer[i];
 				}
@@ -1150,6 +1149,7 @@ int CDigitalFilter::TemporalResponce(COMPLEX * dst,
 			{
 				pPrevOutArray[nDenomOrder * 2 + 1] = tmp;
 				// process conjugated poles
+				int i;
 				for (i = nDenomOrder; i > nSinglePoles; i -= 2)
 				{
 					// pPrevOutArray[i * 2 + 1] - current input sample
@@ -1176,7 +1176,7 @@ int CDigitalFilter::TemporalResponce(COMPLEX * dst,
 			}
 			else
 			{
-				for (i = 1; i < nDenomLength; i++)
+				for (int i = 1; i < nDenomLength; i++)
 				{
 					tmp -= pPrevOutSampl[-i] * pDenom[i];
 				}
@@ -1189,7 +1189,7 @@ int CDigitalFilter::TemporalResponce(COMPLEX * dst,
 			{
 				tmp = src[iSample] * cNormCoeff;
 				// process conjugated zeros
-
+				int i;
 				for (i = nNumerOrder; i > nSingleZeros; i -= 2)
 				{
 					// tmp - current input sample
@@ -1214,7 +1214,7 @@ int CDigitalFilter::TemporalResponce(COMPLEX * dst,
 			}
 			else
 			{
-				for (i = 0; i < nNumerLength; i++)
+				for (int i = 0; i < nNumerLength; i++)
 				{
 					tmp += pPrevInSampl[-i] * pNumer[i].real();
 				}
@@ -1225,6 +1225,7 @@ int CDigitalFilter::TemporalResponce(COMPLEX * dst,
 			{
 				pPrevOutArray[nDenomOrder * 2 + 1] = tmp;
 				// process conjugated poles
+				int i;
 				for (i = nDenomOrder; i > nSinglePoles; i -= 2)
 				{
 					// pPrevOutArray[i * 2 + 1] - current input sample
@@ -1250,7 +1251,7 @@ int CDigitalFilter::TemporalResponce(COMPLEX * dst,
 			}
 			else
 			{
-				for (i = 1; i < nDenomLength; i++)
+				for (int i = 1; i < nDenomLength; i++)
 				{
 					tmp -= pPrevOutSampl[-i] * pDenom[i].real();
 				}
@@ -1263,7 +1264,7 @@ int CDigitalFilter::TemporalResponce(COMPLEX * dst,
 			if (iSample < nDenomOrder - 1)
 			{
 				// shift the information in pPrevOutArray
-				for (i = 1; i < nDenomOrder; i++)
+				for (int i = 1; i < nDenomOrder; i++)
 				{
 					pPrevOutArray[i - 1] = pPrevOutArray[i];
 				}
@@ -1319,13 +1320,8 @@ int CDigitalFilter::TemporalResponce(
 		nDenomCountsArray[i] = 1 + m_aRatios[i]->denom().order();
 		nCoeffArraySize += nDenomCountsArray[i];
 	}
-	// kludge to avoid unaligned allocation
-#if 0
-	Complex * pCoeffsArray = new Complex[nCoeffArraySize];
-#else
-	void * pCoeffsArrayBuf = new char[nCoeffArraySize * sizeof (Complex)];
-	Complex * pCoeffsArray = (Complex *) pCoeffsArrayBuf;
-#endif
+
+	Complex* pCoeffsArray = new Complex[nCoeffArraySize];
 
 	// 2. Fill coeff buffer
 	Complex * pCoeff = pCoeffsArray;
@@ -1347,12 +1343,7 @@ int CDigitalFilter::TemporalResponce(
 	if (nHistorySize < 128) nHistorySize = 128;
 
 	// kludge to avoid unaligned allocation
-#if 0
-	Complex * pHistoryArray = new Complex[nHistorySize];
-#else
-	void * pHistoryArrayBuf = new char[nHistorySize * sizeof (Complex)];
-	Complex * pHistoryArray = (Complex *) pHistoryArrayBuf;
-#endif
+	Complex* pHistoryArray = new Complex[nHistorySize];
 
 	if (pHistoryArray != NULL)
 	{
@@ -1371,7 +1362,7 @@ int CDigitalFilter::TemporalResponce(
 		{
 			Complex InSample = src->GetNextComplex();
 			Complex OutSample = 0.;
-			Complex * pCoeff = pCoeffsArray;
+			pCoeff = pCoeffsArray;
 			// 5. Loop on filter cells.
 			for (int nCell = 0; nCell < nNumOfCells; nCell++)
 			{
@@ -1452,14 +1443,13 @@ int CDigitalFilter::TemporalResponce(
 		{
 			double InSample = src->GetNextDouble();
 			double OutSample = 0.;
-			Complex * pCoeff = pCoeffsArray;
+			pCoeff = pCoeffsArray;
 			// 5. Loop on filter cells.
 			for (int nCell = 0; nCell < nNumOfCells; nCell++)
 			{
 				//      Put input signal to numerator history array.
 				pHistoryPtr[0] = InSample;
 				double tmp = 0.;
-				int j;
 				// 6. loop on numerator taps.
 				if(2 == nNumerCountsArray[nCell])
 				{
@@ -1499,7 +1489,7 @@ int CDigitalFilter::TemporalResponce(
 				}
 				else
 				{
-					for (j = 1; j < nDenomCountsArray[nCell]; j++)
+					for (int j = 1; j < nDenomCountsArray[nCell]; j++)
 					{
 						tmp -= pCoeff[j].real() * pHistoryPtr[j].real();
 					}
@@ -1527,13 +1517,10 @@ int CDigitalFilter::TemporalResponce(
 			}
 			pHistoryPtr--;
 		}
-#if 0
+
 	delete[] pHistoryArray;
 	delete[] pCoeffsArray;
-#else
-	delete pHistoryArrayBuf;
-	delete pCoeffsArrayBuf;
-#endif
+
 	return 1;
 }
 

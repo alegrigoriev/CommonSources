@@ -11,8 +11,6 @@
 #include <afxtempl.h>
 #endif
 
-#pragma pack(push, 8)
-
 struct CSignal
 {
 	CSignal()
@@ -218,7 +216,7 @@ private:
 	HANDLE hMemoryMapping;
 	LPVOID pFileBase;
 	LPVOID pDataAddress;
-	DWORD nTotalSize;
+	LONGLONG nTotalSize;
 	int nWaveSamples;
 	int nCurrChannel;
 	CArray<CSignalDecimator *, CSignalDecimator *>
@@ -308,7 +306,6 @@ protected:
 	int nAmplArraySize;
 	BOOL bAmplArrayValid;
 };
-#pragma pack(pop)
 
 inline double CFilterband::GetAmplitude(int nSample)
 {
@@ -346,7 +343,7 @@ inline double CFilterband::GetLevelDB(int nSample)
 				return 10. * log10(level);
 			}
 			else
-				return -100.;
+				return -140.;
 		}
 		else
 		{
@@ -356,12 +353,12 @@ inline double CFilterband::GetLevelDB(int nSample)
 				return 20. * log10(level);
 			}
 			else
-				return -100.;
+				return -140.;
 		}
 	}
 	else
 	{
-		return -100.;
+		return -140.;
 	}
 }
 

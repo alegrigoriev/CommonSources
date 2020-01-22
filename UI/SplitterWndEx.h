@@ -40,6 +40,6 @@ protected: // create from serialization only
 	CEmptyPane() {}
 	DECLARE_DYNCREATE(CEmptyPane);
 public:
-	virtual void OnDraw(CDC* pDC) {}  // draw nothing
+	virtual void OnDraw(CDC* /*pDC*/) {}  // draw nothing
 	virtual ~CEmptyPane() {}
 };
