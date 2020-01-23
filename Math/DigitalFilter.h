@@ -10,24 +10,6 @@
 
 #include "DigitalSignalArray.h"
 
-#pragma pack(push, 8)
-
-#ifdef USE_LONGDOUBLE
-	#define POLY_ROOTS lpolyRoots
-	#define POLY_RATIO lpolyRatio
-	#define POLY lpoly
-	#define COMPLEX lcomplex
-	#define REAL ldouble
-	#define COMPLEX_ARRAY lcomplexArray
-#else
-	#define POLY_ROOTS polyRoots
-	#define POLY_RATIO polyRatio
-	#define POLY poly
-	#define COMPLEX Complex
-	#define REAL double
-	#define COMPLEX_ARRAY complexArray
-#endif
-
 #define MAX_FILTER_ORDER    255
 #define FILTER_COMPLEX          0x00000001
 #define FILTER_ALLPASS          0x00000002
@@ -131,14 +113,14 @@ public:
 	BOOL IsFir() const { return m_Ratio.DenomOrder() != 0; }
 	BOOL IsStable() const;
 	// data access
-	const POLY_ROOTS & Zeros() const { return m_Zeros; }
-	POLY_ROOTS & Zeros() { return m_Zeros; }
+	const polyRoots& Zeros() const { return m_Zeros; }
+	polyRoots& Zeros() { return m_Zeros; }
 
-	const POLY_ROOTS & Poles() const { return m_Poles; }
-	POLY_ROOTS & Poles() { return m_Poles; }
+	const polyRoots& Poles() const { return m_Poles; }
+	polyRoots& Poles() { return m_Poles; }
 
-	const POLY_RATIO & Deriv() const;
-	const POLY_RATIO & Ratio() const;
+	const polyRatio& Deriv() const;
+	const polyRatio& Ratio() const;
 
 	CFilterCell & operator = (const CFilterCell &);
 	CFilterCell & operator = (const polyRatio &);
@@ -151,9 +133,11 @@ public:
 	BOOL MakeZeros();
 	void SetCoeffsPrecision(int iBits);
 
-	COMPLEX FreqResponce(double f) const;
-	COMPLEX FreqResponce(Complex z) const
-	{ return m_Ratio.eval(z); }
+	Complex FreqResponce(double f) const;
+	Complex FreqResponce(Complex z) const
+	{
+		return m_Ratio.eval(z);
+	}
 	//void InitPrevSamples(const Complex * pPrevBuf);
 	//void NextOutputSample(const Complex & InSample);
 
@@ -193,15 +177,19 @@ public:
 	{ return m_prCanonical.DenomOrder(); }
 	BOOL IsFir() const { return !(dwFlags & FILTER_IIR); }
 	BOOL IsStable() const;
-	const POLY_ROOTS & Zeros() const { return m_Zeros; }
-	POLY_ROOTS & Zeros() { return m_Zeros; }
-	const POLY_ROOTS & Poles() const { return m_Poles; }
-	POLY_ROOTS & Poles() { return m_Poles; }
+	const polyRoots& Zeros() const { return m_Zeros; }
+	polyRoots& Zeros() { return m_Zeros; }
+	const polyRoots& Poles() const { return m_Poles; }
+	polyRoots& Poles() { return m_Poles; }
 	int RatioCount() const { return (int)m_aRatios.GetSize(); }
-	const POLY_RATIO & PolyRatio(int n) const
-	{ return *(m_aRatios[n]); }
-	POLY_RATIO & PolyRatio(int n)
-	{ return *(m_aRatios[n]); }
+	const polyRatio& PolyRatio(int n) const
+	{
+		return *(m_aRatios[n]);
+	}
+	polyRatio& PolyRatio(int n)
+	{
+		return *(m_aRatios[n]);
+	}
 	DWORD Flags(DWORD dwMask = 0xffffffff) const
 	{ return dwFlags & dwMask; }
 	DWORD ModifyFlags(DWORD FlagsToSet,
@@ -211,25 +199,25 @@ public:
 	}
 	// operations
 public:
-	POLY_RATIO GetCanonical();
+	polyRatio GetCanonical();
 	void MakeCanonical();
 	BOOL MakePoles();
 	BOOL MakeZeros();
 	void Decompose();
 	BOOL RemoveRatio(int iIndex);
-	BOOL InsertRatio(const POLY_RATIO & pr);
+	BOOL InsertRatio(const polyRatio& pr);
 	void SetCoeffsPrecision(int iBits);
 
-	COMPLEX FreqResponce(double f) const;
-	REAL GroupDelay(double f) const;
+	Complex FreqResponce(double f) const;
+	double GroupDelay(double f) const;
 
-	int TemporalResponce(CSignalStoreIterator * dst,
-						CSignalIterator * src, int nCount);
-	int TemporalResponce(COMPLEX * dst, const COMPLEX * src, int iCount);
+	int TemporalResponce(CSignalStoreIterator* dst,
+						CSignalIterator* src, int nCount);
+	int TemporalResponce(Complex* dst, const Complex* src, int iCount);
 	// TrailLength - Find number of samples when the signal will fade to
 	// the specified amount of decibels
 	int TrailLength(double dDecay = 90. /* dB */) const;
-	COMPLEX operator ()(double f) const { return FreqResponce(f); }
+	Complex operator ()(double f) const { return FreqResponce(f); }
 	// implementation
 #ifdef _DEBUG
 	void Dump(CDumpContext & = afxDump);
@@ -244,12 +232,12 @@ public:
 									CPianoString& PianoString = CPianoString());
 #endif
 protected:
-	POLY_ROOTS m_Zeros;
-	POLY_ROOTS m_Poles;
+	polyRoots m_Zeros;
+	polyRoots m_Poles;
 	int iPrecision;
-	CArray<POLY_RATIO *, POLY_RATIO *> m_aRatios;
-	POLY_RATIO m_prCanonical;
-	CArray<POLY_RATIO *, POLY_RATIO *> m_aDerivRatios;
+	CArray<polyRatio*, polyRatio*> m_aRatios;
+	polyRatio m_prCanonical;
+	CArray<polyRatio*, polyRatio*> m_aDerivRatios;
 
 	DWORD dwFlags;
 
@@ -268,5 +256,3 @@ protected:
 	// free all data:
 	void Reset();
 };
-
-#pragma pack (pop)

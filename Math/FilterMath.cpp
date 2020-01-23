@@ -78,8 +78,8 @@ static double ipow(double x,
 /*  laguerreMethod()                              */
 /*                                                */
 /**************************************************/
-int LaguerreMethod(POLY &coef,
-					Complex *zz,
+int LaguerreMethod(poly& coef,
+					Complex* zz,
 					double epsilon,
 					double epsilon2,
 					int maxIterations)
@@ -254,9 +254,9 @@ void EllipticPolesZeros(double omegaPass,
 						double minStopLoss,
 						double maxPassLoss, // 1 - power-symmetric filter
 						int order,
-						POLY_ROOTS &zeros,
-						POLY_ROOTS &poles,
-						COMPLEX &rNormCoeff )
+						polyRoots& zeros,
+						polyRoots& poles,
+						Complex& rNormCoeff)
 {
 	ASSERT (&poles != NULL);
 	ASSERT (&zeros != NULL);
@@ -330,8 +330,8 @@ void EllipticPolesZeros(double omegaPass,
 		sum += ipow(-1.0, m) * ipow(q, m * m) * cosh(2.0 * m * vv);
 	}
 
-	denom = 1.0 + 2.0*sum;
-	COMPLEX cFirstTerm = -fabs(numer / denom);
+	denom = 1.0 + 2.0 * sum;
+	Complex cFirstTerm = -fabs(numer / denom);
 
 	mu = 0.5;
 	if (order & 1)
@@ -361,14 +361,14 @@ void EllipticPolesZeros(double omegaPass,
 		denom = 1.0 + 2.0 * sum;
 		xx = numer/denom;
 
-		zeros += COMPLEX(0., 1./xx) * CenterFreq;
-		zeros += COMPLEX(0., -1./xx) * CenterFreq;
-		denom = 1.0 + ipow(real(cFirstTerm)*xx, 2);		/* Eq (5.18) */
+		zeros += Complex(0., 1. / xx) * CenterFreq;
+		zeros += Complex(0., -1. / xx) * CenterFreq;
+		denom = 1.0 + ipow(real(cFirstTerm) * xx, 2);     /* Eq (5.18) */
 		/* Eq (5.16) */
 		yy = sqrt((1.0 - k * xx*xx) * (1.0-(xx*xx/k)))* real(cFirstTerm)/denom;
 		xx = xx * ww / denom;
-		poles += COMPLEX(yy, xx) * CenterFreq;
-		poles += COMPLEX(yy, -xx) * CenterFreq;
+		poles += Complex(yy, xx) * CenterFreq;
+		poles += Complex(yy, -xx) * CenterFreq;
 	}
 
 	if (order & 1)
@@ -389,7 +389,7 @@ void EllipticHilbertPoles(double omegaPass,
 						double &minStopLossDB,
 						double &maxPassLossDB, // 0 - power-symmetric filter
 						int order,
-						POLY_ROOTS &poles )
+						polyRoots& poles)
 {
 	/* estimating required filter order (odd) */
 	double k, u, q, kk, ww, mu;
@@ -456,8 +456,8 @@ void EllipticHilbertPoles(double omegaPass,
 }
 
 // Non-symmetric pass-band filter synthesis
-void EllipticPassbandPolesZeros(POLY_ROOTS &poles,
-								POLY_ROOTS &zeros,
+void EllipticPassbandPolesZeros(polyRoots& poles,
+								polyRoots& zeros,
 								int order,
 								int bilinear,
 								double T,
@@ -476,7 +476,7 @@ void EllipticPassbandPolesZeros(POLY_ROOTS &poles,
 
 	double p1a = 0, p1b, p1c, PassFreq1, StopFreq1, PassFreq2, StopFreq2, f0c;
 	int order1, order2, i;
-	POLY_ROOTS poles1, zeros1;
+	polyRoots poles1, zeros1;
 
 	for(int iter=0; iter < 15;iter++)
 	{
@@ -529,7 +529,7 @@ void EllipticPassbandPolesZeros(POLY_ROOTS &poles,
 		}
 
 		CopyMinStopLossDB = minStopLossDB;
-		COMPLEX dNormCoef;
+		Complex dNormCoef;
 
 		EllipticPolesZeros(PassFreq1,
 							StopFreq1,
@@ -579,26 +579,26 @@ void EllipticPassbandPolesZeros(POLY_ROOTS &poles,
 	return;
 }
 
-	// Low Pass Filter two allpass cell decomposition
-void TwoAllpassDecompose(const POLY_ROOTS &poles,
+// Low Pass Filter two allpass cell decomposition
+void TwoAllpassDecompose(const polyRoots& poles,
 						double T,
-						POLY &denom1,
-						POLY &numer1,
-						POLY &denom2,
-						POLY &numer2,
+						poly& denom1,
+						poly& numer1,
+						poly& denom2,
+						poly& numer2,
 						double angle)
 {
 	// first cell uses pole[1], pole[4], pole[5], pole[8], pole[9] ...
 	// second cell uses pole[2], pole[3], pole[6], pole[7] ...
 	int order = poles.count();
-	POLY_ROOTS roots1, roots2;
-	COMPLEX rotator(cos(angle), sin(angle));
-	ASSERT ((order & 1) != 0);
+	polyRoots roots1, roots2;
+	Complex rotator(cos(angle), sin(angle));
+	ASSERT((order & 1) != 0);
 	// perform bilinear transform for the poles
 	for (int i = 0; i < order; i ++)
 	{
-		COMPLEX ctmp = poles[i];
-		ctmp = rotator * (2./T + ctmp) / (2./T - ctmp);
+		Complex ctmp = poles[i];
+		ctmp = rotator * (2. / T + ctmp) / (2. / T - ctmp);
 
 		if (i & 2)
 		{
@@ -609,8 +609,8 @@ void TwoAllpassDecompose(const POLY_ROOTS &poles,
 			roots2 += ctmp;
 		}
 	}
-	denom1 = POLY(roots1);
-	denom2 = POLY(roots2);
+	denom1 = poly(roots1);
+	denom2 = poly(roots2);
 	// make reverce denominators
 	numer1.MakeUnique();
 	numer1.SetOrder(denom1.order());
@@ -631,11 +631,11 @@ void TwoAllpassDecompose(const POLY_ROOTS &poles,
 }
 
 // Hilbert Filter two allpass cell decomposition
-void HilbertTwoAllpassDecompose(const POLY_ROOTS & poles,
-								POLY &denom1,
-								POLY &numer1,
-								POLY &denom2,
-								POLY &numer2)
+void HilbertTwoAllpassDecompose(const polyRoots& poles,
+								poly& denom1,
+								poly& numer1,
+								poly& denom2,
+								poly& numer2)
 {
 // first cell uses pole[1], pole[4], pole[5], pole[8], pole[9] ...
 // second cell uses pole[2], pole[3], pole[6], pole[7] ...
@@ -643,14 +643,14 @@ void HilbertTwoAllpassDecompose(const POLY_ROOTS & poles,
 	int order = poles.count();
 	int i;
 
-	POLY_ROOTS roots1, roots2;
-	ASSERT ((order & 1) != 0);
+	polyRoots roots1, roots2;
+	ASSERT((order & 1) != 0);
 
 	// perform bilinear transform for the poles
 	// poles[poles.count()-1] should be equal 2!
 	for (i = 0; i < order; i ++)
 	{
-		COMPLEX ctmp = poles[i];
+		Complex ctmp = poles[i];
 		ctmp = Complex(0., -1.) * (2. + ctmp) / (2. - ctmp);
 		if (i & 2)
 		{
@@ -662,10 +662,10 @@ void HilbertTwoAllpassDecompose(const POLY_ROOTS & poles,
 		}
 	}
 
-	denom1 = POLY(roots1);
-	denom2 = POLY(roots2);
+	denom1 = poly(roots1);
+	denom2 = poly(roots2);
 	// make reverse denominators
-	COMPLEX mult1(0.5, 0), mult2(0., 0.5);
+	Complex mult1(0.5, 0), mult2(0., 0.5);
 	if (poles.count() & 2)
 	{
 		mult1 = Complex(0., 0.5);
@@ -695,12 +695,12 @@ void HilbertTwoAllpassDecompose(const POLY_ROOTS & poles,
 	return;
 }
 
-void Allpass2Canonical(POLY& numer,
-						POLY& denom,
-						const POLY& numer1,
-						const POLY& denom1,
-						const POLY& numer2,
-						const POLY& denom2)
+void Allpass2Canonical(poly& numer,
+						poly& denom,
+						const poly& numer1,
+						const poly& denom1,
+						const poly& numer2,
+						const poly& denom2)
 {
 	// numer=first numerator*second denominator+second numerator*first denominator
 	// denom=second denominator*first denominator
@@ -709,28 +709,28 @@ void Allpass2Canonical(POLY& numer,
 }
 
 // Passband Filter two allpass cell decomposition
-void TwoAllpassPassbandDecompose(const POLY_ROOTS & poles,
+void TwoAllpassPassbandDecompose(const polyRoots& poles,
 								double W0,
 								double T,
-								POLY &denom1,
-								POLY &numer1,
-								POLY &denom2,
-								POLY &numer2,
-								POLY_ROOTS & ZPlanePoles)
+								poly& denom1,
+								poly& numer1,
+								poly& denom2,
+								poly& numer2,
+								polyRoots& ZPlanePoles)
 {
 // One cell uses pole[1], pole[4], pole[5], pole[8], pole[9] ...
 // Another cell uses pole[2], pole[3], pole[6], pole[7] ...
 // Order must be odd!
 	int order = poles.count();
 	int i;
-	POLY_ROOTS roots1, roots2, dblpoles;
+	polyRoots roots1, roots2, dblpoles;
 
 	ASSERT ((order & 1) != 0);
 	Complex rot = exp ( Complex(0., -W0 * T));
 	// perform bilinear transform for the poles
 	for (i = 0; i < order; i ++)
 	{
-		COMPLEX ctmp = poles[i];
+		Complex ctmp = poles[i];
 		// rotate the poles and double them
 		ctmp = rot * (2./T + ctmp) / (2./T - ctmp);
 		dblpoles += ctmp;
@@ -750,8 +750,8 @@ void TwoAllpassPassbandDecompose(const POLY_ROOTS & poles,
 			roots2 += dblpoles[i + 1];
 		}
 	}
-	denom1 = POLY(roots1);
-	denom2 = POLY(roots2);
+	denom1 = poly(roots1);
+	denom2 = poly(roots2);
 	ZPlanePoles = dblpoles;
 
 	// make reverse denominators
@@ -921,15 +921,15 @@ void besselGroupDelay(	int order,
 /**********************************/
 
 
-void BilinearLowPass(const POLY_ROOTS & SrcPoles,
-					const POLY_ROOTS & SrcZeros,
+void BilinearLowPass(const polyRoots& SrcPoles,
+					const polyRoots& SrcZeros,
 					double T,
-					POLY_ROOTS & ZPlanePoles,
-					POLY_ROOTS & ZPlaneZeros,
-					COMPLEX rotator)
+					polyRoots& ZPlanePoles,
+					polyRoots& ZPlaneZeros,
+					Complex rotator)
 {
 	int m;
-	POLY_ROOTS zpoles, zzeros;
+	polyRoots zpoles, zzeros;
 	int numPoles = SrcPoles.count();
 	int numZeros = SrcZeros.count();
 
@@ -943,7 +943,7 @@ void BilinearLowPass(const POLY_ROOTS & SrcPoles,
 
 	for( ; m < numPoles; m++)
 	{
-		zzeros += COMPLEX(-1., 0.) * rotator;
+		zzeros += Complex(-1., 0.) * rotator;
 	}
 
 	/*-------------------------------------*/
@@ -956,7 +956,7 @@ void BilinearLowPass(const POLY_ROOTS & SrcPoles,
 
 	for( ; m < numZeros; m++)
 	{
-		zpoles += COMPLEX(-1., 0.) * rotator;
+		zpoles += Complex(-1., 0.) * rotator;
 	}
 
 	ZPlanePoles = zpoles;
@@ -1014,27 +1014,27 @@ void BilinearTransform(const polyRatio & src, polyRatio & dst,
 	dst.denom() *= 1. / dst.denom()[0];
 }
 
-COMPLEX BilinearNormCoeff(const POLY_ROOTS & SrcPoles,
-						const POLY_ROOTS & SrcZeros,
-						double T, COMPLEX NormCoeff)
+Complex BilinearNormCoeff(const polyRoots& SrcPoles,
+						const polyRoots& SrcZeros,
+						double T, Complex NormCoeff)
 {
-	COMPLEX bilinearNorm = SrcZeros.eval(COMPLEX(2. / T))
-							/ SrcPoles.eval(COMPLEX(2. / T));
+	Complex bilinearNorm = SrcZeros.eval(Complex(2. / T))
+							/ SrcPoles.eval(Complex(2. / T));
 	return NormCoeff * bilinearNorm;
 }
 
-void LowpassToBandpass(const POLY_ROOTS & SrcPoles,
-						const POLY_ROOTS & SrcZeros,
+void LowpassToBandpass(const polyRoots& SrcPoles,
+						const polyRoots& SrcZeros,
 						double W0, // center frequency
 						double T,
-						POLY_ROOTS & ZPlanePoles,
-						POLY & Denom)
+						polyRoots& ZPlanePoles,
+						poly& Denom)
 {
 	int m;
-	POLY_ROOTS zpoles, zzeros;
+	polyRoots zpoles, zzeros;
 	int numPoles = SrcPoles.count();
 	int numZeros = SrcZeros.count();
-	COMPLEX rotator(cos(W0 * T), sin(W0 * T));
+	Complex rotator(cos(W0 * T), sin(W0 * T));
 
 	for( m = 0; m < numZeros; m++)
 	{
@@ -1978,9 +1978,9 @@ BOOL LowpassFilter::CreateElliptic(double PassFreq, double PassLoss,
 		PassLoss = sqrt(PassLoss);
 		StopLoss = sqrt(StopLoss);
 	}
-	POLY_ROOTS zeros;
-	POLY_ROOTS poles;
-	COMPLEX NormCoeff;
+	polyRoots zeros;
+	polyRoots poles;
+	Complex NormCoeff;
 
 	EllipticPolesZeros(OmegaPass, OmegaStop, StopLoss,
 						PassLoss, 1, zeros, poles, NormCoeff);
@@ -2041,9 +2041,9 @@ BOOL HighpassFilter::CreateElliptic(double PassFreq, double PassLoss,
 		PassLoss = sqrt(PassLoss);
 		StopLoss = sqrt(StopLoss);
 	}
-	POLY_ROOTS zeros;
-	POLY_ROOTS poles;
-	COMPLEX NormCoeff;
+	polyRoots zeros;
+	polyRoots poles;
+	Complex NormCoeff;
 
 	EllipticPolesZeros(OmegaPass, OmegaStop, StopLoss,
 						PassLoss, 1, zeros, poles, NormCoeff);

@@ -6,16 +6,10 @@
 #include "PolyMath.h"
 #include "PolyRatio.h"
 
-typedef polyRoots POLY_ROOTS;
-typedef polyRatio POLY_RATIO;
-typedef poly POLY;
-typedef Complex COMPLEX;
-typedef complexArray COMPLEX_ARRAY;
-
 #define TWO_PI (M_PI*2.)
 
-int LaguerreMethod(	POLY &coef,
-					Complex *zz,
+int LaguerreMethod(poly& coef,
+					Complex* zz,
 					double epsilon,
 					double epsilon2,
 					int maxIterations);
@@ -27,34 +21,34 @@ void EllipticPolesZeros(double omegaPass,
 						double minStopLossDB,
 						double maxPassLossDB,
 						int order,
-						POLY_ROOTS &zeros,
-						POLY_ROOTS &poles,
-						COMPLEX &rNormCoeff);
+						polyRoots& zeros,
+						polyRoots& poles,
+						Complex& rNormCoeff);
 
-void TwoAllpassDecompose(const POLY_ROOTS &poles,
+void TwoAllpassDecompose(const polyRoots& poles,
 						double T,
-						POLY &denom1,
-						POLY &numer1,
-						POLY &denom2,
-						POLY &numer2,
+						poly& denom1,
+						poly& numer1,
+						poly& denom2,
+						poly& numer2,
 						double angle = 0.);
 
-void TwoAllpassPassbandDecompose(const POLY_ROOTS & poles,
+void TwoAllpassPassbandDecompose(const polyRoots& poles,
 								double W0,
 								double T,
-								POLY &denom1,
-								POLY &numer1,
-								POLY &denom2,
-								POLY &numer2,
-								POLY_ROOTS & ZPlanePoles);
+								poly& denom1,
+								poly& numer1,
+								poly& denom2,
+								poly& numer2,
+								polyRoots& ZPlanePoles);
 
 
-void BilinearLowPass(const POLY_ROOTS & SrcPoles,
-					const POLY_ROOTS & SrcZeros,
+void BilinearLowPass(const polyRoots& SrcPoles,
+					const polyRoots& SrcZeros,
 					double T,
-					POLY_ROOTS & ZPlanePoles,
-					POLY_ROOTS & ZPlaneZeros,
-					COMPLEX rotator = Complex(1., 0.));
+					polyRoots& ZPlanePoles,
+					polyRoots& ZPlaneZeros,
+					Complex rotator = Complex(1., 0.));
 
 void BilinearTransform(const poly & src, poly & dst,
 						double T, Complex rotator, int nAddZeros);
@@ -62,21 +56,21 @@ void BilinearTransform(const poly & src, poly & dst,
 void BilinearTransform(const polyRatio & src, polyRatio & dst,
 						double T, Complex rotator = 1.);
 
-COMPLEX BilinearNormCoeff(const POLY_ROOTS & SrcPoles,
-						const POLY_ROOTS & SrcZeros,
-						double T, COMPLEX NormCoeff);
+Complex BilinearNormCoeff(const polyRoots& SrcPoles,
+						const polyRoots& SrcZeros,
+						double T, Complex NormCoeff);
 
 
 
-void LowpassToBandpass(const POLY_ROOTS & SrcPoles,
-						const POLY_ROOTS & SrcZeros,
+void LowpassToBandpass(const polyRoots& SrcPoles,
+						const polyRoots& SrcZeros,
 						double W0, // center frequency
 						double T,
-						POLY_ROOTS & ZPlanePoles,
-						POLY & Denom);
+						polyRoots& ZPlanePoles,
+						poly& Denom);
 
-void EllipticPassbandPolesZeros(POLY_ROOTS &poles,
-								POLY_ROOTS &zeros,
+void EllipticPassbandPolesZeros(polyRoots& poles,
+								polyRoots& zeros,
 								int order,
 								int bilinear,
 								double T,
@@ -88,24 +82,24 @@ void EllipticPassbandPolesZeros(POLY_ROOTS &poles,
 								double maxPassLossDB,
 								double minStopLossDB);
 
-void HilbertTwoAllpassDecompose(const POLY_ROOTS &poles,
-								POLY &denom1,
-								POLY &numer1,
-								POLY &denom2,
-								POLY &numer2);
+void HilbertTwoAllpassDecompose(const polyRoots& poles,
+								poly& denom1,
+								poly& numer1,
+								poly& denom2,
+								poly& numer2);
 
 void EllipticHilbertPoles(double omegaPass,
 						double &minStopLossDB,
 						double &maxPassLossDB, // 0 - power-symmetric filter
 						int order,
-						POLY_ROOTS &poles);
+						polyRoots& poles);
 
-void Allpass2Canonical(POLY& numer,
-						POLY& denom,
-						const POLY& numer1,
-						const POLY& denom1,
-						const POLY& numer2,
-						const POLY& denom2);
+void Allpass2Canonical(poly& numer,
+						poly& denom,
+						const poly& numer1,
+						const poly& denom1,
+						const poly& numer2,
+						const poly& denom2);
 
 int EstimateChebyshev2FilterOrder(double w_pass, double passband_attenuation, double w_stop, double stopband_attenuation);
 

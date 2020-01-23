@@ -2,7 +2,6 @@
 
 #include "DigitalFilter.h"
 #include "FilterMath.h"
-//#include "PianoString.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -106,13 +105,13 @@ BOOL CDigitalFilter::CreateEllipticFilter(NewFilterData * pFD)
 BOOL CDigitalFilter::CreateLowpassElliptic(NewFilterData * pFD)
 {
 	dCenterFreq = 0.;
-	REAL OmegaPass = 2 * tan(pFD->dLowFreq/dSamplingRate * M_PI);
-	REAL OmegaStop = 2 * tan(pFD->dHighFreq/dSamplingRate * M_PI);
-	REAL MinStopLossDB = pFD->dStopLoss;
-	REAL MaxPassLossDB = pFD->dPassLoss;
-	POLY_ROOTS zeros;
-	POLY_ROOTS poles;
-	COMPLEX NormCoeff;
+	double OmegaPass = 2 * tan(pFD->dLowFreq / dSamplingRate * M_PI);
+	double OmegaStop = 2 * tan(pFD->dHighFreq / dSamplingRate * M_PI);
+	double MinStopLossDB = pFD->dStopLoss;
+	double MaxPassLossDB = pFD->dPassLoss;
+	polyRoots zeros;
+	polyRoots poles;
+	Complex NormCoeff;
 	if (pFD->bPowerSymm)
 	{
 		pFD->iOrder |= 1;
@@ -120,16 +119,16 @@ BOOL CDigitalFilter::CreateLowpassElliptic(NewFilterData * pFD)
 	EllipticPolesZeros(OmegaPass, OmegaStop, MinStopLossDB,
 						MaxPassLossDB, pFD->iOrder,
 						zeros, poles, NormCoeff);
-	POLY_ROOTS ZPlanePoles, ZPlaneZeros;
+	polyRoots ZPlanePoles, ZPlaneZeros;
 	BilinearLowPass(poles, zeros, 1., ZPlanePoles, ZPlaneZeros);
 	// perform bilinear transform or two allpass
 	// decomposition
 	if (pFD->dPassLoss == 0. || pFD->bPowerSymm)
 	{
-		POLY denom1, denom2, numer1, numer2;
+		poly denom1, denom2, numer1, numer2;
 		TwoAllpassDecompose(poles, 1., denom1, numer1, denom2, numer2);
-		InsertRatio(POLY_RATIO(numer1, denom1));
-		InsertRatio(POLY_RATIO(numer2, denom2));
+		InsertRatio(polyRatio(numer1, denom1));
+		InsertRatio(polyRatio(numer2, denom2));
 		MakeCanonical();
 
 		dwFlags |= FILTER_DECOMPOSABLE;
@@ -137,10 +136,10 @@ BOOL CDigitalFilter::CreateLowpassElliptic(NewFilterData * pFD)
 	else
 	{
 
-		m_prCanonical = POLY_RATIO(
-									POLY(ZPlaneZeros,
-										BilinearNormCoeff(poles, zeros, 1., NormCoeff)),
-									POLY(ZPlanePoles));
+		m_prCanonical = polyRatio(
+								poly(ZPlaneZeros,
+									BilinearNormCoeff(poles, zeros, 1., NormCoeff)),
+								poly(ZPlanePoles));
 
 #if 1
 		CArray<polyRatio *, polyRatio *> * pDecomposed
@@ -196,10 +195,10 @@ BOOL CDigitalFilter::CreateHighpassElliptic(NewFilterData * pFD)
 	int i;
 	for (i = 0; i < m_aRatios.GetSize(); i++)
 	{
-		m_aRatios[i]->ScaleRoots(COMPLEX(-1., 0.));
-		m_aDerivRatios[i]->ScaleRoots(COMPLEX(-1., 0.));
+		m_aRatios[i]->ScaleRoots(Complex(-1., 0.));
+		m_aDerivRatios[i]->ScaleRoots(Complex(-1., 0.));
 	}
-	m_prCanonical.ScaleRoots(COMPLEX(-1., 0.));
+	m_prCanonical.ScaleRoots(Complex(-1., 0.));
 	// reflect poles and zeros
 	m_Zeros.MakeUnique();
 	m_Poles.MakeUnique();
@@ -218,17 +217,17 @@ BOOL CDigitalFilter::CreateHighpassElliptic(NewFilterData * pFD)
 BOOL CDigitalFilter::CreateHilbertElliptic(NewFilterData * pFD)
 {
 	dCenterFreq = dSamplingRate * 0.25;
-	REAL OmegaPass = 2 * tan((0.25 - pFD->dHighFreq/dSamplingRate) * M_PI);
-	REAL MinStopLossDB = pFD->dStopLoss;
-	REAL MaxPassLossDB;
-	POLY_ROOTS poles;
-	//    REAL NormCoeff;
+	double OmegaPass = 2 * tan((0.25 - pFD->dHighFreq / dSamplingRate) * M_PI);
+	double MinStopLossDB = pFD->dStopLoss;
+	double MaxPassLossDB;
+	polyRoots poles;
+	//    double NormCoeff;
 	EllipticHilbertPoles(OmegaPass, MinStopLossDB,
 						MaxPassLossDB, pFD->iOrder, poles);
-	POLY denom1, numer1, denom2, numer2;
+	poly denom1, numer1, denom2, numer2;
 	HilbertTwoAllpassDecompose(poles, denom1, numer1, denom2, numer2);
-	InsertRatio(POLY_RATIO(numer1, denom1));
-	InsertRatio(POLY_RATIO(numer2, denom2));
+	InsertRatio(polyRatio(numer1, denom1));
+	InsertRatio(polyRatio(numer2, denom2));
 	m_Poles = poles;
 	dwFlags |= FILTER_CREATED | FILTER_IIR | FILTER_POLES_KNOWN
 				| FILTER_COMPLEX | FILTER_DECOMPOSABLE;
@@ -242,17 +241,17 @@ BOOL CDigitalFilter::CreateBandpassElliptic(NewFilterData * pFD)
 	{
 		dCenterFreq = pFD->dCenterFreq;
 		double dAngle = pFD->dCenterFreq / pFD->dSamplingRate * 2 * M_PI;
-		COMPLEX rotator(cos(dAngle), sin(dAngle));
+		Complex rotator(cos(dAngle), sin(dAngle));
 
 
-		REAL OmegaPass = 2 * tan(0.5 * pFD->dLowFreq/dSamplingRate * M_PI);
-		REAL OmegaStop = 2 * tan(0.5 * pFD->dHighFreq/dSamplingRate * M_PI);
-		REAL MinStopLossDB = pFD->dStopLoss;
-		REAL MaxPassLossDB = pFD->dPassLoss;
+		double OmegaPass = 2 * tan(0.5 * pFD->dLowFreq / dSamplingRate * M_PI);
+		double OmegaStop = 2 * tan(0.5 * pFD->dHighFreq / dSamplingRate * M_PI);
+		double MinStopLossDB = pFD->dStopLoss;
+		double MaxPassLossDB = pFD->dPassLoss;
 
-		POLY_ROOTS zeros;
-		POLY_ROOTS poles;
-		COMPLEX NormCoeff;
+		polyRoots zeros;
+		polyRoots poles;
+		Complex NormCoeff;
 		if (pFD->bPowerSymm)
 		{
 			pFD->iOrder |= 1;
@@ -272,22 +271,22 @@ BOOL CDigitalFilter::CreateBandpassElliptic(NewFilterData * pFD)
 		if (pFD->dPassLoss == 0. || pFD->bPowerSymm)
 		{
 			// create power-symmetric filter from two allpass cells
-			POLY denom1, denom2, numer1, numer2;
+			poly denom1, denom2, numer1, numer2;
 			TwoAllpassDecompose(poles, 1.,
 								denom1, numer1, denom2, numer2, dAngle);
-			InsertRatio(POLY_RATIO(numer1, denom1));
-			InsertRatio(POLY_RATIO(numer2, denom2));
+			InsertRatio(polyRatio(numer1, denom1));
+			InsertRatio(polyRatio(numer2, denom2));
 			dwFlags |= FILTER_CREATED | FILTER_IIR | FILTER_POLES_KNOWN
 						| FILTER_COMPLEX | FILTER_DECOMPOSABLE;
 			MakeCanonical();
-			m_prCanonical.denom() = POLY(m_Poles);
+			m_prCanonical.denom() = poly(m_Poles);
 		}
 		else
 		{
-			m_prCanonical = POLY_RATIO(
-										POLY(m_Zeros,
-											BilinearNormCoeff(poles, zeros, 1., NormCoeff)),
-										POLY(m_Poles));
+			m_prCanonical = polyRatio(
+									poly(m_Zeros,
+										BilinearNormCoeff(poles, zeros, 1., NormCoeff)),
+									poly(m_Poles));
 
 #if 1
 			CArray<polyRatio *, polyRatio *> * pDecomposed
@@ -358,13 +357,13 @@ BOOL CDigitalFilter::CreateBandpassElliptic(NewFilterData * pFD)
 	{
 		// create bandpass filter with _real_ coefficients
 		dCenterFreq = pFD->dCenterFreq;
-		REAL OmegaPass = 2 * tan(0.5 * pFD->dLowFreq/dSamplingRate * M_PI);
-		REAL OmegaStop = 2 * tan(0.5 * pFD->dHighFreq/dSamplingRate * M_PI);
-		REAL MinStopLossDB = pFD->dStopLoss + 6.;
-		REAL MaxPassLossDB = pFD->dPassLoss;
-		POLY_ROOTS zeros;
-		POLY_ROOTS poles;
-		COMPLEX NormCoeff;
+		double OmegaPass = 2 * tan(0.5 * pFD->dLowFreq / dSamplingRate * M_PI);
+		double OmegaStop = 2 * tan(0.5 * pFD->dHighFreq / dSamplingRate * M_PI);
+		double MinStopLossDB = pFD->dStopLoss + 6.;
+		double MaxPassLossDB = pFD->dPassLoss;
+		polyRoots zeros;
+		polyRoots poles;
+		Complex NormCoeff;
 		if (pFD->bPowerSymm)
 		{
 			pFD->iOrder |= 1;
@@ -374,22 +373,22 @@ BOOL CDigitalFilter::CreateBandpassElliptic(NewFilterData * pFD)
 							zeros, poles, NormCoeff);
 		// perform bilinear transform or two allpass
 		// decomposition
-		POLY_ROOTS ZPlanePoles, ZPlaneZeros;
+		polyRoots ZPlanePoles, ZPlaneZeros;
 		NormCoeff = BilinearNormCoeff(poles, zeros, 1., NormCoeff);
 		if (pFD->dPassLoss == 0. || pFD->bPowerSymm)
 		{
-			POLY denom1, denom2, numer1, numer2;
+			poly denom1, denom2, numer1, numer2;
 			TwoAllpassPassbandDecompose(poles,
 										pFD->dCenterFreq / pFD->dSamplingRate * 2 * M_PI,
 										1., denom1, numer1, denom2, numer2, ZPlanePoles);
 
-			InsertRatio(POLY_RATIO(numer1, denom1));
-			InsertRatio(POLY_RATIO(numer2, denom2));
+			InsertRatio(polyRatio(numer1, denom1));
+			InsertRatio(polyRatio(numer2, denom2));
 			dwFlags |= FILTER_DECOMPOSABLE;
 		}
 		else
 		{
-			POLY numer;
+			poly numer;
 			polyRoots Zpoles1, Zzeros1;
 			double w = pFD->dCenterFreq / pFD->dSamplingRate * 2 * M_PI;
 			Complex rotator(cos(w), sin(w));
@@ -412,8 +411,8 @@ BOOL CDigitalFilter::CreateBandpassElliptic(NewFilterData * pFD)
 				ZPlanePoles += conj(Zpoles1[i]);
 			}
 
-			m_prCanonical = POLY_RATIO(numer * NormCoeff.real(),
-										POLY(ZPlanePoles));
+			m_prCanonical = polyRatio(numer * NormCoeff.real(),
+									poly(ZPlanePoles));
 
 			InsertRatio(m_prCanonical);
 			dwFlags |= FILTER_CANONICAL_KNOWN | FILTER_FROM_POLES;
@@ -463,7 +462,7 @@ BOOL CDigitalFilter::CreateShifter(NewFilterData * pFD)
 	dCenterFreq = 0.;
 	if (pFD->dDelay >= 1. || pFD->dDelay <= 0.)
 		return FALSE;
-	POLY p;
+	poly p;
 	pFD->iOrder |= 1;   // make it odd
 	p.SetOrder(pFD->iOrder);
 	// the responce if sin(n*Pi + dt)/(n*Pi + dt - T0)
@@ -479,8 +478,8 @@ BOOL CDigitalFilter::CreateShifter(NewFilterData * pFD)
 	}
 	// scale for unity responce
 	Complex factor = p(1.);
-	p *= 1./factor;
-	m_prCanonical = POLY_RATIO(p, POLY(0, Complex(1.)));
+	p *= 1. / factor;
+	m_prCanonical = polyRatio(p, poly(0, Complex(1.)));
 	InsertRatio(m_prCanonical);
 	dwFlags |= FILTER_CANONICAL_KNOWN | FILTER_CREATED;
 
@@ -576,7 +575,7 @@ BOOL CDigitalFilter::CreatePartialDelayFilter(NewFilterData * pFD)
 	{
 		p[i].imag(0.);
 	}
-	m_prCanonical = POLY_RATIO(p, POLY(0, Complex(1.)));
+	m_prCanonical = polyRatio(p, poly(0, Complex(1.)));
 	InsertRatio(m_prCanonical);
 	dwFlags |= FILTER_CANONICAL_KNOWN | FILTER_CREATED;
 	//Complex H0 = (*this)(0.);
@@ -762,7 +761,7 @@ BOOL CDigitalFilter::CreateStringReflectorFilter(NewFilterData * pFD,
 		p[i].imag() = 0.;
 	}
 #endif
-	m_prCanonical = POLY_RATIO(p, POLY(0, Complex(1.)));
+	m_prCanonical = polyRatio(p, poly(0, Complex(1.)));
 	InsertRatio(m_prCanonical);
 	dwFlags |= FILTER_CANONICAL_KNOWN | FILTER_CREATED;
 	return TRUE;
@@ -795,10 +794,10 @@ static Complex ipow(const Complex & x, int pow)
 	}
 	return acc;
 }
-BOOL CDigitalFilter::InsertRatio(const POLY_RATIO & pr)
+BOOL CDigitalFilter::InsertRatio(const polyRatio& pr)
 {
-	m_aRatios.Add(new POLY_RATIO(pr));
-	m_aDerivRatios.Add(new POLY_RATIO(pr.numer().deriv(),
+	m_aRatios.Add(new polyRatio(pr));
+	m_aDerivRatios.Add(new polyRatio(pr.numer().deriv(),
 									pr.denom().deriv()));
 
 	if (NULL == m_aRatios[m_aRatios.GetUpperBound()]
@@ -829,11 +828,11 @@ BOOL CDigitalFilter::RemoveRatio(int iIndex)
 	return TRUE;
 }
 
-COMPLEX CDigitalFilter::FreqResponce(double f) const
+Complex CDigitalFilter::FreqResponce(double f) const
 {
-	REAL w = f / dSamplingRate * 2 * M_PI;
-	COMPLEX z(cos(w), sin(w));
-	COMPLEX res = 0.;
+	double w = f / dSamplingRate * 2 * M_PI;
+	Complex z(cos(w), sin(w));
+	Complex res = 0.;
 	if (0 && Flags(FILTER_CANONICAL_KNOWN))
 	{
 		res = m_prCanonical(z)
@@ -875,17 +874,17 @@ COMPLEX CDigitalFilter::FreqResponce(double f) const
 	return res;
 }
 
-REAL CDigitalFilter::GroupDelay(double f) const
+double CDigitalFilter::GroupDelay(double f) const
 {
-	REAL w = f / dSamplingRate * 2 * M_PI;
-	COMPLEX z(cos(w), sin(w));
+	double w = f / dSamplingRate * 2 * M_PI;
+	Complex z(cos(w), sin(w));
 	//      H(z)        d H(z) / d z
-	COMPLEX resp = 0., respderiv = 0.;
-	REAL delay;
+	Complex resp = 0., respderiv = 0.;
+	double delay;
 	for (int i = 0; i < m_aRatios.GetSize(); i++)
 	{
-		COMPLEX Denom = m_aRatios[i]->denom().eval(z);
-		COMPLEX Numer = m_aRatios[i]->numer().eval(z);
+		Complex Denom = m_aRatios[i]->denom().eval(z);
+		Complex Numer = m_aRatios[i]->numer().eval(z);
 		if (Denom != Complex(0., 0.))
 		{
 			resp += Numer / Denom;
@@ -934,11 +933,11 @@ int CDigitalFilter::TrailLength(double dDecay) const
 	return int(- 0.05 * fabs(dDecay) * log(10.) / log(dMaxPole));
 }
 
-POLY_RATIO CDigitalFilter::GetCanonical()
+polyRatio CDigitalFilter::GetCanonical()
 {
 	if (Flags(FILTER_CANONICAL_KNOWN))
 		return m_prCanonical;
-	POLY_RATIO pr;
+	polyRatio pr;
 	for (int i = 0; i < m_aRatios.GetSize(); i++)
 	{
 		pr += *(m_aRatios[i]);
@@ -988,11 +987,11 @@ BOOL CDigitalFilter::MakeZeros()
 	return TRUE;
 }
 
-int CDigitalFilter::TemporalResponce(COMPLEX * dst,
-									const COMPLEX * src,
+int CDigitalFilter::TemporalResponce(Complex* dst,
+									const Complex* src,
 									int iCount)
 {
-	//memcpy(dst, src, iCount * sizeof(COMPLEX));
+	//memcpy(dst, src, iCount * sizeof(Complex));
 	//return 1;
 	MakeCanonical();
 	const int nNumerOrder = m_prCanonical.numer().order();
@@ -1000,8 +999,8 @@ int CDigitalFilter::TemporalResponce(COMPLEX * dst,
 	const int nDenomOrder = m_prCanonical.denom().order();
 	const int nDenomLength = nDenomOrder + 1;
 
-	COMPLEX* pPrevInArray = new COMPLEX[2 * nNumerLength];
-	COMPLEX* pPrevOutArray = new COMPLEX[2 * nDenomLength];
+	Complex* pPrevInArray = new Complex[2 * nNumerLength];
+	Complex* pPrevOutArray = new Complex[2 * nDenomLength];
 	for (int i = 0; i < 2 * nNumerLength; i++)
 		pPrevInArray[i] = 0.;
 	for (int i = 0; i < 2 * nDenomOrder; i++)
@@ -1009,10 +1008,10 @@ int CDigitalFilter::TemporalResponce(COMPLEX * dst,
 	// pPrevInArray and pPrevOutArray are used as
 	// the history for the first few samples
 	//
-	const COMPLEX * pPrevInSampl = pPrevInArray;
-	const COMPLEX * pPrevOutSampl = pPrevInArray;
-	const COMPLEX * pNumer = m_prCanonical.numer().array();
-	const COMPLEX * pDenom = m_prCanonical.denom().array();
+	const Complex* pPrevInSampl = pPrevInArray;
+	const Complex* pPrevOutSampl = pPrevInArray;
+	const Complex* pNumer = m_prCanonical.numer().array();
+	const Complex* pDenom = m_prCanonical.denom().array();
 
 	// if the filter was computed from exact poles and zeros,
 	// use cascade scheme. Although it may be slightly
@@ -1023,7 +1022,7 @@ int CDigitalFilter::TemporalResponce(COMPLEX * dst,
 	int nConjPoles = 0;
 	int nSingleZeros = 0;
 	int nConjZeros = 0;
-	COMPLEX cNormCoeff(1., 0.);
+	Complex cNormCoeff(1., 0.);
 
 	if (Flags(FILTER_FROM_POLES))
 	{
@@ -1103,8 +1102,8 @@ int CDigitalFilter::TemporalResponce(COMPLEX * dst,
 			}
 		}
 
-		COMPLEX tmp(0.);
-		COMPLEX tmp1;
+		Complex tmp(0.);
+		Complex tmp1;
 
 		if (Flags(FILTER_COMPLEX))
 		{
