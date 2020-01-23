@@ -1,15 +1,13 @@
 // Signal.h
 #pragma once
 
+#include <vector>
 #include "DigitalFilter.h"
 
 #include "mmsystem.h"
 
 #include "DigitalSignalArray.h"
 
-#ifndef __AFXTEMPL_H__
-#include <afxtempl.h>
-#endif
 
 struct CSignal
 {
@@ -219,8 +217,7 @@ private:
 	LONGLONG nTotalSize;
 	int nWaveSamples;
 	int nCurrChannel;
-	CArray<CSignalDecimator *, CSignalDecimator *>
-		aDecimators;
+	std::vector<CSignalDecimator*> Decimators;
 	CSignalArray<float> OutSignal;
 	DWORD dwFlags;
 	PCMWAVEFORMAT  wfFormat;           // "FMT" chunk

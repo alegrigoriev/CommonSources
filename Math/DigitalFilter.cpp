@@ -29,12 +29,17 @@ CDigitalFilter::~CDigitalFilter()
 
 void CDigitalFilter::Reset()
 {
-	for (int i = 0; i < m_aRatios.GetSize(); i++)
+	for (auto r : m_aRatios)
 	{
-		delete m_aRatios[i];
-		delete m_aDerivRatios[i];
+		delete r;
 	}
-	m_aRatios.RemoveAll();
+	m_aRatios.clear();
+
+	for (auto r : m_aDerivRatios)
+	{
+		delete r;
+	}
+	m_aDerivRatios.clear();
 	dwFlags = 0;
 }
 
@@ -142,32 +147,30 @@ BOOL CDigitalFilter::CreateLowpassElliptic(NewFilterData * pFD)
 								poly(ZPlanePoles));
 
 #if 1
-		CArray<polyRatio *, polyRatio *> * pDecomposed
-			= polyRatio(poly(zeros, NormCoeff), poly(poles)).Decompose(2, & poles);
-		while (pDecomposed->GetSize() > 0)
+		std::vector<polyRatio*>* pDecomposed
+			= polyRatio(poly(zeros, NormCoeff), poly(poles)).Decompose(2, &poles);
+		for (auto ratio : *pDecomposed)
 		{
 #if 0 && defined(_DEBUG)
-			pDecomposed->GetAt(0)->Dump();
+			ratio->Dump();
 #endif
 			polyRatio pr(poly(zeros, NormCoeff), poly(poles));
 			polyRatio prBil;
-			BilinearTransform( *pDecomposed->GetAt(0), prBil, 1.);
+			BilinearTransform(*ratio, prBil, 1.);
 
 			InsertRatio(prBil);
-			delete pDecomposed->GetAt(0);
-			pDecomposed->RemoveAt(0);
+			delete ratio;
 		}
 #else
-		CArray<polyRatio *, polyRatio *> * pDecomposed
-			= m_prCanonical.Decompose(2, & ZPlanePoles);
-		while (pDecomposed->GetSize() > 0)
+		std::vector<polyRatio*>* pDecomposed
+			= m_prCanonical.Decompose(2, &ZPlanePoles);
+		for (auto ratio : *pDecomposed)
 		{
 #if 0 && defined(_DEBUG)
-			pDecomposed->GetAt(0)->Dump();
+			ratio->Dump();
 #endif
-			InsertRatio(*pDecomposed->GetAt(0));
-			delete pDecomposed->GetAt(0);
-			pDecomposed->RemoveAt(0);
+			InsertRatio(*ratio);
+			delete ratio;
 		}
 #endif
 		delete pDecomposed;
@@ -192,21 +195,23 @@ BOOL CDigitalFilter::CreateHighpassElliptic(NewFilterData * pFD)
 
 	dCenterFreq = dSamplingRate * 0.5;
 	// convert all polynoms to z = -z
-	int i;
-	for (i = 0; i < m_aRatios.GetSize(); i++)
+	for (auto ratio : m_aRatios)
 	{
-		m_aRatios[i]->ScaleRoots(Complex(-1., 0.));
-		m_aDerivRatios[i]->ScaleRoots(Complex(-1., 0.));
+		ratio->ScaleRoots(Complex(-1., 0.));
+	}
+	for (auto ratio : m_aDerivRatios)
+	{
+		ratio->ScaleRoots(Complex(-1., 0.));
 	}
 	m_prCanonical.ScaleRoots(Complex(-1., 0.));
 	// reflect poles and zeros
 	m_Zeros.MakeUnique();
 	m_Poles.MakeUnique();
-	for (i = 0; i < m_Zeros.count(); i++)
+	for (int i = 0; i < m_Zeros.count(); i++)
 	{
 		m_Zeros[i] = - m_Zeros[i];
 	}
-	for (i = 0; i < m_Poles.count(); i++)
+	for (int i = 0; i < m_Poles.count(); i++)
 	{
 		m_Poles[i] = - m_Poles[i];
 	}
@@ -221,7 +226,6 @@ BOOL CDigitalFilter::CreateHilbertElliptic(NewFilterData * pFD)
 	double MinStopLossDB = pFD->dStopLoss;
 	double MaxPassLossDB;
 	polyRoots poles;
-	//    double NormCoeff;
 	EllipticHilbertPoles(OmegaPass, MinStopLossDB,
 						MaxPassLossDB, pFD->iOrder, poles);
 	poly denom1, numer1, denom2, numer2;
@@ -289,17 +293,17 @@ BOOL CDigitalFilter::CreateBandpassElliptic(NewFilterData * pFD)
 									poly(m_Poles));
 
 #if 1
-			CArray<polyRatio *, polyRatio *> * pDecomposed
-				= polyRatio(poly(zeros, NormCoeff), poly(poles)).Decompose(2, & poles);
+			std::vector<polyRatio*>* pDecomposed
+				= polyRatio(poly(zeros, NormCoeff), poly(poles)).Decompose(2, &poles);
 			polyRatio prRem; // constant term
-			while (pDecomposed->GetSize() > 0)
+			for (auto ratio : *pDecomposed)
 			{
 #if 0 && defined(_DEBUG)
-				pDecomposed->GetAt(0)->Dump();
+				ratio->Dump();
 #endif
 				polyRatio pr(poly(zeros, NormCoeff), poly(poles));
 				polyRatio prBil;
-				BilinearTransform( *pDecomposed->GetAt(0), prBil, 1., rotator);
+				BilinearTransform(*ratio, prBil, 1., rotator);
 
 				// reduce the ratio
 				if (0 && prBil.numer().order() > 0)
@@ -310,19 +314,18 @@ BOOL CDigitalFilter::CreateBandpassElliptic(NewFilterData * pFD)
 					prRem += pr1;
 				}
 				InsertRatio(prBil);
-				delete pDecomposed->GetAt(0);
-				pDecomposed->RemoveAt(0);
+				delete ratio;
 			}
 
 			if (prRem.numer()[0] != 0.)
 			{
-				if (m_aRatios[0]->denom().order() <= 1)
+				if (m_aRatios.front()->denom().order() <= 1)
 				{
-					*(m_aRatios[0]) += prRem;
+					*m_aRatios.front() += prRem;
 				}
-				else if (m_aRatios.GetSize() != 0)
+				else if (m_aRatios.size() != 0)
 				{
-					*(m_aRatios[m_aRatios.GetUpperBound()]) += prRem;
+					*m_aRatios.back() += prRem;
 				}
 				else
 				{
@@ -330,16 +333,15 @@ BOOL CDigitalFilter::CreateBandpassElliptic(NewFilterData * pFD)
 				}
 			}
 #else
-			CArray<polyRatio *, polyRatio *> * pDecomposed
-				= m_prCanonical.Decompose(2, & m_Poles);
-			while (pDecomposed->GetSize() > 0)
+			std::vector<polyRatio*>* pDecomposed
+				= m_prCanonical.Decompose(2, &m_Poles);
+			for (auto ratio : *pDecomposed)
 			{
 #if 0 && defined(_DEBUG)
-				pDecomposed->GetAt(0)->Dump();
+				ratio->Dump();
 #endif
-				InsertRatio( *pDecomposed->GetAt(0));
-				delete pDecomposed->GetAt(0);
-				pDecomposed->RemoveAt(0);
+				InsertRatio(*ratio);
+				delete ratio;
 			}
 #endif
 
@@ -421,7 +423,7 @@ BOOL CDigitalFilter::CreateBandpassElliptic(NewFilterData * pFD)
 		dwFlags |= FILTER_CREATED | FILTER_IIR | FILTER_POLES_KNOWN;
 		dwFlags &= ~FILTER_ZEROS_KNOWN;
 	}
-	//int trail = TrailLength();
+
 	return TRUE;
 }
 
@@ -609,11 +611,11 @@ BOOL CDigitalFilter::CreateStringReflectorFilter(NewFilterData * pFD,
 	// build the responce using DFT
 	int i;
 #if 1
-	CArray<Complex, Complex&> InArray;
-	CArray<Complex, Complex> OutArray;
+	std::vector<Complex> InArray;
+	std::vector<Complex> OutArray;
 	n = (n + 1) & ~1;
-	InArray.SetSize(n);
-	OutArray.SetSize(n);
+	InArray.resize(n);
+	OutArray.resize(n);
 	for (i = 1; i < n / 2; i++)
 	{
 		double CurrFreq = (i * dSamplingRate) / n;
@@ -796,17 +798,16 @@ static Complex ipow(const Complex & x, int pow)
 }
 BOOL CDigitalFilter::InsertRatio(const polyRatio& pr)
 {
-	m_aRatios.Add(new polyRatio(pr));
-	m_aDerivRatios.Add(new polyRatio(pr.numer().deriv(),
-									pr.denom().deriv()));
-
-	if (NULL == m_aRatios[m_aRatios.GetUpperBound()]
-		|| NULL == m_aDerivRatios[m_aDerivRatios.GetUpperBound()])
+	m_aRatios.push_back(new polyRatio(pr));
+	try
 	{
-		delete m_aRatios[m_aRatios.GetUpperBound()];
-		m_aRatios.RemoveAt(m_aRatios.GetUpperBound());
-		delete m_aDerivRatios[m_aDerivRatios.GetUpperBound()];
-		m_aDerivRatios.RemoveAt(m_aDerivRatios.GetUpperBound());
+		m_aDerivRatios.push_back(new polyRatio(pr.numer().deriv(),
+												pr.denom().deriv()));
+	}
+	catch (std::bad_alloc&)
+	{
+		delete *m_aRatios.end();
+		m_aRatios.pop_back();
 		return FALSE;
 	}
 
@@ -818,12 +819,12 @@ BOOL CDigitalFilter::InsertRatio(const polyRatio& pr)
 
 BOOL CDigitalFilter::RemoveRatio(int iIndex)
 {
-	if (iIndex > m_aRatios.GetUpperBound())
+	if (iIndex >= m_aRatios.size())
 		return FALSE;
 	delete m_aRatios[iIndex];
 	delete m_aDerivRatios[iIndex];
-	m_aRatios.RemoveAt(iIndex);
-	m_aDerivRatios.RemoveAt(iIndex);
+	m_aRatios.erase(m_aRatios.begin() + iIndex);
+	m_aDerivRatios.erase(m_aDerivRatios.begin() + iIndex);
 	dwFlags &= ~FILTER_CANONICAL_KNOWN;
 	return TRUE;
 }
@@ -840,13 +841,13 @@ Complex CDigitalFilter::FreqResponce(double f) const
 	}
 	else
 	{
-		if (m_aRatios.GetSize() != 1)
+		if (m_aRatios.size() != 1)
 		{
-			for (int i = 0; i < m_aRatios.GetSize(); i++)
+			for (auto ratio : m_aRatios)
 			{
-				res += m_aRatios[i]->eval(z)
-						* ipow(z, m_aRatios[i]->DenomOrder()
-								- m_aRatios[i]->NumerOrder());
+				res += ratio->eval(z)
+						* ipow(z, ratio->DenomOrder()
+								- ratio->NumerOrder());
 			}
 		}
 		else
@@ -881,28 +882,30 @@ double CDigitalFilter::GroupDelay(double f) const
 	//      H(z)        d H(z) / d z
 	Complex resp = 0., respderiv = 0.;
 	double delay;
-	for (int i = 0; i < m_aRatios.GetSize(); i++)
+	for (unsigned i = 0; i < m_aRatios.size(); i++)
 	{
-		Complex Denom = m_aRatios[i]->denom().eval(z);
-		Complex Numer = m_aRatios[i]->numer().eval(z);
+		const polyRatio* ratio = m_aRatios[i];
+		Complex Denom = ratio->denom().eval(z);
+		Complex Numer = ratio->numer().eval(z);
 		if (Denom != Complex(0., 0.))
 		{
 			resp += Numer / Denom;
 			if (Flags(FILTER_DERIV_KNOWN))
 			{
+				const polyRatio* deriv_ratio = m_aDerivRatios[i];
 				respderiv +=
-					(m_aDerivRatios[i]->numer().eval(z) * Denom
-						- m_aDerivRatios[i]->denom().eval(z) * Numer)
+					(deriv_ratio->numer().eval(z) * Denom
+						- deriv_ratio->denom().eval(z) * Numer)
 					/ (Denom * Denom);
 			}
 			else
 			{
-				respderiv += m_aRatios[i]->deriv().eval(z);
+				respderiv += ratio->deriv().eval(z);
 			}
 		}
 	}
 	if (resp == 0.) return 0.;
-	//Complex tmp = z * respderiv / resp;
+
 	delay = -real(z * respderiv / resp);
 	delay += NumerOrder() - DenomOrder();
 	return delay;
@@ -938,9 +941,9 @@ polyRatio CDigitalFilter::GetCanonical()
 	if (Flags(FILTER_CANONICAL_KNOWN))
 		return m_prCanonical;
 	polyRatio pr;
-	for (int i = 0; i < m_aRatios.GetSize(); i++)
+	for (auto ratio : m_aRatios)
 	{
-		pr += *(m_aRatios[i]);
+		pr += *ratio;
 	}
 	return pr;
 }
@@ -1305,14 +1308,13 @@ int CDigitalFilter::TemporalResponce(
 	// 8. Add denominator result to the total
 
 	// a common buffer for numerator/denominator orders
-	int nNumerCountsArray[128];
-	int nDenomCountsArray[128];
-	const INT_PTR nNumOfCells = m_aRatios.GetSize();
-	VERIFY(nNumOfCells <= 128);
+	unsigned nNumerCountsArray[128];
+	unsigned nDenomCountsArray[128];
+
+	ASSERT(m_aRatios.size() <= 128);
 	// 1. Allocate a common buffer for filter coefficients (Complex, of exact size)
-	int nCoeffArraySize = 0;
-	int i;
-	for(i = 0; i < nNumOfCells; i++)
+	unsigned nCoeffArraySize = 0;
+	for (unsigned i = 0; i < m_aRatios.size(); i++)
 	{
 		nNumerCountsArray[i] = 1 + m_aRatios[i]->numer().order();
 		nCoeffArraySize += nNumerCountsArray[i];
@@ -1323,22 +1325,21 @@ int CDigitalFilter::TemporalResponce(
 	Complex* pCoeffsArray = new Complex[nCoeffArraySize];
 
 	// 2. Fill coeff buffer
-	Complex * pCoeff = pCoeffsArray;
-	for(i = 0; i < nNumOfCells; i++)
+	Complex* pCoeff = pCoeffsArray;
+	for (unsigned i = 0; i < m_aRatios.size(); i++)
 	{
-		int j;
-		for (j = 0; j < nNumerCountsArray[i]; j++)
+		for (unsigned j = 0; j < nNumerCountsArray[i]; j++)
 		{
 			*pCoeff++ = m_aRatios[i]->numer()[j];
 		}
-		for (j = 0; j < nDenomCountsArray[i]; j++)
+		for (unsigned j = 0; j < nDenomCountsArray[i]; j++)
 		{
 			*pCoeff++ = m_aRatios[i]->denom()[j];
 		}
 	}
 
 	// 3. Allocate a common zero-initialized buffer for filter history (3*filter coeff size >= 128)
-	int nHistorySize = nCoeffArraySize * 3;
+	unsigned nHistorySize = nCoeffArraySize * 3;
 	if (nHistorySize < 128) nHistorySize = 128;
 
 	// kludge to avoid unaligned allocation
@@ -1346,7 +1347,7 @@ int CDigitalFilter::TemporalResponce(
 
 	if (pHistoryArray != NULL)
 	{
-		for (i = 0; i < nHistorySize; i++)
+		for (unsigned i = 0; i < nHistorySize; i++)
 		{
 			pHistoryArray[i] = 0.;
 		}
@@ -1363,12 +1364,11 @@ int CDigitalFilter::TemporalResponce(
 			Complex OutSample = 0.;
 			pCoeff = pCoeffsArray;
 			// 5. Loop on filter cells.
-			for (int nCell = 0; nCell < nNumOfCells; nCell++)
+			for (unsigned nCell = 0; nCell < m_aRatios.size(); nCell++)
 			{
 				//      Put input signal to numerator history array.
 				pHistoryPtr[0] = InSample;
 				Complex tmp = 0.;
-				int j;
 				// 6. loop on numerator taps.
 				if(2 == nNumerCountsArray[nCell])
 				{
@@ -1387,7 +1387,7 @@ int CDigitalFilter::TemporalResponce(
 				}
 				else
 				{
-					for (j = 0; j < nNumerCountsArray[nCell]; j++)
+					for (unsigned j = 0; j < nNumerCountsArray[nCell]; j++)
 					{
 						tmp += pCoeff[j] * pHistoryPtr[j];
 					}
@@ -1408,7 +1408,7 @@ int CDigitalFilter::TemporalResponce(
 				}
 				else
 				{
-					for (j = 1; j < nDenomCountsArray[nCell]; j++)
+					for (unsigned j = 1; j < nDenomCountsArray[nCell]; j++)
 					{
 						tmp -= pCoeff[j] * pHistoryPtr[j];
 					}
@@ -1444,7 +1444,7 @@ int CDigitalFilter::TemporalResponce(
 			double OutSample = 0.;
 			pCoeff = pCoeffsArray;
 			// 5. Loop on filter cells.
-			for (int nCell = 0; nCell < nNumOfCells; nCell++)
+			for (unsigned nCell = 0; nCell < m_aRatios.size(); nCell++)
 			{
 				//      Put input signal to numerator history array.
 				pHistoryPtr[0] = InSample;
@@ -1467,7 +1467,7 @@ int CDigitalFilter::TemporalResponce(
 				}
 				else
 				{
-					for (int j = 0; j < nNumerCountsArray[nCell]; j++)
+					for (unsigned j = 0; j < nNumerCountsArray[nCell]; j++)
 					{
 						tmp += pCoeff[j].real() * pHistoryPtr[j].real();
 					}
@@ -1488,7 +1488,7 @@ int CDigitalFilter::TemporalResponce(
 				}
 				else
 				{
-					for (int j = 1; j < nDenomCountsArray[nCell]; j++)
+					for (unsigned j = 1; j < nDenomCountsArray[nCell]; j++)
 					{
 						tmp -= pCoeff[j].real() * pHistoryPtr[j].real();
 					}

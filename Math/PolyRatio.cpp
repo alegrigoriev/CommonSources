@@ -381,8 +381,8 @@ void polyRatio::Dump(CDumpContext & dc)
 // of order nCellsOrder. Denominator roots may be given
 // in *pDenomRoots. If pDenomRoots == NULL,
 // roots are calculated
-CArray<polyRatio *, polyRatio *>
-	*polyRatio::Decompose(int nCellsOrder, polyRoots * pDenomRoots,
+std::vector<polyRatio*>*
+	polyRatio::Decompose(int nCellsOrder, polyRoots * pDenomRoots,
 						int nFirstRatioOrder)
 {
 	polyRoots pr;
@@ -403,15 +403,14 @@ CArray<polyRatio *, polyRatio *>
 		pr = denom().roots();
 	}
 
-	CArray<polyRatio *, polyRatio *> * pprArray
-		= new CArray<polyRatio *, polyRatio *>;
+	std::vector<polyRatio*>* pprArray = new std::vector<polyRatio*>;
 
 	// reduce the ratio
 	if (numer().order() >= denom().order())
 	{
 		poly common;
-		PolyDiv( & common, NULL, numer(), denom());
-		pprArray->Add(new polyRatio(common));
+		PolyDiv(&common, NULL, numer(), denom());
+		pprArray->push_back(new polyRatio(common));
 #if 0 && defined( _DEBUG)
 		common.Dump();
 		(*pprArray)[0]->Dump();
@@ -455,7 +454,7 @@ CArray<polyRatio *, polyRatio *>
 									/ (OtherRoots.eval(CellPoles[j]))),
 							SingleRoot);
 		}
-		pprArray->Add(new polyRatio(cell));
+		pprArray->push_back(new polyRatio(cell));
 	}
 	return pprArray;
 }

@@ -3,13 +3,14 @@
 
 #include "PolyMath.h"
 
-#include <afxtempl.h>
+#include <vector>
+#include <iostream>
 
 class polyRatio
 {
 public:
-	CArray<polyRatio *, polyRatio *> *
-		Decompose(int nCellsOrder, polyRoots * DenomRoots,
+	std::vector<polyRatio*>*
+		Decompose(int nCellsOrder, polyRoots* DenomRoots,
 				int nFirstRatioOrder = 0);
 	polyRatio(const polyRatio&);
 	polyRatio(const poly& numer,const poly& denom = poly((int)0, Complex(1.)));

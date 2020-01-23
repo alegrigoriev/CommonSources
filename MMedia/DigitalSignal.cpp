@@ -370,11 +370,11 @@ void CSignalWave::Close()
 		m_File.Close();
 	}
 	// deallocate decimators
-	for (int i = 0; i <= aDecimators.GetUpperBound(); i++)
+	for (auto d : Decimators)
 	{
-		delete aDecimators[i];
+		delete d;
 	}
-	aDecimators.RemoveAll();
+	Decimators.clear();
 
 	dwFlags = 0;
 	pDataAddress = NULL;
@@ -548,8 +548,7 @@ BOOL CSignalWave::Open(LPCTSTR szFilename)
 	return TRUE;
 }
 
-CFilterband * CSignalWave::CreateFilterband
-	(double dLowFreq, double dHighFreq)
+CFilterband* CSignalWave::CreateFilterband(double dLowFreq, double dHighFreq)
 {
 	// Create the filterband object
 	CFilterband * pFilterband = new CFilterband;
@@ -564,26 +563,8 @@ CFilterband * CSignalWave::CreateFilterband
 	// find appropriate decimated signal source
 
 	CSignal* pSignal = this;
-#if 0
-	if ((dHighFreq - dLowFreq) * 10. < SamplingRate() * 0.5)
+	for (auto pDecimator : Decimators)
 	{
-		for (int subband = 0; subband < aDecimators.GetUpperBound(); subband++)
-		{
-			CSignalDecimator * pDecimator = aDecimators[subband];
-			if ((dHighFreq - dLowFreq) * 10. >= pDecimator->dBandwidth
-				|| dHighFreq > aDecimators[subband + 1]->dBandwidth)
-			{
-				break;
-			}
-		}
-
-		pSignal = aDecimators[subband];
-	}
-
-#else
-	for (int subband = 0; subband < aDecimators.GetUpperBound(); subband++)
-	{
-		CSignalDecimator* pDecimator = aDecimators[subband];
 		if (dHighFreq < pDecimator->dBandwidth)
 		{
 			pSignal = pDecimator;
@@ -591,7 +572,6 @@ CFilterband * CSignalWave::CreateFilterband
 		}
 	}
 
-#endif
 	// Create band filter
 	pFilterband->dSamplingRate = pSignal->SamplingRate();
 	pFilterband->SetSourceSignal(pSignal);
@@ -808,11 +788,8 @@ void CSignalWave::CreateDecimators(int nCount)
 		pDecimator->SetSourceSignal(pSignal);
 		pDecimator->Init(2, 0.8, 1., 80.);
 		pSignal = pDecimator;
-#if 0
-		aDecimators.Add(pDecimator);
-#else
-		aDecimators.InsertAt(0, pDecimator);
-#endif
+
+		Decimators.insert(Decimators.begin(), pDecimator);
 	}
 }
 

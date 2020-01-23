@@ -3,7 +3,7 @@
 
 #include "PolyRatio.h"
 
-#include <afxtempl.h>
+#include <vector>
 #define _USE_MATH_DEFINES   // for M_PI definition
 #include <math.h>
 #include <float.h>
@@ -181,7 +181,7 @@ public:
 	polyRoots& Zeros() { return m_Zeros; }
 	const polyRoots& Poles() const { return m_Poles; }
 	polyRoots& Poles() { return m_Poles; }
-	int RatioCount() const { return (int)m_aRatios.GetSize(); }
+	size_t RatioCount() const { return m_aRatios.size(); }
 	const polyRatio& PolyRatio(int n) const
 	{
 		return *(m_aRatios[n]);
@@ -235,9 +235,9 @@ protected:
 	polyRoots m_Zeros;
 	polyRoots m_Poles;
 	int iPrecision;
-	CArray<polyRatio*, polyRatio*> m_aRatios;
+	std::vector<polyRatio*> m_aRatios;
 	polyRatio m_prCanonical;
-	CArray<polyRatio*, polyRatio*> m_aDerivRatios;
+	std::vector<polyRatio*> m_aDerivRatios;
 
 	DWORD dwFlags;
 

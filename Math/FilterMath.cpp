@@ -1985,47 +1985,49 @@ BOOL LowpassFilter::CreateElliptic(double PassFreq, double PassLoss,
 	EllipticPolesZeros(OmegaPass, OmegaStop, StopLoss,
 						PassLoss, 1, zeros, poles, NormCoeff);
 
-	CArray<polyRatio *, polyRatio *> * pDecomposed
+	std::vector<polyRatio*>* pDecomposed
 		= polyRatio(poly(zeros, NormCoeff), poly(poles)).Decompose(2, &poles);
 
-	m_Order = (int)pDecomposed->GetSize();
+	m_Order = (int)pDecomposed->size();
 
 	//int chebyshev_order = EstimateChebyshev2FilterOrder(OmegaPass, PassLoss, OmegaStop, StopLoss);
 	TRACE("Pass loss=%f, stop loss=%f, EllipticOrder=%d\n", PassLoss, StopLoss, m_Order);
 
-	for (int i = 0; i < pDecomposed->GetSize(); i++)
+	double * coeffs = &m_Coeffs[0][0];
+	for (auto ratio : *pDecomposed)
 	{
 #if 0 && defined(_DEBUG)
-		pDecomposed->GetAt(i)->Dump();
+		ratio->Dump();
 #endif
 		polyRatio prBil;
-		BilinearTransform(*pDecomposed->GetAt(i), prBil, 1.);
+		BilinearTransform(*ratio, prBil, 1.);
 		ASSERT(prBil.numer().order() == 2 || prBil.numer().order() == 1);
 		ASSERT(prBil.denom().order() == 2 || prBil.denom().order() == 1);
 
-		m_Coeffs[i][0] = prBil.numer()[0].real();
-		m_Coeffs[i][1] = prBil.numer()[1].real();
+		coeffs[0] = prBil.numer()[0].real();
+		coeffs[1] = prBil.numer()[1].real();
 		if (prBil.numer().order() > 1)
 		{
-			m_Coeffs[i][2] = prBil.numer()[2].real();
+			coeffs[2] = prBil.numer()[2].real();
 		}
 		else
 		{
-			m_Coeffs[i][2] = 0.;
+			coeffs[2] = 0.;
 		}
-		m_Coeffs[i][3] = prBil.denom()[0].real();
-		m_Coeffs[i][4] = prBil.denom()[1].real();
+		coeffs[3] = prBil.denom()[0].real();
+		coeffs[4] = prBil.denom()[1].real();
 
 		if (prBil.numer().order() > 1)
 		{
-			m_Coeffs[i][5] = prBil.denom()[2].real();
+			coeffs[5] = prBil.denom()[2].real();
 		}
 		else
 		{
-			m_Coeffs[i][5] = 0.;
+			coeffs[5] = 0.;
 		}
 
-		delete pDecomposed->GetAt(i);
+		delete ratio;
+		coeffs += 6;
 	}
 	delete pDecomposed;
 	return TRUE;
@@ -2048,45 +2050,47 @@ BOOL HighpassFilter::CreateElliptic(double PassFreq, double PassLoss,
 	EllipticPolesZeros(OmegaPass, OmegaStop, StopLoss,
 						PassLoss, 1, zeros, poles, NormCoeff);
 
-	CArray<polyRatio *, polyRatio *> * pDecomposed
+	std::vector<polyRatio*>* pDecomposed
 		= polyRatio(poly(zeros, NormCoeff), poly(poles)).Decompose(2, &poles);
 
-	m_Order = (int)pDecomposed->GetSize();
+	m_Order = (int)pDecomposed->size();
 
-	for (int i = 0; i < pDecomposed->GetSize(); i++)
+	double* coeffs = &m_Coeffs[0][0];
+	for (auto ratio : *pDecomposed)
 	{
 #if 0 && defined(_DEBUG)
-		pDecomposed->GetAt(i)->Dump();
+		ratio->Dump();
 #endif
 		polyRatio prBil;
-		BilinearTransform(*pDecomposed->GetAt(i), prBil, 1.);
+		BilinearTransform(*ratio, prBil, 1.);
 		ASSERT(prBil.numer().order() == 2 || prBil.numer().order() == 1);
 		ASSERT(prBil.denom().order() == 2 || prBil.denom().order() == 1);
 
-		m_Coeffs[i][0] = prBil.numer()[0].real();
-		m_Coeffs[i][1] = -prBil.numer()[1].real();
+		coeffs[0] = prBil.numer()[0].real();
+		coeffs[1] = -prBil.numer()[1].real();
 
 		if (prBil.numer().order() > 1)
 		{
-			m_Coeffs[i][2] = prBil.numer()[2].real();
+			coeffs[2] = prBil.numer()[2].real();
 		}
 		else
 		{
-			m_Coeffs[i][2] = 0.;
+			coeffs[2] = 0.;
 		}
-		m_Coeffs[i][3] = prBil.denom()[0].real();
-		m_Coeffs[i][4] = -prBil.denom()[1].real();
+		coeffs[3] = prBil.denom()[0].real();
+		coeffs[4] = -prBil.denom()[1].real();
 
 		if (prBil.numer().order() > 1)
 		{
-			m_Coeffs[i][5] = prBil.denom()[2].real();
+			coeffs[5] = prBil.denom()[2].real();
 		}
 		else
 		{
-			m_Coeffs[i][5] = 0.;
+			coeffs[5] = 0.;
 		}
 
-		delete pDecomposed->GetAt(i);
+		delete ratio;
+		coeffs += 6;
 	}
 	delete pDecomposed;
 	return TRUE;
