@@ -386,7 +386,7 @@ struct WAVEREGIONINFO
 	DWORD Flags;
 	DWORD MarkerCueID;
 	SAMPLE_INDEX Sample;
-	DWORD Length;
+	NUMBER_OF_SAMPLES Length;
 	LPCTSTR Label;
 	LPCTSTR Comment;
 	LPCTSTR Ltxt;

@@ -391,7 +391,7 @@ BOOL CMmioFile::CreateChunk(MMCKINFO & ck, UINT wFlags)
 		Seek(1, FILE_CURRENT);
 	}
 
-	DWORD ckhdr[2] = { ck.ckid, ck.cksize};
+	DWORD ckhdr[2] = {(DWORD)ck.ckid, (DWORD)ck.cksize};
 	if (wFlags & MMIO_CREATERIFF)
 	{
 		ck.ckid = FOURCC_RIFF;
@@ -481,7 +481,7 @@ BOOL CWaveFile::LoadWaveformat()
 	*pFmtCk = ck;
 
 	// allocate structure
-	LPWAVEFORMATEX pWf = AllocateWaveformat(ck.cksize);
+	LPWAVEFORMATEX pWf = AllocateWaveformat((unsigned)ck.cksize);
 
 	if (NULL != pWf)
 	{
@@ -573,7 +573,7 @@ BOOL CWaveFile::LoadMetadata()
 				return FALSE;
 			}
 			if (CF_TEXT == id
-				|| ! ReadChunkString(chunk.cksize - sizeof id,
+				|| !ReadChunkString((unsigned)(chunk.cksize - sizeof id),
 									pInstData->m_DisplayTitle))
 			{
 				return FALSE;
@@ -1527,7 +1527,7 @@ BOOL CWaveFile::InstanceDataWav::GetWaveMarker(WAVEREGIONINFO * pInfo) const
 				WaveRegionMarker const * pMarker = GetRegionMarker(pInfo->MarkerCueID);
 				if (NULL != pMarker)
 				{
-					if (pMarker->SampleLength == pInfo->Length)
+					if (pMarker->SampleLength == (DWORD)pInfo->Length)
 					{
 						// found exact match
 						break;

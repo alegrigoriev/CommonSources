@@ -9,7 +9,10 @@
 #include <Setupapi.h>
 #define _NTSCSI_USER_MODE_
 #include <ntddscsi.h>
+#pragma warning(push)
+#pragma warning(disable : 4324)
 #include <scsi.h>
+#pragma warning(pop)
 #if !WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_DESKTOP)
 #error !WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_DESKTOP)
 #endif
