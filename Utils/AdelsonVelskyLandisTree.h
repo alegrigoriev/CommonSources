@@ -621,10 +621,9 @@ template<typename T, typename K> typename avl_tree_base<T, K>::node * avl_tree_b
 		return left_leaf;
 	}
 	// If current node is right, return its parent.
-	node * parent_node;
 	while (1)
 	{
-		parent_node = leaf->parent;
+		node * parent_node = leaf->parent;
 		if (!leaf->is_left || parent_node->is_terminal)
 		{
 			return parent_node;
@@ -650,10 +649,9 @@ template<typename T, typename K> typename avl_tree_base<T, K>::node * avl_tree_b
 		return right_leaf;
 	}
 	// If current node is left, return its parent.
-	node * parent_node;
 	while (1)
 	{
-		parent_node = leaf->parent;
+		node * parent_node = leaf->parent;
 		if (leaf->is_left || parent_node->is_terminal)
 		{
 			return parent_node;
