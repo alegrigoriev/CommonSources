@@ -51,7 +51,7 @@ protected:
 		UINT flags;
 	};
 
-	void SetResizeableItems(ResizableDlgItem const * pItems, int count)
+	void SetResizeableItems(ResizableDlgItem const* pItems, int count) noexcept
 	{
 		m_pResizeItems = pItems;
 		m_ResizeItemsCount = count;
@@ -60,7 +60,7 @@ protected:
 
 	virtual void OnMetricsChange();
 	// cx, cy - new size, dx, dy - size delta
-	virtual HDWP OnDeferredSize(HDWP hdwp, int /*cx*/, int /*cy*/, int /*dx*/, int /*dy*/)
+	virtual HDWP OnDeferredSize(HDWP hdwp, int /*cx*/, int /*cy*/, int /*dx*/, int /*dy*/) noexcept
 	{
 		return hdwp;
 	}
@@ -162,8 +162,8 @@ void CResizableDialogT<Base>::OnSize(UINT nType, int cx, int cy)
 		return;
 	}
 
-	int dx = cx - m_PrevSize.cx;
-	int dy = cy - m_PrevSize.cy;
+	int const dx = cx - m_PrevSize.cx;
+	int const dy = cy - m_PrevSize.cy;
 	m_PrevSize.cx = cx;
 	m_PrevSize.cy = cy;
 
@@ -268,9 +268,9 @@ void CResizableDialogT<Base>::OnSize(UINT nType, int cx, int cy)
 
 	// invalidate an area which is (after resizing)
 	// occupied by size grip
-	int size = GetSystemMetrics(SM_CXVSCROLL);
-	CRect r(cx - size, cy - size, cx, cy);
-	InvalidateRect( & r, TRUE);
+	int const size = GetSystemMetrics(SM_CXVSCROLL);
+	CRect const r(cx - size, cy - size, cx, cy);
+	InvalidateRect(&r, TRUE);
 }
 
 template<class Base>

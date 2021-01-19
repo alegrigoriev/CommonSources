@@ -52,10 +52,10 @@ class CApplicationProfileItemLong: public CApplicationProfileItem
 protected:
 	virtual void WriteData(BOOL bForceWrite=FALSE);
 	virtual void ReadData();
-	virtual void ResetToDefault();
-	virtual void ResetToInitial();
-	CApplicationProfileItemLong(CApplicationProfile * pProfile,
-								LPCTSTR szSection, LPCTSTR szName, LONG & RefValue,
+	virtual void ResetToDefault() noexcept;
+	virtual void ResetToInitial() noexcept;
+	CApplicationProfileItemLong(CApplicationProfile* pProfile,
+								LPCTSTR szSection, LPCTSTR szName, LONG& RefValue,
 								LONG Default, LONG MinVal, LONG MaxVal);
 
 	friend class CApplicationProfile;
@@ -72,8 +72,8 @@ protected:
 
 	virtual void WriteData(BOOL bForceWrite=FALSE);
 	virtual void ReadData();
-	virtual void ResetToDefault();
-	virtual void ResetToInitial();
+	virtual void ResetToDefault() noexcept;
+	virtual void ResetToInitial() noexcept;
 
 	CApplicationProfileItemInt(CApplicationProfile * pProfile,
 								LPCTSTR szSection, LPCTSTR szName, int & RefValue,
@@ -93,10 +93,10 @@ protected:
 
 	virtual void WriteData(BOOL bForceWrite=FALSE);
 	virtual void ReadData();
-	virtual void ResetToDefault();
-	virtual void ResetToInitial();
-	CApplicationProfileItemUint(CApplicationProfile * pProfile,
-								LPCTSTR szSection, LPCTSTR szName, unsigned int & RefValue,
+	virtual void ResetToDefault() noexcept;
+	virtual void ResetToInitial() noexcept;
+	CApplicationProfileItemUint(CApplicationProfile* pProfile,
+								LPCTSTR szSection, LPCTSTR szName, unsigned int& RefValue,
 								unsigned int Default, unsigned int MinVal, unsigned int MaxVal);
 
 	friend class CApplicationProfile;
@@ -110,10 +110,10 @@ class CApplicationProfileItemShort : public CApplicationProfileItemInt
 protected:
 	virtual void WriteData(BOOL bForceWrite=FALSE);
 	virtual void ReadData();
-	virtual void ResetToDefault();
-	virtual void ResetToInitial();
-	CApplicationProfileItemShort(CApplicationProfile * pProfile,
-								LPCTSTR szSection, LPCTSTR szName, short & RefValue,
+	virtual void ResetToDefault() noexcept;
+	virtual void ResetToInitial() noexcept;
+	CApplicationProfileItemShort(CApplicationProfile* pProfile,
+								LPCTSTR szSection, LPCTSTR szName, short& RefValue,
 								short Default, short MinVal, short MaxVal);
 
 	friend class CApplicationProfile;
@@ -127,10 +127,10 @@ class CApplicationProfileItemUshort : public CApplicationProfileItemUint
 protected:
 	virtual void WriteData(BOOL bForceWrite=FALSE);
 	virtual void ReadData();
-	virtual void ResetToDefault();
-	virtual void ResetToInitial();
-	CApplicationProfileItemUshort(CApplicationProfile * pProfile,
-								LPCTSTR szSection, LPCTSTR szName, unsigned short & RefValue,
+	virtual void ResetToDefault() noexcept;
+	virtual void ResetToInitial() noexcept;
+	CApplicationProfileItemUshort(CApplicationProfile* pProfile,
+								LPCTSTR szSection, LPCTSTR szName, unsigned short& RefValue,
 								unsigned short Default, unsigned short MinVal, unsigned short MaxVal);
 
 	friend class CApplicationProfile;
@@ -145,10 +145,10 @@ class CApplicationProfileItemBool: public CApplicationProfileItemInt
 protected:
 	virtual void WriteData(BOOL bForceWrite=FALSE);
 	virtual void ReadData();
-	virtual void ResetToDefault();
-	virtual void ResetToInitial();
-	CApplicationProfileItemBool(CApplicationProfile * pProfile,
-								LPCTSTR szSection, LPCTSTR szName, bool & RefValue,
+	virtual void ResetToDefault() noexcept;
+	virtual void ResetToInitial() noexcept;
+	CApplicationProfileItemBool(CApplicationProfile* pProfile,
+								LPCTSTR szSection, LPCTSTR szName, bool& RefValue,
 								bool Default = false);
 
 	friend class CApplicationProfile;
@@ -164,10 +164,10 @@ class CApplicationProfileItemUlong: public CApplicationProfileItem
 protected:
 	virtual void WriteData(BOOL bForceWrite=FALSE);
 	virtual void ReadData();
-	virtual void ResetToDefault();
-	virtual void ResetToInitial();
-	CApplicationProfileItemUlong(CApplicationProfile * pProfile,
-								LPCTSTR szSection, LPCTSTR szName, ULONG & RefValue,
+	virtual void ResetToDefault() noexcept;
+	virtual void ResetToInitial() noexcept;
+	CApplicationProfileItemUlong(CApplicationProfile* pProfile,
+								LPCTSTR szSection, LPCTSTR szName, ULONG& RefValue,
 								ULONG Default, ULONG MinVal, ULONG MaxVal);
 
 	friend class CApplicationProfile;
@@ -183,10 +183,10 @@ protected:
 	double m_MaxVal;
 	virtual void WriteData(BOOL bForceWrite=FALSE);
 	virtual void ReadData();
-	virtual void ResetToDefault();
-	virtual void ResetToInitial();
-	CApplicationProfileItemDouble(CApplicationProfile * pProfile,
-								LPCTSTR szSection, LPCTSTR szName, double & RefValue,
+	virtual void ResetToDefault() noexcept;
+	virtual void ResetToInitial() noexcept;
+	CApplicationProfileItemDouble(CApplicationProfile* pProfile,
+								LPCTSTR szSection, LPCTSTR szName, double& RefValue,
 								double Default, double MinVal, double MaxVal);
 
 	friend class CApplicationProfile;
@@ -201,10 +201,10 @@ protected:
 
 	virtual void WriteData(BOOL bForceWrite=FALSE);
 	virtual void ReadData();
-	virtual void ResetToDefault();
-	virtual void ResetToInitial();
-	CApplicationProfileItemFloat(CApplicationProfile * pProfile,
-								LPCTSTR szSection, LPCTSTR szName, float & RefValue,
+	virtual void ResetToDefault() noexcept;
+	virtual void ResetToInitial() noexcept;
+	CApplicationProfileItemFloat(CApplicationProfile* pProfile,
+								LPCTSTR szSection, LPCTSTR szName, float& RefValue,
 								double Default, double MinVal, double MaxVal);
 
 	friend class CApplicationProfile;
@@ -221,8 +221,8 @@ protected:
 	virtual void WriteData(BOOL bForceWrite=FALSE);
 	virtual void ReadData();
 
-	virtual void ResetToDefault();
-	virtual void ResetToInitial();
+	virtual void ResetToDefault() noexcept;
+	virtual void ResetToInitial() noexcept;
 
 	CApplicationProfileItemBinary(
 								CApplicationProfile * pProfile, LPCTSTR szSection, LPCTSTR szName,
@@ -274,12 +274,12 @@ void CApplicationProfileItemBinary::WriteData(BOOL bForceWrite)
 	}
 }
 
-void CApplicationProfileItemBinary::ResetToDefault()
+void CApplicationProfileItemBinary::ResetToDefault() noexcept
 {
 	memcpy(m_Pointer, & m_Default.front(), m_Size);
 }
 
-void CApplicationProfileItemBinary::ResetToInitial()
+void CApplicationProfileItemBinary::ResetToInitial() noexcept
 {
 	memcpy(m_Pointer, & m_InitialData.front(), m_Size);
 }
@@ -348,12 +348,12 @@ void CApplicationProfileItemLong::WriteData(BOOL bForceWrite)
 	}
 }
 
-void CApplicationProfileItemLong::ResetToInitial()
+void CApplicationProfileItemLong::ResetToInitial() noexcept
 {
 	LongRef = InitialData;
 }
 
-void CApplicationProfileItemLong::ResetToDefault()
+void CApplicationProfileItemLong::ResetToDefault() noexcept
 {
 	LongRef = m_Default;
 }
@@ -383,12 +383,12 @@ void CApplicationProfileItemInt::WriteData(BOOL bForceWrite)
 	}
 }
 
-void CApplicationProfileItemInt::ResetToInitial()
+void CApplicationProfileItemInt::ResetToInitial() noexcept
 {
 	Ref = InitialData;
 }
 
-void CApplicationProfileItemInt::ResetToDefault()
+void CApplicationProfileItemInt::ResetToDefault() noexcept
 {
 	Ref = m_Default;
 }
@@ -416,12 +416,12 @@ void CApplicationProfileItemShort::WriteData(BOOL bForceWrite)
 	CApplicationProfileItemInt::WriteData(bForceWrite);
 }
 
-void CApplicationProfileItemShort::ResetToInitial()
+void CApplicationProfileItemShort::ResetToInitial() noexcept
 {
 	ShortRef = short(InitialData);
 }
 
-void CApplicationProfileItemShort::ResetToDefault()
+void CApplicationProfileItemShort::ResetToDefault() noexcept
 {
 	ShortRef = short(m_Default);
 }
@@ -451,12 +451,12 @@ void CApplicationProfileItemUint::WriteData(BOOL bForceWrite)
 	}
 }
 
-void CApplicationProfileItemUint::ResetToInitial()
+void CApplicationProfileItemUint::ResetToInitial() noexcept
 {
 	Ref = InitialData;
 }
 
-void CApplicationProfileItemUint::ResetToDefault()
+void CApplicationProfileItemUint::ResetToDefault() noexcept
 {
 	Ref = m_Default;
 }
@@ -485,12 +485,12 @@ void CApplicationProfileItemUshort::WriteData(BOOL bForceWrite)
 	CApplicationProfileItemUint::WriteData(bForceWrite);
 }
 
-void CApplicationProfileItemUshort::ResetToInitial()
+void CApplicationProfileItemUshort::ResetToInitial() noexcept
 {
 	ShortRef = (unsigned short)(0xFFFF & InitialData);
 }
 
-void CApplicationProfileItemUshort::ResetToDefault()
+void CApplicationProfileItemUshort::ResetToDefault() noexcept
 {
 	ShortRef = (unsigned short)(0xFFFF & m_Default);
 }
@@ -520,12 +520,12 @@ void CApplicationProfileItemBool::WriteData(BOOL bForceWrite)
 	CApplicationProfileItemInt::WriteData(bForceWrite);
 }
 
-void CApplicationProfileItemBool::ResetToInitial()
+void CApplicationProfileItemBool::ResetToInitial() noexcept
 {
 	Ref = InitialData;
 }
 
-void CApplicationProfileItemBool::ResetToDefault()
+void CApplicationProfileItemBool::ResetToDefault() noexcept
 {
 	Ref = m_bDefault;
 }
@@ -555,12 +555,12 @@ void CApplicationProfileItemUlong::WriteData(BOOL bForceWrite)
 	}
 }
 
-void CApplicationProfileItemUlong::ResetToInitial()
+void CApplicationProfileItemUlong::ResetToInitial() noexcept
 {
 	LongRef = InitialData;
 }
 
-void CApplicationProfileItemUlong::ResetToDefault()
+void CApplicationProfileItemUlong::ResetToDefault() noexcept
 {
 	LongRef = m_Default;
 }
@@ -609,12 +609,12 @@ void CApplicationProfileItemDouble::WriteData(BOOL bForceWrite)
 	}
 }
 
-void CApplicationProfileItemDouble::ResetToInitial()
+void CApplicationProfileItemDouble::ResetToInitial() noexcept
 {
 	DoubleRef = InitialData;
 }
 
-void CApplicationProfileItemDouble::ResetToDefault()
+void CApplicationProfileItemDouble::ResetToDefault() noexcept
 {
 	DoubleRef = m_Default;
 }
@@ -644,18 +644,18 @@ void CApplicationProfileItemFloat::WriteData(BOOL bForceWrite)
 	CApplicationProfileItemDouble::WriteData(bForceWrite);
 }
 
-void CApplicationProfileItemFloat::ResetToInitial()
+void CApplicationProfileItemFloat::ResetToInitial() noexcept
 {
 	FloatRef = float(InitialData);
 }
 
-void CApplicationProfileItemFloat::ResetToDefault()
+void CApplicationProfileItemFloat::ResetToDefault() noexcept
 {
 	CApplicationProfileItemDouble::ResetToDefault();
 	FloatRef = float(IntermediateValue);
 }
 
-CApplicationProfile::CApplicationProfile()
+CApplicationProfile::CApplicationProfile() noexcept
 	:hCachedRegistryKey(NULL),
 	hCachedSectionKey(NULL)
 {
@@ -772,7 +772,7 @@ void CApplicationProfile::RemoveFromRegistry(LPCTSTR szSection, LPCTSTR szName)
 	WriteProfileString(szSection, szName, NULL);
 }
 
-BOOL CApplicationProfile::RemoveItem(LPCTSTR szSection, LPCTSTR szName)
+BOOL CApplicationProfile::RemoveItem(LPCTSTR szSection, LPCTSTR szName) noexcept
 {
 	for (CApplicationProfileItem * p = Items.First();
 		Items.NotEnd(p); p = Items.Next(p))
@@ -790,7 +790,7 @@ BOOL CApplicationProfile::RemoveItem(LPCTSTR szSection, LPCTSTR szName)
 	return FALSE;
 }
 
-void CApplicationProfile::RemoveSection(LPCTSTR szSection)
+void CApplicationProfile::RemoveSection(LPCTSTR szSection) noexcept
 {
 	for (CApplicationProfileItem * p = Items.First();
 		Items.NotEnd(p); )
@@ -1026,7 +1026,7 @@ void CApplicationProfile::SetRegistryKey(UINT nIDRegistryKey)
 // returns key for HKEY_CURRENT_USER\"Software"\RegistryKey\ProfileName
 // creating it if it doesn't exist
 // responsibility of the caller to call RegCloseKey() on the returned HKEY
-LPCTSTR CApplicationProfile::GetProfileName() const
+LPCTSTR CApplicationProfile::GetProfileName() const noexcept
 {
 	if ( ! m_pszProfileName.IsEmpty())
 	{
@@ -1098,7 +1098,7 @@ HKEY CApplicationProfile::GetAppRegistryKey()
 // creating it if it doesn't exist.
 // responsibility of the caller to call RegCloseKey() on the returned HKEY
 
-void CApplicationProfile::CloseCachedKeys()
+void CApplicationProfile::CloseCachedKeys() noexcept
 {
 	if (NULL != hCachedRegistryKey)
 	{

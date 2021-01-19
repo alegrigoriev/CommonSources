@@ -472,9 +472,9 @@ public:
 	{
 		erase_node(ii.p);
 	}
-	void reset();   // delete all
+	void reset() noexcept;   // delete all
 
-	void validate() const;  // check the tree for validity
+	void validate() const noexcept;  // check the tree for validity
 
 	iterator begin()
 	{
@@ -541,7 +541,7 @@ public:
 		return _predicate;
 	}
 
-	avl_tree(P const & _pr = P(), A const & a = A())
+	avl_tree(P const& _pr = P(), A const& a = A()) noexcept
 		: _predicate(_pr), allocator(a), hdr(nullptr)
 		, tree_count(0)
 		, tree_height(0)
@@ -1003,7 +1003,7 @@ template<typename T, typename K, typename P, typename A> void avl_tree<T, K, P, 
 	tree_count--;
 }
 
-template<typename T, typename K, typename P, typename A> void avl_tree<T, K, P, A>::reset()
+template<typename T, typename K, typename P, typename A> void avl_tree<T, K, P, A>::reset() noexcept
 {
 	// delete all
 	while (tree_count != 0)
@@ -1037,7 +1037,7 @@ template<typename T, typename K, typename P, typename A> bool avl_tree<T, K, P, 
 			}
 			// remove it from the subtree
 			subtree_height_reduced = remove_node(new_top, &leaf->left);
-			new_top->node_balance = leaf->node_balance + subtree_height_reduced;
+			new_top->node_balance = leaf->node_balance + (int)subtree_height_reduced;
 			// the leaf to remove was left heavy.
 			// If its height was reduced when the new_top subnode was removed, then the node becomes neutral balanced,
 			// and its subtree height gets reduced, as well.
@@ -1055,7 +1055,7 @@ template<typename T, typename K, typename P, typename A> bool avl_tree<T, K, P, 
 			}
 			// remove it from the subtree
 			subtree_height_reduced = remove_node(new_top, &leaf->right);
-			new_top->node_balance = leaf->node_balance - subtree_height_reduced;
+			new_top->node_balance = leaf->node_balance - (int)subtree_height_reduced;
 			// the leaf to remove was right heavy or balanced.
 			// If its height was reduced when the new_top subnode was removed, then the node becomes neutral balanced,
 			// and its subtree height gets reduced, as well.
@@ -1106,9 +1106,9 @@ template<typename T, typename K, typename P, typename A> bool avl_tree<T, K, P, 
 	// if we get here, this subtree reduced in height. Walk up the tree from 'leaf' till *pp_top_node and check if the tree is still balanced
 	for (node * curr_node = leaf; curr_node != *pp_top_node; parent_node = curr_node->parent)
 	{
-		node * A = parent_node;
-		node * C;
-		node * D;
+		node* A = parent_node;
+		node* C = nullptr;
+		node* D = nullptr;
 		if (curr_node->is_left)
 		{
 			if (++parent_node->node_balance == 1)
@@ -1458,7 +1458,7 @@ template<typename T, typename K, typename P, typename A> void avl_tree<T, K, P, 
 	*number_nodes = 1 + left_nodes + right_nodes;
 }
 
-template<typename T, typename K, typename P, typename A> void avl_tree<T, K, P, A>::validate() const
+template<typename T, typename K, typename P, typename A> void avl_tree<T, K, P, A>::validate() const noexcept
 {
 	unsigned depth = 0;
 	unsigned number_nodes = 0;

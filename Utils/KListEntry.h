@@ -14,9 +14,9 @@ protected:
 	typedef ListItem<T> Item;
 
 public:
-	List * pPrev;
-	List * pNext;
-	ListEntry()
+	List* pPrev;
+	List* pNext;
+	ListEntry() noexcept
 	{
 		pPrev = this;
 		pNext = this;
@@ -27,7 +27,7 @@ public:
 		// make sure the item is not in any list
 		ASSERT(pPrev == this && pNext == this);
 	}
-	void Init()
+	void Init() noexcept
 	{
 		pPrev = this;
 		pNext = this;
@@ -35,27 +35,27 @@ public:
 
 private:
 	// protection against assignment:
-	ListEntry(ListEntry<T> const &);
-	ListEntry<T> & operator =(ListEntry<T> const &);
+	ListEntry(ListEntry<T> const&) = delete;
+	ListEntry<T>& operator =(ListEntry<T> const&) = delete;
 };
 
 template<class T>
 struct ListItem : ListEntry<T>
 {
 	//typedef ListItem<T> Item;
-	T * Next() const volatile { return static_cast<T *>(pNext); }
-	T * Prev() const volatile { return static_cast<T *>(pPrev); }
-	bool IsAlone() const volatile
+	T* Next() const volatile noexcept { return static_cast<T*>(pNext); }
+	T* Prev() const volatile noexcept { return static_cast<T*>(pPrev); }
+	bool IsAlone() const volatile noexcept
 	{
 		return pPrev == static_cast<List const volatile *>(this);
 	}
-	void RemoveFromList()
+	void RemoveFromList() noexcept
 	{
 		pNext->pPrev = pPrev;
 		pPrev->pNext = pNext;
 		Init();
 	}
-	void InsertAsNextItem(Item * entry)
+	void InsertAsNextItem(Item* entry) noexcept
 	{
 		__assume(NULL != entry);
 		// make sure the item is not in any list
@@ -67,7 +67,7 @@ struct ListItem : ListEntry<T>
 		pNext = entry;
 	}
 
-	void InsertAsPrevItem(Item * entry)
+	void InsertAsPrevItem(Item* entry) noexcept
 	{
 		__assume(NULL != entry);
 		// make sure the item is not in any list
@@ -86,34 +86,34 @@ struct ListHead : ListEntry<T>
 	//typename Item;
 	typedef ListHead<T> Head;
 
-	T * First() const volatile { return static_cast<T *>(pNext); }
-	T * Last() const volatile { return static_cast<T *>(pPrev); }
-	Item * FirstItem() const volatile { return static_cast<Item *>(pNext); }
-	Item * LastItem() const volatile { return static_cast<Item *>(pPrev); }
-	static T * Next(const volatile Item * pItem) { return pItem->Next(); }
-	static T * Prev(const volatile Item * pItem) { return pItem->Prev(); }
+	T* First() const volatile noexcept { return static_cast<T*>(pNext); }
+	T* Last() const volatile noexcept { return static_cast<T*>(pPrev); }
+	Item* FirstItem() const volatile noexcept { return static_cast<Item*>(pNext); }
+	Item* LastItem() const volatile noexcept { return static_cast<Item*>(pPrev); }
+	static T* Next(const volatile Item* pItem) noexcept { return pItem->Next(); }
+	static T* Prev(const volatile Item* pItem) noexcept { return pItem->Prev(); }
 
-	bool NotEnd(Item const volatile * entry) const volatile
+	bool NotEnd(Item const volatile* entry) const volatile noexcept
 	{
 		return this != static_cast<List const volatile *>(entry);
 	}
-	bool IsEnd(Item const volatile * entry) const volatile
+	bool IsEnd(Item const volatile* entry) const volatile noexcept
 	{
 		return this == static_cast<List const volatile *>(entry);
 	}
 
-	bool IsEmpty() const volatile
+	bool IsEmpty() const volatile noexcept
 	{
 		return pNext == static_cast<List const volatile *>(this);
 	}
 
-	static void RemoveEntry(Item * entry)
+	static void RemoveEntry(Item* entry) noexcept
 	{
 		__assume(NULL != entry);
 		entry->RemoveFromList();
 	}
 
-	T * RemoveHead()
+	T* RemoveHead() noexcept
 	{
 		if (IsEmpty())
 		{
@@ -124,7 +124,7 @@ struct ListHead : ListEntry<T>
 
 		return static_cast<T *> (tmp);
 	}
-	T * RemoveTail()
+	T* RemoveTail() noexcept
 	{
 		if (IsEmpty())
 		{
@@ -136,7 +136,7 @@ struct ListHead : ListEntry<T>
 		return static_cast<T *>(tmp);
 	}
 
-	void InsertHead(Item * entry)
+	void InsertHead(Item* entry) noexcept
 	{
 		// make sure the item is not in any list
 		ASSERT(entry->IsAlone());
@@ -147,7 +147,7 @@ struct ListHead : ListEntry<T>
 		pNext = entry;
 	}
 
-	void InsertTail(Item * entry)
+	void InsertTail(Item* entry) noexcept
 	{
 		// make sure the item is not in any list
 		ASSERT(entry->IsAlone());
@@ -158,7 +158,7 @@ struct ListHead : ListEntry<T>
 		pPrev = entry;
 	}
 	// move all the list to DstList. The list becomes empty
-	void RemoveAll(Head & DstList)
+	void RemoveAll(Head& DstList) noexcept
 	{
 		ASSERT(DstList.IsEmpty());
 
@@ -173,7 +173,7 @@ struct ListHead : ListEntry<T>
 		}
 	}
 
-	template <typename K> T * FindByKey(const K & key)
+	template <typename K> T* FindByKey(const K& key) noexcept
 	{
 		// operator == (const T&, const K&) must exist
 		for (T * p = First(); NotEnd(p); p = Next(p))
@@ -275,19 +275,19 @@ template<class T, class L = CSimpleCriticalSection>
 struct LockedListHead : ListHead<T>, public L
 {
 	// no destructor necessary
-	void InsertHead(Item * entry)
+	void InsertHead(Item* entry) noexcept
 	{
 		Lock();
 		Head::InsertHead(entry);
 		Unlock();
 	}
-	void InsertTail(Item * entry)
+	void InsertTail(Item* entry) noexcept
 	{
 		Lock();
 		Head::InsertTail(entry);
 		Unlock();
 	}
-	T * RemoveHead()
+	T* RemoveHead() noexcept
 	{
 		Lock();
 		T * tmp = Head::RemoveHead();
@@ -295,7 +295,7 @@ struct LockedListHead : ListHead<T>, public L
 		return tmp;
 	}
 
-	T * RemoveTail()
+	T* RemoveTail() noexcept
 	{
 		Lock();
 		T * tmp = Head::RemoveTail();
@@ -303,36 +303,36 @@ struct LockedListHead : ListHead<T>, public L
 		return tmp;
 	}
 
-	void InsertHeadUnsafe(Item * entry)
+	void InsertHeadUnsafe(Item* entry) noexcept
 	{
 		Head::InsertHead(entry);
 	}
-	void InsertTailUnsafe(Item * entry)
+	void InsertTailUnsafe(Item* entry) noexcept
 	{
 		Head::InsertTail(entry);
 	}
 
-	T * RemoveHeadUnsafe()
+	T* RemoveHeadUnsafe() noexcept
 	{
 		return Head::RemoveHead();
 	}
-	T * RemoveTailUnsafe()
+	T* RemoveTailUnsafe() noexcept
 	{
 		return Head::RemoveTail();
 	}
-	void RemoveEntry(Item * entry)
+	void RemoveEntry(Item* entry) noexcept
 	{
 		Lock();
 		Head::RemoveEntry(entry);
 		Unlock();
 	}
-	void RemoveEntryUnsafe(Item * entry)
+	void RemoveEntryUnsafe(Item* entry) noexcept
 	{
 		Head::RemoveEntry(entry);
 	}
 
 	// move all the list to DstList. The list becomes empty
-	void RemoveAll(Head & DstList)
+	void RemoveAll(Head& DstList) noexcept
 	{
 		Lock();
 		Head::RemoveAll(DstList);

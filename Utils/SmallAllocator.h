@@ -23,7 +23,7 @@ private:
 		BlockHeader(CSmallAllocator * alloc)
 			: m_Signature(eSignature),
 			pAllocator(alloc),
-			pFreeItems(NULL),
+			pFreeItems(nullptr),
 			NumOfFreeItems(0)
 		{
 		}
@@ -32,6 +32,10 @@ private:
 		ItemHeader * pFreeItems;
 		CSmallAllocator * pAllocator;
 		size_t NumOfFreeItems;
+	private:
+		BlockHeader() = delete;
+		BlockHeader(const BlockHeader&) = delete;
+		BlockHeader& operator =(const BlockHeader&) = delete;
 	};
 	BlockHeader * AllocateBlock();
 	ListHead<BlockHeader> m_Blocks;
@@ -41,6 +45,9 @@ private:
 	size_t m_BlockSize;
 	unsigned m_ItemsInBlock;
 	unsigned m_TotalFreeItems;
+private:
+	CSmallAllocator(const CSmallAllocator&) = delete;
+	CSmallAllocator& operator =(const CSmallAllocator&) = delete;
 };
 
 #pragma warning(default:4355)

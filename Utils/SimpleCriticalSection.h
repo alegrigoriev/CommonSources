@@ -5,7 +5,7 @@ class CSimpleCriticalSection
 {
 	CRITICAL_SECTION m_cs;
 public:
-	CSimpleCriticalSection()
+	CSimpleCriticalSection() noexcept
 	{
 		InitializeCriticalSection( & m_cs);
 	}
@@ -13,20 +13,23 @@ public:
 	{
 		DeleteCriticalSection( & m_cs);
 	}
-	void Lock() volatile
+	void Lock() volatile noexcept
 	{
 		EnterCriticalSection(const_cast<CRITICAL_SECTION *>( & m_cs));
 	}
-	void Unlock() volatile
+	void Unlock() volatile noexcept
 	{
 		LeaveCriticalSection(const_cast<CRITICAL_SECTION *>( & m_cs));
 	}
+private:
+	CSimpleCriticalSection& operator =(const CSimpleCriticalSection&) = delete;
+	CSimpleCriticalSection(const CSimpleCriticalSection&) = delete;
 };
 class CSimpleCriticalSectionLock
 {
 	CSimpleCriticalSection volatile & m_cs;
 public:
-	CSimpleCriticalSectionLock(CSimpleCriticalSection volatile & cs)
+	CSimpleCriticalSectionLock(CSimpleCriticalSection volatile& cs) noexcept
 		: m_cs(cs)
 	{
 		cs.Lock();
@@ -36,6 +39,6 @@ public:
 		m_cs.Unlock();
 	}
 private:
-	CSimpleCriticalSectionLock & operator =(const CSimpleCriticalSectionLock&);
-	CSimpleCriticalSectionLock(const CSimpleCriticalSectionLock&);
+	CSimpleCriticalSectionLock& operator =(const CSimpleCriticalSectionLock&) = delete;
+	CSimpleCriticalSectionLock(const CSimpleCriticalSectionLock&) = delete;
 };

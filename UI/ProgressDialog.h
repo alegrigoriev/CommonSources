@@ -23,7 +23,7 @@ public:
 
 	void KickDialogUpdate();
 	void SetCurrentItemDone(LONGLONG Done);
-	void SetTotalDataSize(LONGLONG size)
+	void SetTotalDataSize(LONGLONG size) noexcept
 	{
 		m_TotalDataSize = size;
 	}

@@ -11,50 +11,50 @@ class CPathExT : public ATL::CPathT<StringType>
 
 	static DWORD GetFullPathNameT(
 								LPCWSTR lpFileName, DWORD nBufferLength,
-								LPWSTR lpBuffer, LPWSTR* lpFilePart)
+								LPWSTR lpBuffer, LPWSTR* lpFilePart) noexcept
 	{
 		return GetFullPathNameW(lpFileName, nBufferLength, lpBuffer, lpFilePart);
 	}
 
 	static DWORD GetFullPathNameT(
 								LPCSTR lpFileName, DWORD nBufferLength,
-								LPSTR lpBuffer, LPSTR* lpFilePart)
+								LPSTR lpBuffer, LPSTR* lpFilePart) noexcept
 	{
 		return GetFullPathNameA(lpFileName, nBufferLength, lpBuffer, lpFilePart);
 	}
 
 	static DWORD GetCurrentDirectoryT(DWORD nBufferLength,
-									LPWSTR lpBuffer)
+									LPWSTR lpBuffer) noexcept
 	{
 		return ::GetCurrentDirectoryW(nBufferLength, lpBuffer);
 	}
 
 	static DWORD GetCurrentDirectoryT(DWORD nBufferLength,
-									LPSTR lpBuffer)
+									LPSTR lpBuffer) noexcept
 	{
 		return ::GetCurrentDirectoryA(nBufferLength, lpBuffer);
 	}
 
 	static DWORD GetTempPathT(DWORD nBufferLength,
-							LPSTR lpBuffer)
+							LPSTR lpBuffer) noexcept
 	{
 		return ::GetTempPathA(nBufferLength, lpBuffer);
 	}
 
 	static DWORD GetTempPathT(DWORD nBufferLength,
-							LPWSTR lpBuffer)
+							LPWSTR lpBuffer) noexcept
 	{
 		return ::GetTempPathW(nBufferLength, lpBuffer);
 	}
 
 	static DWORD GetModuleFileNameT(HMODULE hModule, LPSTR lpBuffer,
-									DWORD nBufferLength)
+									DWORD nBufferLength) noexcept
 	{
 		return ::GetModuleFileNameA(hModule, lpBuffer, nBufferLength);
 	}
 
 	static DWORD GetModuleFileNameT(HMODULE hModule, LPWSTR lpBuffer,
-									DWORD nBufferLength)
+									DWORD nBufferLength) noexcept
 	{
 		return ::GetModuleFileNameW(hModule, lpBuffer, nBufferLength);
 	}
@@ -64,7 +64,7 @@ public:
 		: BasePath(pszPath)
 	{
 	}
-	CPathExT( ) throw( ) {}
+	CPathExT() noexcept {}
 
 	bool MakeFullPath();
 	bool MakeFullPath(PCXSTR pszPath);
@@ -73,7 +73,7 @@ public:
 	bool GetModuleFileName(HMODULE hModule);  // NULL - running EXE
 
 	bool GetCurrentDirectory();
-	bool IsEmpty() const
+	bool IsEmpty() const noexcept
 	{
 		return m_strPath.IsEmpty();
 	}

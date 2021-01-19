@@ -8,7 +8,7 @@ class CApplicationProfileItem;
 class CApplicationProfile
 {
 public:
-	CApplicationProfile();
+	CApplicationProfile() noexcept;
 	~CApplicationProfile();
 	// saves the section in INI file. If section name is empty,
 	// saves all of them
@@ -59,9 +59,9 @@ public:
 	void RemoveFromRegistry(LPCTSTR szSection, LPCTSTR szName);
 
 	// remove from list
-	void RemoveSection(LPCTSTR szSection);
-	BOOL RemoveItem(LPCTSTR szSection, LPCTSTR szName);
-	void RemoveAllItems()
+	void RemoveSection(LPCTSTR szSection) noexcept;
+	BOOL RemoveItem(LPCTSTR szSection, LPCTSTR szName) noexcept;
+	void RemoveAllItems() noexcept
 	{
 		RemoveSection(NULL);
 	}
@@ -114,8 +114,8 @@ public:
 							LPCTSTR lpszValue);
 	BOOL WriteProfileBinary(LPCTSTR lpszSection, LPCTSTR lpszEntry,
 							LPBYTE pData, UINT nBytes);
-	void CloseCachedKeys();
-	LPCTSTR GetProfileName() const;
+	void CloseCachedKeys() noexcept;
+	LPCTSTR GetProfileName() const noexcept;
 
 	ListHead<CApplicationProfileItem> Items;
 
@@ -141,9 +141,9 @@ public:
 	void AddString(CString const & str, int AtIndex = 0);
 	void DeleteString(CString const & str, int StartFromIndex = 0);
 
-	int Size() const { return m_NumStrings; }
-	CString const & operator[](int index) const { return m_Strings[index]; }
-	CString & operator[](int index) { return m_Strings[index]; }
+	int Size() const noexcept { return m_NumStrings; }
+	CString const& operator[](int index) const noexcept { return m_Strings[index]; }
+	CString& operator[](int index) noexcept { return m_Strings[index]; }
 
 protected:
 	enum { AttachedHistory = 4 };
