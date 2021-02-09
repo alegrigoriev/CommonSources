@@ -574,7 +574,7 @@ private:
 	bool remove_node(node *leaf, node **pp_top_node);
 	void erase_node(node *leaf);
 
-	void validate_subtree(node const * tree, int * depth, int * number_nodes, node const** subtree_leftmost, node const** subtree_rightmost) const;
+	void validate_subtree(node const* tree, unsigned* depth, unsigned* number_nodes, node const** subtree_leftmost, node const** subtree_rightmost) const;
 
 	node_header hdr;
 	size_t tree_count;
@@ -1403,9 +1403,9 @@ typename avl_tree<T, K, P, A> & avl_tree<T, K, P, A>::operator=(avl_tree const& 
 	return *this;
 }
 
-template<typename T, typename K, typename P, typename A> void avl_tree<T, K, P, A>::validate_subtree(node const * tree, int * depth, int * number_nodes, node const** subtree_leftmost, node const** subtree_rightmost) const
+template<typename T, typename K, typename P, typename A> void avl_tree<T, K, P, A>::validate_subtree(node const* tree, unsigned* depth, unsigned* number_nodes, node const** subtree_leftmost, node const** subtree_rightmost) const
 {
-	int left_depth, right_depth, left_nodes, right_nodes;
+	unsigned left_depth, right_depth, left_nodes, right_nodes;
 	node const* tmp_node = nullptr;
 
 	node const* left = tree->left;
@@ -1460,8 +1460,8 @@ template<typename T, typename K, typename P, typename A> void avl_tree<T, K, P, 
 
 template<typename T, typename K, typename P, typename A> void avl_tree<T, K, P, A>::validate() const
 {
-	int depth = 0;
-	int number_nodes = 0;
+	unsigned depth = 0;
+	unsigned number_nodes = 0;
 	node const* subtree_leftmost = static_cast<node const*>(&hdr);
 	node const* subtree_rightmost = static_cast<node const*>(&hdr);
 	if (hdr.root)
