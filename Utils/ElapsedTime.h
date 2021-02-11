@@ -7,28 +7,35 @@ namespace ElapsedTime
 template<typename TimeTraits>
 class CElapsedTimeT : TimeTraits
 {
+	using TimeTraits::GetTime;
+	using TimeTraits::ToMs;
+	using TimeTraits::ToTenthMs;
 public:
 
-	CElapsedTimeT()
-		: m_StartTime(TimeTraits::GetTime())
+	CElapsedTimeT() noexcept
+		: m_StartTime(GetTime())
 	{
 	}
 
 	~CElapsedTimeT()
 	{
 	}
-	typename TimeTraits::TimeDifferenceType ElapsedTime()
+	typename TimeTraits::TimeDifferenceType ElapsedTime() noexcept
 	{
-		return TimeTraits::GetTime() - m_StartTime;
+		return GetTime() - m_StartTime;
 	}
 
-	DWORD ElapsedTimeMs()
+	DWORD ElapsedTimeMs() noexcept
 	{
-		return TimeTraits::ToMs(TimeTraits::GetTime() - m_StartTime);
+		return ToMs(GetTime() - m_StartTime);
 	}
-	DWORD ElapsedTimeTenthMs()
+	DWORD ElapsedTimeTenthMs() noexcept
 	{
-		return TimeTraits::ToTenthMs(TimeTraits::GetTime() - m_StartTime);
+		return ToTenthMs(GetTime() - m_StartTime);
+	}
+	void Reset() noexcept
+	{
+		m_StartTime = GetTime();
 	}
 private:
 	typename TimeTraits::TimeType m_StartTime;
@@ -36,16 +43,16 @@ private:
 
 struct CElapsedTimeDummy
 {
-	DWORD ElapsedTime()
+	DWORD ElapsedTime() noexcept
 	{
 		return 0;
 	}
 
-	DWORD ElapsedTimeMs()
+	DWORD ElapsedTimeMs() noexcept
 	{
 		return 0;
 	}
-	DWORD ElapsedTimeTenthMs()
+	DWORD ElapsedTimeTenthMs() noexcept
 	{
 		return 0;
 	}
@@ -56,19 +63,18 @@ class Win32TimeTraits
 public:
 	typedef DWORD TimeType;
 	typedef DWORD TimeDifferenceType;
-	static DWORD ToMs(TimeDifferenceType diff)
+	static DWORD ToMs(TimeDifferenceType diff) noexcept
 	{
 		return diff;
 	}
-	static DWORD ToTenthMs(TimeDifferenceType diff)
+	static DWORD ToTenthMs(TimeDifferenceType diff) noexcept
 	{
 		return diff * 10;
 	}
-	static TimeType GetTime()
+	static TimeType GetTime() noexcept
 	{
 		return GetTickCount();
 	}
-
 };
 
 class MmTimeTraits
@@ -76,19 +82,18 @@ class MmTimeTraits
 public:
 	typedef DWORD TimeType;
 	typedef DWORD TimeDifferenceType;
-	static DWORD ToMs(TimeDifferenceType diff)
+	static DWORD ToMs(TimeDifferenceType diff) noexcept
 	{
 		return diff;
 	}
-	static DWORD ToTenthMs(TimeDifferenceType diff)
+	static DWORD ToTenthMs(TimeDifferenceType diff) noexcept
 	{
 		return diff * 10;
 	}
-	static TimeType GetTime()
+	static TimeType GetTime() noexcept
 	{
 		return timeGetTime();
 	}
-
 };
 
 class PerfCounterTimeTraits
@@ -96,7 +101,7 @@ class PerfCounterTimeTraits
 public:
 	typedef ULONGLONG TimeType;
 	typedef LONGLONG TimeDifferenceType;
-	static DWORD ToMs(TimeDifferenceType diff)
+	static DWORD ToMs(TimeDifferenceType diff) noexcept
 	{
 		LARGE_INTEGER freq;
 		if (QueryPerformanceFrequency( & freq))
@@ -106,7 +111,7 @@ public:
 		}
 		return 0;
 	}
-	static DWORD ToTenthMs(TimeDifferenceType diff)
+	static DWORD ToTenthMs(TimeDifferenceType diff) noexcept
 	{
 		LARGE_INTEGER freq;
 		if (QueryPerformanceFrequency( & freq))
@@ -116,7 +121,7 @@ public:
 		}
 		return 0;
 	}
-	static TimeType GetTime()
+	static TimeType GetTime() noexcept
 	{
 		LARGE_INTEGER counter;
 		if (QueryPerformanceCounter( & counter))
@@ -125,7 +130,6 @@ public:
 		}
 		return 0;
 	}
-
 };
 }
 
