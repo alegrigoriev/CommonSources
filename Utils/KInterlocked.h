@@ -1,421 +1,637 @@
 // KInterlocked.h
 #pragma once
+#include <stddef.h>
+#include <stdint.h>
 #include <intrin.h>
+#include <type_traits>
 
-template <typename T>
-inline T InterlockedIncrementT(volatile T* src) noexcept
+namespace AG {
+// Helper template class, to make up for lack of function template partial specialization in C++
+template<typename T, typename T1=T, typename T2=T, int sizeofT = sizeof(T)> class Interlocked
 {
-	static_assert(sizeof(long) == sizeof(T), "InterlockedIncrementT: Wrong operand size");
-	return static_cast<T>(_InterlockedIncrement(reinterpret_cast<long volatile*>(src)));
+public:
+	static T Increment(volatile T* src) = delete;
+
+	static T Decrement(volatile T* src) = delete;
+
+	static T Exchange(volatile T* src, T1 exchange) = delete;
+
+	static T CompareExchange(volatile T* src, T1 exchange, T2 comperand) = delete;
+
+	static T ExchangeAdd(volatile T* src, T1 addend) = delete;
+
+	static T Add(volatile T* src, T1 addend) = delete;
+
+	static T Subtract(volatile T* src, T1 addend) = delete;
+
+	static T Or(volatile T* src, T1 operand) = delete;
+
+	static T Xor(volatile T* src, T1 operand) = delete;
+
+	static T And(volatile T* src, T1 operand) = delete;
+	static T ModuloAdd(volatile T* src, T1 operand) = delete;
+};
+
+// Template declarations
+template <typename T, int sizeofT = sizeof(T)>
+									inline T InterlockedIncrementT(volatile T* src) noexcept
+{
+	return Interlocked<T, T, T, sizeofT>::Increment(src);
 }
 
-template <typename T>
-inline T InterlockedDecrementT(volatile T* src) noexcept
+template <typename T, int sizeofT = sizeof(T)>
+									inline T InterlockedDecrementT(volatile T* src) noexcept
 {
-	static_assert(sizeof(long) == sizeof(T), "InterlockedDecrementT: Wrong operand size");
-	return static_cast<T>(_InterlockedDecrement(reinterpret_cast<long volatile*>(src)));
+	return Interlocked<T, T, T, sizeofT>::Decrement(src);
 }
 
-template <typename T, typename T1>
-inline T InterlockedExchangeT(volatile T* src, T1 exchange) noexcept
+template <typename T, typename T1, int sizeofT = sizeof(T)>
+												inline T InterlockedExchangeT(volatile T* src, T1 exchange) noexcept
 {
-	long tmp;
-	return reinterpret_cast<T&>
-			(tmp = _InterlockedExchange(
-										const_cast<long*>(&reinterpret_cast<long volatile&>(*src)),
-										reinterpret_cast<long volatile&>(exchange)));
+	return Interlocked<T, T1, T1, sizeofT>::Exchange(src, exchange);
 }
 
-template <typename T>
-inline T InterlockedExchangeAddT(volatile T* src, long addend) noexcept
+template <typename T, typename T1, typename T2, int sizeofT = sizeof(T)>
+			inline T InterlockedCompareExchangeT(volatile T* src, T1 exchange, T2 comperand) noexcept
 {
-	return static_cast<T>
-			(_InterlockedExchangeAdd(
-									const_cast<long*>(&reinterpret_cast<long volatile&>(*src)),
-									addend));
+	return Interlocked<T, T1, T2, sizeofT>::CompareExchange(src, exchange, comperand);
 }
 
-template <typename T>
-inline T InterlockedAddT(volatile T* src, long addend) noexcept
+template <typename T, typename T1, int sizeofT = sizeof(T)>
+												inline T InterlockedExchangeAddT(volatile T* src, T1 addend) noexcept
 {
-	return static_cast<T>
-			(addend + _InterlockedExchangeAdd(
-											const_cast<long*>(&reinterpret_cast<long volatile&>(*src)),
-											addend));
+	return Interlocked<T, T1, T1, sizeofT>::ExchangeAdd(src, addend);
 }
 
-template <typename T>
-inline T InterlockedSubtractT(volatile T* src, long addend) noexcept
+template <typename T, typename T1, int sizeofT = sizeof(T)>
+												inline T InterlockedAddT(volatile T* src, T1 addend) noexcept
 {
-	return static_cast<T>
-			(_InterlockedExchangeAdd(
-									const_cast<long*>(&reinterpret_cast<long volatile&>(*src)),
-									-addend) - addend);
+	return Interlocked<T, T1, T1, sizeofT>::Add(src, addend);
 }
 
-template <typename T, typename T1, typename T2>
-inline T InterlockedCompareExchangeT(volatile T* src, T1 exchange, T2 compare) noexcept
+template <typename T, typename T1, int sizeofT = sizeof(T)>
+												inline T InterlockedSubtractT(volatile T* src, T1 addend) noexcept
 {
-	long tmp;
-	return reinterpret_cast<T&>
-			(tmp = _InterlockedCompareExchange(
-												const_cast<long*>(&reinterpret_cast<long volatile&>(*src)),
-												reinterpret_cast<long volatile&>(exchange),
-												reinterpret_cast<long volatile&>(compare)));
-}
-
-template <typename T>
-inline T InterlockedCompareExchangePointerT(volatile T* src, void* exchange, void* compare) noexcept
-{
-	return reinterpret_cast<T>
-			(_InterlockedCompareExchangePointer(&reinterpret_cast<void* volatile&>(*src),
-												exchange,
-												compare));
-}
-
-// the function returns previous contents of the memory location being modified
-template <typename T>
-static T InterlockedIncrementModulo(volatile T* src, long modulo) noexcept
-{
-	T tmp;
-	do
-	{
-		tmp = *src;
-	}
-	while (tmp != InterlockedCompareExchangeT<T>(src, T(tmp + 1) % T(modulo), tmp));
-	return tmp;
+	return Interlocked<T, T1, T1, sizeofT>::Subtract(src, addend);
 }
 
 // the function returns previous contents of the memory location being modified
-template <typename T>
-static T InterlockedAddModulo(volatile T* src, long Addend, long modulo)
+template <typename T, typename T1, typename T2, int sizeofT = sizeof(T)>
+															inline T InterlockedAddModulo(volatile T* src, T1 addend, T2 modulo)
 {
-	T tmp;
-	do
-	{
-		tmp = *src;
-	}
-	while (tmp != InterlockedCompareExchangeT<T>(src, T(tmp + Addend) % T(modulo), tmp));
-	return tmp;
+	return Interlocked<T, T1, T2, sizeofT>::AddModulo(src, addend, modulo);
 }
 
 // the function returns previous contents of the memory location being modified
-template <typename T>
-static T InterlockedOrT(volatile T* src, T operand) noexcept
+template <typename T, typename T1, int sizeofT = sizeof(T)>
+												inline T InterlockedIncrementModulo(volatile T* src, T1 modulo)
 {
-	T tmp;
-	do
-	{
-		tmp = *src;
-	}
-	while (tmp != InterlockedCompareExchangeT<T>(src, tmp | operand, tmp));
-	return tmp;
+	return Interlocked<T, T1, T1, sizeofT>::AddModulo(src, 1, modulo);
 }
 
 // the function returns previous contents of the memory location being modified
-template <typename T>
-static T InterlockedAndT(volatile T* src, T operand) noexcept
+// ONLY IF THE PLATFORM DOESN'T PROVIDE AN INTRINSIC
+template <typename T, typename T1, int sizeofT = sizeof(T)>
+												inline T InterlockedOrT(volatile T* src, T1 operand) noexcept
 {
-	T tmp;
-	do
-	{
-		tmp = *src;
-	}
-	while (tmp != InterlockedCompareExchangeT<T>(src, tmp & operand, tmp));
-	return tmp;
+	return Interlocked<T, T1, T1, sizeofT>::Or(src, operand);
 }
 
 // the function returns previous contents of the memory location being modified
-template <typename T>
-static T InterlockedXorT(volatile T* src, T operand) noexcept
+template <typename T, typename T1, int sizeofT = sizeof(T)>
+static T InterlockedAndT(volatile T* src, T1 operand) noexcept
 {
-	T tmp;
-	do
-	{
-		tmp = *src;
-	}
-	while (tmp != InterlockedCompareExchangeT<T>(src, tmp ^ operand, tmp));
-	return tmp;
+	return Interlocked<T, T1, T1, sizeofT>::And(src, operand);
 }
 
-template<typename T, int sizeofT = sizeof(T)>
-									struct NUM_volatile
+// the function returns previous contents of the memory location being modified
+template <typename T, typename T1, int sizeofT = sizeof(T)>
+static T InterlockedXorT(volatile T* src, T1 operand) noexcept
 {
-	T volatile num;
+	return Interlocked<T, T1, T1, sizeofT>::Xor(src, operand);
+}
 
-	NUM_volatile(T init = 0) noexcept
-		: num(init)
+// Partial specializations for 32 bit integer types (signed, unsigned)
+template<typename T, typename T1, typename T2>
+class Interlocked<T, T1, T2, 4>
+{
+	typedef long TT;
+public:
+	static T Increment(volatile T* src) noexcept
 	{
-	}
-	NUM_volatile& operator =(T src) noexcept
-	{
-		num = src;
-		return *this;
-	}
-	operator T() const noexcept
-	{
-		return num;
-	}
-
-	T operator ++() noexcept
-	{
-		return InterlockedIncrementT<T>(&num);
+		return static_cast<T>(::_InterlockedIncrement(
+													reinterpret_cast<TT volatile*>(src)));
 	}
 
-	T operator ++(int) noexcept
+	static T Decrement(volatile T* src) noexcept
 	{
-		return InterlockedIncrementT<T>(&num) - 1;
+		return static_cast<T>(::_InterlockedDecrement(
+													reinterpret_cast<TT volatile*>(src)));
 	}
 
-	T operator --() noexcept
+	static T Exchange(volatile T* src, T1 exchange) noexcept
 	{
-		return InterlockedDecrementT<T>(&num);
+		return static_cast<T>(::_InterlockedExchange(
+													reinterpret_cast<TT volatile*>(src),
+													static_cast<TT>(static_cast<T>(exchange))));
 	}
 
-	T operator --(int) noexcept
+	static T CompareExchange(volatile T* src, T1 exchange, T2 comperand) noexcept
 	{
-		return InterlockedDecrementT<T>(&num) + 1;
+		return static_cast<T>(::_InterlockedCompareExchange(
+															reinterpret_cast<TT volatile*>(src),
+															static_cast<TT>(static_cast<T>(exchange)),
+															static_cast<TT>(static_cast<T>(comperand))));
 	}
 
-	T operator +=(T op) noexcept
+	static T ExchangeAdd(volatile T* src, T1 addend) noexcept
 	{
-		return InterlockedAddT<T>(&num, op);
-	}
-	T operator -=(T op) noexcept
-	{
-		return InterlockedSubtractT<T>(&num, op);
+		return (T)(::_InterlockedExchangeAdd(
+											reinterpret_cast<TT volatile*>(src),
+											static_cast<TT>(addend)));
 	}
 
-	T operator |=(T op) noexcept
+	static T Add(volatile T* src, T1 addend) noexcept
 	{
-		return InterlockedOrT<T>(&num, op) | op;
+		return (T)(::_InterlockedExchangeAdd(
+											reinterpret_cast<TT volatile*>(src),
+											static_cast<TT>(addend)) + addend);
 	}
 
-	T Exchange_Or(T op) noexcept
+	static T Subtract(volatile T* src, T1 addend) noexcept
 	{
-		return InterlockedOrT<T>(&num, op);
+		return (T)(::_InterlockedExchangeAdd(
+											reinterpret_cast<TT volatile*>(src),
+											0 - static_cast<TT>(addend)) - addend);
 	}
 
-	T operator &=(T op) noexcept
+	static T Or(volatile T* src, T1 operand) noexcept
 	{
-		return InterlockedAndT<T>(&num, op) & op;
+		return static_cast<T>(::_InterlockedOr(
+												reinterpret_cast<TT volatile*>(src),
+												static_cast<TT>(static_cast<T>(operand))));
 	}
 
-	T Exchange_And(T op) noexcept
+	static T Xor(volatile T* src, T1 operand) noexcept
 	{
-		return InterlockedAndT<T>(&num, op);
+		return static_cast<T>(::_InterlockedXor(
+												reinterpret_cast<TT volatile*>(src),
+												static_cast<TT>(static_cast<T>(operand))));
 	}
 
-	T operator ^=(T op) noexcept
+	static T And(volatile T* src, T1 operand) noexcept
 	{
-		return InterlockedXorT<T>(&num, op) ^ op;
+		return static_cast<T>(::_InterlockedAnd(
+												reinterpret_cast<TT volatile*>(src),
+												static_cast<TT>(static_cast<T>(operand))));
 	}
 
-	T Exchange_Xor(T op) noexcept
+	static T AddModulo(volatile T* src, T1 Addend, T2 modulo)
 	{
-		return InterlockedXorT<T>(&num, op);
-	}
-
-	T Exchange(T src) noexcept
-	{
-		return InterlockedExchangeT<T>(&num, src);
-	}
-	T ExchangeAdd(T src) noexcept
-	{
-		return InterlockedExchangeAddT<T>(&num, src);
-	}
-	T CompareExchange(T src, T Comperand) noexcept
-	{
-		return InterlockedCompareExchangeT<T>(&num, src, Comperand);
-	}
-
-	T IncrementModulo(T modulo)
-	{
-		return InterlockedIncrementModulo<T>(&num, modulo);
-	}
-
-	T AddModulo(T Addend, T modulo) noexcept
-	{
-		return InterlockedAddModulo<T>(&num, Addend, modulo);
+		T tmp;
+		do
+		{
+			tmp = *src;
+		} while (tmp != CompareExchange(src, T(tmp + Addend) % modulo, tmp));
+		return tmp;
 	}
 };
 
-#if _WIN32_WINNT >= _WIN32_WINNT_WIN7
-template <typename T, typename T1, typename T2>
-inline T InterlockedCompareExchange64T(volatile T* src, T1 exchange, T2 compare) noexcept
+// Partial specializations for 16 bit integer types (signed, unsigned)
+template<typename T, typename T1, typename T2>
+class Interlocked<T, T1, T2, 2>
 {
-	__int64 tmp;
-	return reinterpret_cast<T&>
-			(tmp = _InterlockedCompareExchange64(
-												const_cast<__int64*>(&reinterpret_cast<__int64 volatile&>(*src)),
-												reinterpret_cast<__int64 volatile&>(exchange),
-												reinterpret_cast<__int64 volatile&>(compare)));
-}
+	typedef short TT;
+public:
+	static T Increment(volatile T* src)
+	{
+		return static_cast<T>(::_InterlockedIncrement16(
+														reinterpret_cast<TT volatile*>(src)));
+	}
+
+	static T Decrement(volatile T* src)
+	{
+		return static_cast<T>(::_InterlockedDecrement16(
+														reinterpret_cast<TT volatile*>(src)));
+	}
+
+	static T Exchange(volatile T* src, T1 exchange)
+	{
+		return static_cast<T>(::_InterlockedExchange16(
+														reinterpret_cast<TT volatile*>(src),
+														static_cast<TT>(static_cast<T>(exchange))));
+	}
+
+	static T CompareExchange(volatile T* src, T1 exchange, T2 comperand)
+	{
+		return static_cast<T>(::_InterlockedCompareExchange16(
+															reinterpret_cast<TT volatile*>(src),
+															static_cast<TT>(static_cast<T>(exchange)),
+															static_cast<TT>(static_cast<T>(comperand))));
+	}
+
+	static T ExchangeAdd(volatile T* src, T1 addend)
+	{
+		return static_cast<T>(::_InterlockedExchangeAdd16(
+														reinterpret_cast<TT volatile*>(src),
+														static_cast<TT>(static_cast<T>(addend))));
+	}
+
+	static T Add(volatile T* src, T1 addend)
+	{
+		return static_cast<T>(::_InterlockedExchangeAdd16(
+														reinterpret_cast<TT volatile*>(src),
+														static_cast<TT>(static_cast<T>(addend))) + addend);
+	}
+
+	static T Subtract(volatile T* src, T1 addend)
+	{
+		return static_cast<T>(::_InterlockedExchangeAdd16(
+														reinterpret_cast<TT volatile*>(src),
+														0 - static_cast<TT>(addend)) - addend);
+	}
+
+	static T Or(volatile T* src, T1 operand)
+	{
+		return static_cast<T>(::_InterlockedOr16(
+												reinterpret_cast<TT volatile*>(src),
+												static_cast<TT>(static_cast<T>(operand))));
+	}
+
+	static T Xor(volatile T* src, T1 operand)
+	{
+		return static_cast<T>(::_InterlockedXor16(
+												reinterpret_cast<TT volatile*>(src),
+												static_cast<TT>(static_cast<T>(operand))));
+	}
+
+	static T And(volatile T* src, T1 operand)
+	{
+		return static_cast<T>(::_InterlockedAnd16(
+												reinterpret_cast<TT volatile*>(src),
+												static_cast<TT>(static_cast<T>(operand))));
+	}
+
+	static T AddModulo(volatile T* src, T1 Addend, T2 modulo)
+	{
+		T tmp;
+		do
+		{
+			tmp = *src;
+		} while (tmp != CompareExchange(src, T(tmp + Addend) % modulo, tmp));
+		return tmp;
+	}
+};
+
+// Partial specializations for 8 bit integer types (signed, unsigned)
+template<typename T, typename T1, typename T2>
+class Interlocked<T, T1, T2, 1>
+{
+	typedef char TT;
+public:
+	static T Increment(volatile T* src)
+	{
+		return Add(src, 1);
+	}
+
+	static T Decrement(volatile T* src)
+	{
+		return Subtract(src, 1);
+	}
+
+	static T Exchange(volatile T* src, T1 exchange)
+	{
+		return static_cast<T>(::_InterlockedExchange8(
+													reinterpret_cast<TT volatile*>(src),
+													static_cast<TT>(static_cast<T>(exchange))));
+	}
+
+	static T CompareExchange(volatile T* src, T1 exchange, T2 comperand)
+	{
+		return static_cast<T>(::_InterlockedCompareExchange8(
+															reinterpret_cast<TT volatile*>(src),
+															static_cast<TT>(static_cast<T>(exchange)),
+															static_cast<TT>(static_cast<T>(comperand))));
+	}
+
+	static T ExchangeAdd(volatile T* src, T1 addend)
+	{
+		return static_cast<T>(::_InterlockedExchangeAdd8(
+														reinterpret_cast<TT volatile*>(src),
+														static_cast<TT>(static_cast<T>(addend))));
+	}
+
+	static T Add(volatile T* src, T1 addend)
+	{
+		return static_cast<T>(::_InterlockedExchangeAdd8(
+														reinterpret_cast<TT volatile*>(src),
+														static_cast<TT>(static_cast<T>(addend))) + addend);
+	}
+
+	static T Subtract(volatile T* src, T1 addend)
+	{
+		return static_cast<T>(::_InterlockedExchangeAdd8(
+														reinterpret_cast<TT volatile*>(src),
+														0 - static_cast<TT>(addend)) - addend);
+	}
+
+	static T Or(volatile T* src, T1 operand)
+	{
+		return static_cast<T>(::_InterlockedOr8(
+												reinterpret_cast<TT volatile*>(src),
+												static_cast<TT>(static_cast<T>(operand))));
+	}
+
+	static T Xor(volatile T* src, T1 operand)
+	{
+		return static_cast<T>(::_InterlockedXor8(
+												reinterpret_cast<TT volatile*>(src),
+												static_cast<TT>(static_cast<T>(operand))));
+	}
+
+	static T And(volatile T* src, T1 operand)
+	{
+		return static_cast<T>(::_InterlockedAnd8(
+												reinterpret_cast<TT volatile*>(src),
+												static_cast<TT>(static_cast<T>(operand))));
+	}
+
+	static T AddModulo(volatile T* src, T1 Addend, T2 modulo)
+	{
+		T tmp;
+		do
+		{
+			tmp = *src;
+		} while (tmp != CompareExchange(src, T(tmp + Addend) % modulo, tmp));
+		return tmp;
+	}
+};
 
 #if defined(_M_ARM) || defined(_M_X64) || defined(_M_ARM64) || defined(_M_HYBRID_X86_ARM64) || defined(_M_ARM64EC)
-template <typename T>
-inline T InterlockedIncrement64T(volatile T* src) noexcept
+// Partial specializations for 64 bit integer types (signed, unsigned)
+// for machines with extensive 64 bit support
+template<typename T, typename T1, typename T2>
+class Interlocked<T, T1, T2, 8>
 {
-	static_assert(sizeof(__int64) == sizeof(T), "InterlockedIncrement64T: Wrong operand size");
-	return static_cast<T>(InterlockedIncrement64(reinterpret_cast<__int64 volatile*>(src)));
-}
+	typedef __int64 TT;
+public:
+	static T Increment(volatile T* src)
+	{
+		return static_cast<T>(::_InterlockedIncrement64(
+														reinterpret_cast<TT volatile*>(src)));
+	}
 
-template <typename T>
-inline T InterlockedDecrement64T(volatile T* src) noexcept
-{
-	static_assert(sizeof(__int64) == sizeof(T), "InterlockedDecrement64T: Wrong operand size");
-	return static_cast<T>(_InterlockedDecrement64(reinterpret_cast<__int64 volatile*>(src)));
-}
+	static T Decrement(volatile T* src)
+	{
+		return static_cast<T>(::_InterlockedDecrement64(
+														reinterpret_cast<TT volatile*>(src)));
+	}
 
-template <typename T, typename T1>
-inline T InterlockedExchange64T(volatile T* src, T1 exchange) noexcept
-{
-	__int64 tmp;
-	return reinterpret_cast<T&>
-			(tmp = _InterlockedExchange64(
-										const_cast<__int64*>(&reinterpret_cast<__int64 volatile&>(*src)),
-										reinterpret_cast<__int64 volatile&>(exchange)));
-}
+	static T Exchange(volatile T* src, T1 exchange)
+	{
+		return static_cast<T>(::_InterlockedExchange64(
+														reinterpret_cast<TT volatile*>(src),
+														static_cast<TT>(static_cast<T>(exchange))));
+	}
 
-template <typename T>
-inline T InterlockedExchangeAdd64T(volatile T* src, __int64 addend) noexcept
-{
-	return static_cast<T>
-			(_InterlockedExchangeAdd64(
-										const_cast<__int64*>(&reinterpret_cast<__int64 volatile&>(*src)),
-										addend));
-}
+	static T CompareExchange(volatile T* src, T1 exchange, T2 comperand)
+	{
+		return static_cast<T>(::_InterlockedCompareExchange64(
+															reinterpret_cast<TT volatile*>(src),
+															static_cast<TT>(static_cast<T>(exchange)),
+															static_cast<TT>(static_cast<T>(comperand))));
+	}
 
-template <typename T>
-inline T InterlockedAdd64T(volatile T* src, __int64 addend) noexcept
-{
-	return static_cast<T>
-			(addend + _InterlockedExchangeAdd64(
-												const_cast<__int64*>(&reinterpret_cast<__int64 volatile&>(*src)),
-												addend));
-}
+	static T ExchangeAdd(volatile T* src, T1 addend)
+	{
+		return (T)(::_InterlockedExchangeAdd64(
+												reinterpret_cast<TT volatile*>(src),
+												static_cast<TT>(addend)));
+	}
 
-template <typename T>
-inline T InterlockedSubtract64T(volatile T* src, __int64 addend) noexcept
-{
-	return static_cast<T>
-			(_InterlockedExchangeAdd64(
-										const_cast<__int64*>(&reinterpret_cast<__int64 volatile&>(*src)),
-										-addend) - addend);
-}
+	static T Add(volatile T* src, T1 addend)
+	{
+		return (T)(::_InterlockedExchangeAdd64(
+												reinterpret_cast<TT volatile*>(src),
+												static_cast<TT>(addend)) + addend);
+	}
+
+	static T Subtract(volatile T* src, T1 addend)
+	{
+		return (T)(::_InterlockedExchangeAdd64(
+												reinterpret_cast<TT volatile*>(src),
+												0 - static_cast<TT>(addend)) - addend);
+	}
+
+	static T Or(volatile T* src, T1 operand)
+	{
+		return static_cast<T>(::_InterlockedOr64(
+												reinterpret_cast<TT volatile*>(src),
+												static_cast<TT>(static_cast<T>(operand))));
+	}
+
+	static T Xor(volatile T* src, T1 operand)
+	{
+		return static_cast<T>(::_InterlockedXor64(
+												reinterpret_cast<TT volatile*>(src),
+												static_cast<TT>(static_cast<T>(operand))));
+	}
+
+	static T And(volatile T* src, T1 operand)
+	{
+		return static_cast<T>(::_InterlockedAnd64(
+												reinterpret_cast<TT volatile*>(src),
+												static_cast<TT>(static_cast<T>(operand))));
+	}
+
+	static T AddModulo(volatile T* src, T1 Addend, T2 modulo)
+	{
+		T tmp;
+		do
+		{
+			tmp = *src;
+		} while (tmp != CompareExchange(src, T(tmp + Addend) % modulo, tmp));
+		return tmp;
+	}
+};
 #else
-template <typename T, typename T1>
-inline T InterlockedExchange64T(volatile T* src, T1 exchange) noexcept
+// Partial specializations for 64 bit integer types (signed, unsigned)
+// for machines with limited 64 bit support,
+// Only _InterlockedCompareExchange64 is available, not even InterlockedExchange64
+template<typename T, typename T1, typename T2>
+class Interlocked<T, T1, T2, 8>
 {
-	T tmp;
-	do
+	typedef __int64 TT;
+public:
+	static T Increment(volatile T* src)
 	{
-		tmp = *src;
-	} while (tmp != InterlockedCompareExchange64T<T>(src, exchange, tmp));
-	return tmp;
-}
+		return Add(src, 1);
+	}
 
-template <typename T>
-inline T InterlockedExchangeAdd64T(volatile T* src, __int64 addend) noexcept
-{
-	T tmp;
-	do
+	static T Decrement(volatile T* src)
 	{
-		tmp = *src;
-	} while (tmp != InterlockedCompareExchange64T<T>(src, tmp + addend, tmp));
-	return tmp;
-}
-template <typename T>
-inline T InterlockedIncrement64T(volatile T* src) noexcept
-{
-	static_assert(sizeof(__int64) == sizeof(T), "InterlockedIncrement64T: Wrong operand size");
-	return InterlockedExchangeAdd64T(src, 1) + 1;
-}
+		return Subtract(src, 1);
+	}
 
-template <typename T>
-inline T InterlockedDecrement64T(volatile T* src) noexcept
-{
-	static_assert(sizeof(__int64) == sizeof(T), "InterlockedDecrement64T: Wrong operand size");
-	return InterlockedExchangeAdd64T(src, -1) - 1;
-}
+	static T Exchange(volatile T* src, T1 exchange)
+	{
+		T tmp;
+		do
+		{
+			tmp = *src;
+		} while (tmp != CompareExchange(src, exchange, tmp));
+		return tmp;
+	}
 
-template <typename T>
-inline T InterlockedAdd64T(volatile T* src, __int64 addend) noexcept
-{
-	return InterlockedExchangeAdd64T(src, addend) + addend;
-}
+	static T CompareExchange(volatile T* src, T1 exchange, T2 comperand)
+	{
+		return (T)(::_InterlockedCompareExchange64(
+													reinterpret_cast<TT volatile*>(src),
+													static_cast<TT>(exchange),
+													static_cast<TT>(comperand)));
+	}
 
-template <typename T>
-inline T InterlockedSubtract64T(volatile T* src, __int64 addend) noexcept
-{
-	return InterlockedExchangeAdd64T(src, -addend) - addend;
-}
+	static T ExchangeAdd(volatile T* src, T1 addend)
+	{
+		T tmp;
+		do
+		{
+			tmp = *src;
+		} while (tmp != CompareExchange(src, tmp + addend, tmp));
+		return tmp;
+	}
+
+	static T Add(volatile T* src, T1 addend)
+	{
+		return static_cast<T>(ExchangeAdd(src, addend) + addend);
+	}
+
+	static T Subtract(volatile T* src, T1 addend)
+	{
+		return static_cast<T>(ExchangeAdd(src, (TT)0-(TT)addend) - addend);
+	}
+
+	static T Or(volatile T* src, T1 operand)
+	{
+		T tmp;
+		do
+		{
+			tmp = *src;
+		} while (tmp != CompareExchange(src, tmp | operand, tmp));
+		return tmp;
+	}
+
+	static T Xor(volatile T* src, T1 operand)
+	{
+		T tmp;
+		do
+		{
+			tmp = *src;
+		} while (tmp != CompareExchange(src, tmp ^ operand, tmp));
+		return tmp;
+	}
+
+	static T And(volatile T* src, T1 operand)
+	{
+		T tmp;
+		do
+		{
+			tmp = *src;
+		} while (tmp != CompareExchange(src, tmp & operand, tmp));
+		return tmp;
+	}
+
+	static T AddModulo(volatile T* src, T1 Addend, T2 modulo)
+	{
+		T tmp;
+		do
+		{
+			tmp = *src;
+		} while (tmp != CompareExchange(src, T(tmp + Addend) % modulo, tmp));
+		return tmp;
+	}
+};
 #endif
 
-template <typename T>
-static T InterlockedIncrement64Modulo(volatile T* src, __int64 modulo)
+// Specialization for operations with pointers
+template<typename T>
+class Interlocked<T*, T*, T*, sizeof (void*)>
 {
-	T tmp;
-	do
+	typedef T* P;
+	typedef typename std::remove_cv<T>::type *PP;
+	typedef uintptr_t TT;
+public:
+	// Note that arithmetics cannot be performed on void*, only on typed pointers
+	static P Increment(P volatile* src) noexcept
 	{
-		tmp = *src;
-	} while (tmp != InterlockedCompareExchange64T<T>(src, T(tmp + 1) % T(modulo), tmp));
-	return tmp;
-}
+		return Add(src, 1);
+	}
+
+	static P Decrement(P volatile* src) noexcept
+	{
+		return Subtract(src, 1);
+	}
+
+	static P ExchangeAdd(P volatile* src, ptrdiff_t addend)
+	{
+		return reinterpret_cast<P>(InterlockedExchangeAddT<TT, ptrdiff_t>(
+										reinterpret_cast<TT volatile*>(src),
+										addend * sizeof(T)));
+	}
+
+	static P Add(P volatile* src, ptrdiff_t addend)
+	{
+		return reinterpret_cast<P>(InterlockedExchangeAddT<TT, ptrdiff_t>(
+										reinterpret_cast<TT volatile*>(src),
+										addend*ptrdiff_t(sizeof (T)))) + addend;
+	}
+
+	static P Subtract(P volatile* src, size_t addend)
+	{
+		return reinterpret_cast<P>(InterlockedExchangeAddT<TT, ptrdiff_t>(
+										reinterpret_cast<TT volatile*>(src),
+										- addend * ptrdiff_t(sizeof(T)))) - addend;
+	}
+
+	static P Exchange(P volatile* src, P exchange)
+	{
+		return reinterpret_cast<P>
+				(::_InterlockedExchangePointer(static_cast<void *volatile*>(static_cast<volatile void*>(src)),
+												const_cast<PP>(exchange)));
+	}
+
+	static P CompareExchange(P volatile* src, P exchange, P compare)
+	{
+		return reinterpret_cast<P>
+				(::_InterlockedCompareExchangePointer(
+													static_cast<void* volatile*>(static_cast<volatile void*>(src)),
+													const_cast<PP>(exchange), const_cast<PP>(compare)));
+	}
+};
 
 template <typename T>
-static T InterlockedAdd64Modulo(volatile T* src, __int64 Addend, __int64 modulo)
+inline T* InterlockedExchangePointerT(T* volatile* src, T* exchange) noexcept
 {
-	T tmp;
-	do
-	{
-		tmp = *src;
-	} while (tmp != InterlockedCompareExchange64T<T>(src, T(tmp + Addend) % T(modulo), tmp));
-	return tmp;
-}
-template <typename T>
-static T InterlockedOr64T(volatile T* src, T operand) noexcept
-{
-	T tmp;
-	do
-	{
-		tmp = *src;
-	} while (tmp != InterlockedCompareExchange64T<T>(src, tmp | operand, tmp));
-	return tmp;
+	return Interlocked<T*,T*,T*>::Exchange(src, exchange);
 }
 
-template <typename T>
-static T InterlockedAnd64T(volatile T* src, T operand) noexcept
+template <typename T, typename T1, typename T2>
+T InterlockedCompareExchangePointerT(T* volatile* src, T1 exchange, T2 compare) noexcept
 {
-	T tmp;
-	do
-	{
-		tmp = *src;
-	} while (tmp != InterlockedCompareExchange64T<T>(src, tmp & operand, tmp));
-	return tmp;
+	return Interlocked<T*,T1,T2>::CompareExchange(src, exchange, compare);
 }
 
-template <typename T>
-static T InterlockedXor64T(volatile T* src, T operand) noexcept
-{
-	T tmp;
-	do
-	{
-		tmp = *src;
-	} while (tmp != InterlockedCompareExchange64T<T>(src, tmp ^ operand, tmp));
-	return tmp;
-}
 
 template<typename T>
-struct NUM_volatile<T, 8>
+struct Atomic
 {
 	T volatile num;
 
-	NUM_volatile(T init = 0) noexcept
+	Atomic(T init = 0) noexcept
 		: num(init)
 	{
 	}
-	NUM_volatile& operator =(T src) noexcept
+	Atomic& operator =(T src) noexcept
 	{
 		num = src;
 		return *this;
@@ -427,94 +643,185 @@ struct NUM_volatile<T, 8>
 
 	T operator ++() noexcept
 	{
-		return InterlockedIncrement64T<T>(&num);
+		return InterlockedIncrementT(&num);
 	}
 
 	T operator ++(int) noexcept
 	{
-		return InterlockedIncrement64T<T>(&num) - 1;
+		return InterlockedIncrementT(&num) - 1;
 	}
 
 	T operator --() noexcept
 	{
-		return InterlockedDecrement64T<T>(&num);
+		return InterlockedDecrementT(&num);
 	}
 
 	T operator --(int) noexcept
 	{
-		return InterlockedDecrement64T<T>(&num) + 1;
+		return InterlockedDecrementT(&num) + 1;
 	}
 
 	T operator +=(T op) noexcept
 	{
-		return InterlockedAdd64T<T>(&num, op);
+		return InterlockedAddT(&num, op);
 	}
 	T operator -=(T op) noexcept
 	{
-		return InterlockedSubtract64T<T>(&num, op);
+		return InterlockedSubtractT(&num, op);
 	}
 
 	T operator |=(T op) noexcept
 	{
-		return InterlockedOr64T<T>(&num, op) | op;
+		return InterlockedOrT(&num, op) | op;
 	}
 
 	T Exchange_Or(T op) noexcept
 	{
-		return InterlockedOr64T<T>(&num, op);
+		return InterlockedOrT(&num, op);
 	}
 
 	T operator &=(T op) noexcept
 	{
-		return InterlockedAnd64T<T>(&num, op) & op;
+		return InterlockedAndT(&num, op) & op;
 	}
 
 	T Exchange_And(T op) noexcept
 	{
-		return InterlockedAnd64T<T>(&num, op);
+		return InterlockedAndT(&num, op);
 	}
 
 	T operator ^=(T op) noexcept
 	{
-		return InterlockedXor64T<T>(&num, op) ^ op;
+		return InterlockedXorT(&num, op) ^ op;
 	}
 
 	T Exchange_Xor(T op) noexcept
 	{
-		return InterlockedXor64T<T>(&num, op);
+		return InterlockedXorT(&num, op);
 	}
 
 	T Exchange(T src) noexcept
 	{
-		return InterlockedExchange64T<T>(&num, src);
+		return InterlockedExchangeT(&num, src);
 	}
 	T ExchangeAdd(T src) noexcept
 	{
-		return InterlockedExchangeAdd64T<T>(&num, src);
+		return InterlockedExchangeAddT(&num, src);
 	}
 	T CompareExchange(T src, T Comperand) noexcept
 	{
-		return InterlockedCompareExchange64T<T>(&num, src, Comperand);
+		return InterlockedCompareExchangeT(&num, src, Comperand);
 	}
 
-	T IncrementModulo(T modulo)
+	T IncrementModulo(T modulo) noexcept
 	{
-		return InterlockedIncrement64Modulo<T>(&num, modulo);
+		return InterlockedIncrementModulo(&num, modulo);
 	}
 
 	T AddModulo(T Addend, T modulo)
 	{
-		return InterlockedAdd64Modulo<T>(&num, Addend, modulo);
+		return InterlockedAddModulo(&num, Addend, modulo);
 	}
 };
-#endif
-template<typename T>
-struct NUM_volatile<T*, sizeof (void*)>
-{
 
+// A specialization for pointer argument
+template<typename T>
+struct Atomic<T*>
+{
+	typedef T* P;
+	P volatile ptr;
+
+	Atomic(P init = 0)
+		: ptr(init)
+	{
+	}
+	Atomic& operator =(P src)
+	{
+		ptr = src;
+		return *this;
+	}
+	operator P() const
+	{
+		return ptr;
+	}
+
+	P operator ++()
+	{
+		return operator +=(1);
+	}
+
+	P operator ++(int)
+	{
+		return ExchangeAdd(1);
+	}
+
+	P operator --()
+	{
+		return operator -=(1);
+	}
+
+	P operator --(int)
+	{
+		return ExchangeAdd(-1);
+	}
+
+	P operator +=(ptrdiff_t increment)
+	{
+		return ExchangeAdd(increment) + increment;
+	}
+
+	P operator -=(ptrdiff_t decrement)
+	{
+		return ExchangeAdd(-decrement) - decrement;
+	}
+
+	P Exchange(P src)
+	{
+		return InterlockedExchangeT<P>(&ptr, src);
+	}
+	P CompareExchange(P src, P comperand)
+	{
+		return InterlockedCompareExchangeT<P>(&ptr, src, comperand);
+	}
+	P ExchangeAdd(ptrdiff_t increment)
+	{
+		return InterlockedExchangeAddT<P, ptrdiff_t>(&ptr, increment * ptrdiff_t(sizeof(T)));
+	}
+
+	P RingIncrement(P ring_begin, size_t ring_size, ptrdiff_t increment)
+	{
+		const P ring_end = ring_begin + ring_size;
+		P old_ptr, new_ptr;
+		do
+		{
+			old_ptr = ptr;
+			new_ptr = old_ptr + increment;
+			if (ring_size == 0)
+			{
+				// skip
+			}
+			else if (increment > 0)
+			{
+				while (new_ptr >= ring_end)
+				{
+					new_ptr -= ring_size;
+				}
+			}
+			else if (increment < 0)
+			{
+				while (new_ptr < ring_begin)
+				{
+					new_ptr += ring_size;
+				}
+			}
+		} while (old_ptr != CompareExchange(new_ptr, old_ptr));
+		return new_ptr;
+	}
 };
 
-typedef NUM_volatile<long> LONG_volatile;
-typedef NUM_volatile<unsigned long> ULONG_volatile;
-typedef NUM_volatile<unsigned long long> ULONGLONG_volatile;
+}
+
+typedef AG::Atomic<signed long> LONG_volatile;
+typedef AG::Atomic<unsigned long> ULONG_volatile;
+typedef AG::Atomic<unsigned long long> ULONGLONG_volatile;
 
