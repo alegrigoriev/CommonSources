@@ -72,7 +72,7 @@ void IFFTPreProc(const std::complex<T> * src, std::complex<T> * dst, const unsig
 	{
 		u *= rot;
 		std::complex<T> tmp = conj(src[k]) + src[i];
-		std::complex<T> tmp2 = u * std::complex<double>(conj(src[k]) - src[i]);
+		std::complex<T> tmp2 = std::complex<T>(u * std::complex<double>(conj(src[k]) - src[i]));
 
 		dst[i] = T(0.5) * (tmp + tmp2);
 		dst[k] = T(0.5) * conj(tmp - tmp2);
