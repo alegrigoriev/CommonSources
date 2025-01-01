@@ -341,6 +341,8 @@ void CALLBACK CWaveOut::waveOutProc(HWAVEOUT hwo,
 			// can't use ASSERT in wave out callback
 			TRACE("Wrong dwInstance in waveOutProc\n");
 		}
+#else
+		(void)hwo;
 #endif
 	{
 		WAVEHDR * pWhdr = (WAVEHDR *) dwParam1;
