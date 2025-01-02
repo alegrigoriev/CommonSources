@@ -320,10 +320,11 @@ bool CWmaDecoderSync::DeliverNextSample()
 		Stop();
 		return false;
 	}
-	m_DstFile.CDirectFile::Write(pData, cbData);
+	SAMPLE_POSITION DstCopyPos = m_DstPos;
+	m_DstFile.WriteAt(pData, cbData, DstCopyPos);
 
 	// update current number of samples
-	SAMPLE_POSITION DstCopyPos = (SAMPLE_POSITION)m_DstFile.CDirectFile::Seek(0, FILE_CURRENT);
+	DstCopyPos += cbData;
 	SAMPLE_INDEX DstCopySample = m_DstFile.PositionToSample(DstCopyPos);
 
 	if (DstCopySample > m_CurrentSamples)
@@ -1530,10 +1531,11 @@ HRESULT STDMETHODCALLTYPE CWmaDecoderAsync::OnSample( /* [in] */ DWORD dwOutputN
 	{
 		return hr;
 	}
-	m_DstFile.CDirectFile::Write(pData, cbData);
+	SAMPLE_POSITION DstCopyPos = m_DstPos;
+	m_DstFile.WriteAt(pData, cbData, DstCopyPos);
 
 	// update current number of samples
-	SAMPLE_POSITION DstCopyPos = (SAMPLE_POSITION)m_DstFile.CDirectFile::Seek(0, FILE_CURRENT);
+	DstCopyPos += cbData;
 	SAMPLE_INDEX DstCopySample = m_DstFile.PositionToSample(DstCopyPos);
 
 	if (DstCopySample > m_CurrentSamples)
