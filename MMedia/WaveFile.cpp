@@ -2677,9 +2677,10 @@ BOOL CWaveFile::CommitChanges()
 
 		if (datack->dwFlags & MMIO_DIRTY)
 		{
-			Seek(datack->dwDataOffset - sizeof datack->cksize);
+			DWORD cksize = (DWORD)datack->cksize;
+			Seek(datack->dwDataOffset - sizeof cksize);
 
-			Write( & datack->cksize, sizeof datack->cksize);
+			Write( & cksize, sizeof cksize);
 			datack->dwFlags &= ~MMIO_DIRTY;
 			GetRiffChunk()->dwFlags |= MMIO_DIRTY;
 		}
