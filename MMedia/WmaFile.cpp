@@ -388,7 +388,6 @@ HRESULT CWmaDecoderSync::Open(LPCTSTR szFilename)
 	return Open(file);
 }
 
-#if 1
 #define USE_READER_CALLBACK_ADVANCED 1
 class CWmaDecoderAsync : public IWMReaderCallback
 #if USE_READER_CALLBACK_ADVANCED
@@ -575,10 +574,6 @@ protected:
 	DWORD m_Bitrate;
 };
 
-
-
-#endif
-
 HRESULT CWmaDecoderSync::Open(CDirectFile & file)
 {
 	HRESULT hr;
@@ -586,25 +581,21 @@ HRESULT CWmaDecoderSync::Open(CDirectFile & file)
 	{
 		return S_FALSE;
 	}
-#if 1
+
 	m_InputStream.SetFile(file);
 
 	hr = m_Reader->OpenStream( & m_InputStream);
-#else
-	hr = m_Reader->Open(file.GetName());
-#endif
+
 	if (FAILED(hr))
 	{
-#if 1
 		CWmaDecoderAsync decoder1;
 		CComPtr<IWMReader> reader;
 		hr = WMCreateReader(NULL, 0, &reader);
 		if (SUCCEEDED(hr))
 		{
 			hr = reader->Open(file.GetName(), &decoder1, NULL);
-
 		}
-#endif
+
 		m_InputStream.Close();
 		return hr;
 	}
@@ -673,7 +664,6 @@ HRESULT CWmaDecoderSync::Open(CDirectFile & file)
 		// Couldnt find any Audio output number in the file
 		//
 		hr = E_UNEXPECTED;
-
 	}
 	else
 	{
@@ -1388,7 +1378,6 @@ HRESULT STDMETHODCALLTYPE FileWriter::OnEndWriting( void)
 	return S_OK;
 }
 
-#if 1
 HRESULT STDMETHODCALLTYPE CWmaDecoderAsync::OnStatus( /* [in] */ WMT_STATUS Status,
 																/* [in] */ HRESULT hr,
 																/* [in] */ WMT_ATTR_DATATYPE dwType,
@@ -1627,19 +1616,17 @@ HRESULT STDMETHODCALLTYPE CWmaDecoderAsync::AllocateForOutput(
 	*ppBuffer = new NSSBuffer(cbBuffer);
 	return S_OK;
 }
+#endif
 
-#endif
-#endif
 CDirectShowDecoder::CDirectShowDecoder(CDirectShowDecoderDataSink * DataSink)
 	: m_FilterState(State_Stopped)
 	, m_DecoderState(DecoderStateUninitialized)
 	, m_DataSink(DataSink)
 {
-
 }
+
 CDirectShowDecoder::~CDirectShowDecoder()
 {
-
 }
 
 HRESULT STDMETHODCALLTYPE CDirectShowDecoder::QueryInterface(
@@ -1687,6 +1674,7 @@ ULONG STDMETHODCALLTYPE CDirectShowDecoder::Release(void)
 {
 	return 1;
 }
+
 // IPin overrides:
 HRESULT STDMETHODCALLTYPE CDirectShowDecoder::Connect(
 													/* [in] */ IPin *pReceivePin,

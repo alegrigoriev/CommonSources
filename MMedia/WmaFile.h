@@ -102,7 +102,6 @@ private:
 };
 
 class CWmaDecoderSync
-
 {
 public:
 
@@ -179,7 +178,6 @@ protected:
 	ATL::CEvent m_StartedEvent;
 	ATL::CEvent m_SampleEvent;
 
-	//WMT_STATUS ReaderStatus;
 	QWORD m_CurrentStreamTime;
 	QWORD m_BufferLengthTime; //32kbytes in 100ns units
 	QWORD m_StreamDuration;
@@ -193,7 +191,6 @@ protected:
 };
 
 #include <streams.h>
-//#include <pullpin.h>
 
 class CDirectShowDecoderDataSink
 {
@@ -413,7 +410,6 @@ protected:
 
 class FileWriter : public IWMWriterSink
 {
-
 	//
 	//Methods of IUnknown
 	//

@@ -509,7 +509,6 @@ public:
 	{
 	}
 
-
 private:
 };
 
