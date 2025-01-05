@@ -512,6 +512,25 @@ public:
 private:
 };
 
+struct CSET_CHUNK
+{
+	enum {
+		FOURCC = mmioFOURCC('C', 'S', 'E', 'T'),
+	};
+	WORD	wCodePage;
+	WORD	wCountryCode;
+	WORD	wLanguageCode;
+	WORD	wDialect;
+
+	CSET_CHUNK()
+		: wCodePage(0),
+		wCountryCode(0),
+		wLanguageCode(0),
+		wDialect(0)
+	{
+	}
+};
+
 class CWaveFile : public CMmioFile
 {
 	typedef CMmioFile BaseClass;
@@ -621,6 +640,7 @@ public:
 
 		InfoListItemVector m_InfoList;
 		InfoListItemVectorW m_InfoListW;    // UNFO list
+		CSET_CHUNK m_Cset;
 
 		bool m_InfoChanged;
 
@@ -724,6 +744,7 @@ public:
 	BOOL LoadListMetadata(MMCKINFO & chunk);
 	BOOL ReadCueSheet(MMCKINFO & chunk);
 	BOOL ReadPlaylist(MMCKINFO & chunk);
+	bool ReadCharacterSetChunk(const MMCKINFO& chunk);
 
 	CuePointChunkItem * GetCuePoint(DWORD CueId);
 	WaveRegionMarker * GetRegionMarker(DWORD CueId);

@@ -533,6 +533,21 @@ BOOL CWaveFile::FindData()
 	return FindChunk( * pDatack, GetRiffChunk());
 }
 
+bool CWaveFile::ReadCharacterSetChunk(const MMCKINFO& chunk)
+{
+	InstanceDataWav* pInstData = AllocateInstanceData<InstanceDataWav>();
+
+	CSET_CHUNK cset;
+
+	if (chunk.cksize < sizeof cset
+		|| sizeof cset != Read(&cset, sizeof cset))
+	{
+		return FALSE;
+	}
+	pInstData->m_Cset = cset;
+	return true;
+}
+
 BOOL CWaveFile::LoadMetadata()
 {
 	InstanceDataWav * pInstData = AllocateInstanceData<InstanceDataWav>();
@@ -579,6 +594,9 @@ BOOL CWaveFile::LoadMetadata()
 				return FALSE;
 			}
 			// TODO: read arbitrary DISP types ( they can be several in one file
+			break;
+		case CSET_CHUNK::FOURCC:
+			ReadCharacterSetChunk(chunk);
 			break;
 		}
 		Ascend(chunk);
