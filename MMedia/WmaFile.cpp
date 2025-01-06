@@ -572,6 +572,8 @@ protected:
 	CWaveFormat m_DstWf;
 	CWaveFormat m_SrcWf;
 	DWORD m_Bitrate;
+
+	std::map<std::wstring, std::vector<BYTE> > m_Attributes;
 };
 
 HRESULT CWmaDecoderSync::Open(CDirectFile & file)
@@ -705,6 +707,7 @@ HRESULT CWmaDecoderSync::Open(CDirectFile & file)
 		return hr;
 	}
 
+	m_Attributes.clear();
 	if (CComQIPtr<IWMHeaderInfo> pHeaderInfo = m_Reader)
 	{
 		WORD stream = WORD(m_dwAudioOutputNum);
@@ -714,27 +717,6 @@ HRESULT CWmaDecoderSync::Open(CDirectFile & file)
 		WORD SizeofStreamLength = sizeof StreamLength;
 		WMT_ATTR_DATATYPE type = WMT_TYPE_QWORD;
 
-#ifdef _DEBUG
-		WORD AttributeCount = 0;
-
-		pHeaderInfo->GetAttributeCount(stream, & AttributeCount);
-		TRACE("HeaderInfo::stream=%d, %d attributes\n", stream, AttributeCount);
-		for (WORD ii = 0; ii < AttributeCount; ii++)
-		{
-			WCHAR name[1024];
-			name[0] = 0;
-			WORD NameLen = 1024;
-			WMT_ATTR_DATATYPE Type;
-			BYTE value[1024];
-			WORD Length=1024;
-			if (SUCCEEDED(pHeaderInfo->GetAttributeByIndex(ii,
-															&stream, name, & NameLen, & Type, value, & Length)))
-			{
-				TRACE(L"Attribute %d name=%s\n", ii, name);
-			}
-		}
-#endif
-
 		hr = pHeaderInfo->GetAttributeByName( & stream, g_wszWMDuration,
 											& type, (BYTE *) & StreamLength, & SizeofStreamLength);
 
@@ -743,6 +725,33 @@ HRESULT CWmaDecoderSync::Open(CDirectFile & file)
 			if (TRACE_WMA_DECODER) TRACE(_T("Stream Length = %08X%08X (%d seconds), size=%d\n"),
 				DWORD(StreamLength >> 32), DWORD(StreamLength & 0xFFFFFFFF), DWORD(StreamLength / 10000000), SizeofStreamLength);
 			m_StreamDuration = StreamLength;
+		}
+
+		WORD AttributeCount = 0;
+		pHeaderInfo->GetAttributeCount(stream, & AttributeCount);
+		if (TRACE_WMA_DECODER) TRACE("HeaderInfo::stream=%d, %d attributes\n", stream, AttributeCount);
+		for (WORD ii = 0; ii < AttributeCount; ii++)
+		{
+			const unsigned AttributeNameLen = 1024;
+			WCHAR name[AttributeNameLen] = { 0 };
+			name[0] = 0;
+			WORD NameLen = AttributeNameLen;
+			WMT_ATTR_DATATYPE Type;
+			BYTE value[1024] = { 0 };
+			WORD Length = sizeof value;
+			WORD stream0 = 0;
+
+			if (SUCCEEDED(pHeaderInfo->GetAttributeByIndex(ii,
+															&stream0, name, & NameLen, & Type, value, & Length)))
+			{
+				if (TRACE_WMA_DECODER) TRACE(L"Attribute %d name=%s\n", ii, name);
+
+				WM_Attribute attr =
+				{
+					Type, name, std::vector<BYTE>(value, value + Length),
+				};
+				m_Attributes.push_back(attr);
+			}
 		}
 	}
 	else

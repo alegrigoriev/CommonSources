@@ -6,6 +6,8 @@
 #include <atlsync.h>
 #define _INC_WINDOWSX	// DO NOT PARSE windowsx.h
 #include <dshow.h>
+#include <map>
+#include <string>
 
 class CDirectFileStream : public IStream
 {
@@ -101,6 +103,13 @@ private:
 	CDirectFile m_File;
 };
 
+struct WM_Attribute
+{
+	WMT_ATTR_DATATYPE type;
+	CStringW name;
+	std::vector<BYTE> value;
+};
+
 class CWmaDecoderSync
 {
 public:
@@ -160,6 +169,7 @@ public:
 		return m_CurrentSamples;
 	}
 
+
 protected:
 	BOOL volatile m_bNeedNextSample;
 	CWaveFile m_DstFile;
@@ -188,6 +198,8 @@ protected:
 	CWaveFormat m_DstWf;
 	CWaveFormat m_SrcWf;
 	DWORD m_Bitrate;
+
+	std::vector<WM_Attribute> m_Attributes;
 };
 
 #include <streams.h>
