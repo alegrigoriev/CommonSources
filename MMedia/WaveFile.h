@@ -499,7 +499,7 @@ protected:
 };
 
 #pragma warning(push)
-#pragma warning(disable : 4521 4522)
+//#pragma warning(disable : 4521 4522)
 class bad_get_waveformat
 	: public std::exception
 {
