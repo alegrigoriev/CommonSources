@@ -412,13 +412,33 @@ struct InfoListItemA
 {
 	FOURCC fccCode;
 	CStringA Text;
+
+	InfoListItemA(DWORD fourcc, LPCSTR str)
+		: fccCode(fourcc),
+		Text(str)
+	{ }
+	InfoListItemA()
+		: fccCode(0),
+		Text()
+	{ }
 };
 
 struct InfoListItemW
 {
 	FOURCC fccCode;
-	CStringA Tag;   // tag as in WMA file
+	CStringW Tag;   // tag as in WMA file
 	CStringW Text;
+
+	InfoListItemW(DWORD fourcc, LPCWSTR tag, LPCWSTR str)
+		: fccCode(fourcc),
+		Tag(tag),
+		Text(str)
+	{ }
+	InfoListItemW()
+		: fccCode(0),
+		Tag(),
+		Text()
+	{ }
 };
 
 typedef std::vector<InfoListItemA> InfoListItemVector;
@@ -611,24 +631,6 @@ public:
 		CWavePeaks m_PeakData;
 
 		CString m_DisplayTitle;   // DISP, WM/Title
-#if 0
-		CString Author;         // WM/Author
-		CString Album;          // WM/AlbumTitle
-		CString Copyright;      // ICOP
-		CString RecordingEngineer;  // IENG
-
-		CString Title;
-		CString OriginalArtist; // IART
-		CString Date;       // WM/Year
-		CString Genre;      // IGNR, WM/Genre
-		CString Comment;    // ICMT
-		CString Subject;   // ISBJ
-		CString Keywords;  // IKEY
-		CString Medium;  // IMED
-		CString Source; // ISRC
-		CString Digitizer; // ITCH
-		CString DigitizationSource; // ISRF
-#endif
 
 		RegionMarkerVector m_RegionMarkers;  // markers and regions
 		CuePointVector m_CuePoints;
@@ -687,6 +689,11 @@ public:
 
 		BOOL CopyMarkers(InstanceDataWav const * pSrc,
 						SAMPLE_INDEX SrcBegin, SAMPLE_INDEX DstBegin, NUMBER_OF_SAMPLES Length);
+
+		CString GetInfoItem(DWORD fourcc) const;
+		CStringW GetInfoItem(LPCSTR tag) const;
+		void SetInfoItem(DWORD fourcc, LPCWSTR tag, LPCWSTR str);
+		void SetInfoItem(DWORD fourcc, LPCSTR str);
 
 		bool IsChanged() const
 		{
@@ -760,6 +767,11 @@ public:
 	BOOL GetWaveMarker(WAVEREGIONINFO * info) const;
 	BOOL MoveWaveMarker(unsigned long MarkerCueID, SAMPLE_INDEX Sample);
 	BOOL SetMarkerLabel(unsigned long MarkerCueID, LPCTSTR Label);
+
+	CString GetInfoItem(DWORD fourcc) const;
+	CStringW GetInfoItem(LPCSTR tag) const;
+	void SetInfoItem(DWORD fourcc, LPCWSTR tag, LPCWSTR str);
+	void SetInfoItem(DWORD fourcc, LPCSTR str);
 
 	// return sorted array of markers
 	void GetSortedMarkers(SAMPLE_INDEX_Vector & markers, BOOL IncludeFileLimits = FALSE) const;

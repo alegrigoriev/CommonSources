@@ -863,6 +863,127 @@ int CMmioFile::WriteChunkStringW(CStringW const & String)
 	return Length;
 }
 
+CString CWaveFile::InstanceDataWav::GetInfoItem(DWORD fourcc) const
+{
+	for (auto ii = m_InfoList.begin(); ii != m_InfoList.end(); ++ii)
+	{
+		if (fourcc == ii->fccCode)
+		{
+			return CString(ii->Text);
+		}
+	}
+	for (auto ii = m_InfoListW.begin(); ii != m_InfoListW.end(); ++ii)
+	{
+		if (ii->fccCode != 0
+			&& fourcc == ii->fccCode)
+		{
+			return CString(ii->Text);
+		}
+	}
+	return CString();
+}
+
+CStringW CWaveFile::InstanceDataWav::GetInfoItem(LPCSTR tag) const
+{
+	for (auto ii = m_InfoListW.begin(); ii != m_InfoListW.end(); ++ii)
+	{
+		if (tag != nullptr
+			&& tag[0] != 0
+			&& ii->Tag == tag)
+		{
+			return ii->Text;
+		}
+	}
+	return CStringW();
+}
+
+void CWaveFile::InstanceDataWav::SetInfoItem(DWORD fourcc, LPCWSTR tag, LPCWSTR str)
+{
+	// set/replace in m_InfoListW
+	InfoListItemW itemW(fourcc, tag, str);
+	auto ii = m_InfoListW.begin();
+	for (; ii != m_InfoListW.end(); ++ii)
+	{
+		if ((fourcc != 0
+			&& fourcc == ii->fccCode)
+			|| (tag != nullptr
+				&& tag[0] != 0
+				&& ii->Tag == tag))
+		{
+			*ii = itemW;
+			break;
+		}
+	}
+	if (ii == m_InfoListW.end())
+	{
+		m_InfoListW.push_back(itemW);
+	}
+
+	// delete from m_InfoList, if present
+	for (auto jj = m_InfoList.begin(); jj != m_InfoList.end(); ++jj)
+	{
+		if (fourcc == jj->fccCode)
+		{
+			m_InfoList.erase(jj);
+			break;
+		}
+	}
+}
+
+void CWaveFile::InstanceDataWav::SetInfoItem(DWORD fourcc, LPCSTR str)
+{
+	// set/replace in m_InfoList
+	InfoListItemA item(fourcc, str);
+	auto ii = m_InfoList.begin();
+	for (; ii != m_InfoList.end(); ++ii)
+	{
+		if (fourcc != 0
+			&& fourcc == ii->fccCode)
+		{
+			*ii = item;
+			break;
+		}
+	}
+	if (ii == m_InfoList.end())
+	{
+		m_InfoList.push_back(item);
+	}
+	if (fourcc == 0)
+	{
+		return;
+	}
+
+	// delete from m_InfoListW, if present
+	for (auto jj = m_InfoListW.begin(); jj != m_InfoListW.end(); ++jj)
+	{
+		if (fourcc == jj->fccCode)
+		{
+			m_InfoListW.erase(jj);
+			break;
+		}
+	}
+}
+
+CString CWaveFile::GetInfoItem(DWORD fourcc) const
+{
+	return GetInstanceData()->GetInfoItem(fourcc);
+}
+
+CStringW CWaveFile::GetInfoItem(LPCSTR tag) const
+{
+	return GetInstanceData()->GetInfoItem(tag);
+}
+
+void CWaveFile::SetInfoItem(DWORD fourcc, LPCWSTR tag, LPCWSTR str)
+{
+	GetInstanceData()->SetInfoItem(fourcc, tag, str);
+}
+
+void CWaveFile::SetInfoItem(DWORD fourcc, LPCSTR str)
+{
+	GetInstanceData()->SetInfoItem(fourcc, str);
+}
+
 BOOL CWaveFile::ReadCueSheet(MMCKINFO & chunk)
 {
 	InstanceDataWav * pInstData = AllocateInstanceData<InstanceDataWav>();
