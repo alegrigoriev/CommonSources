@@ -528,14 +528,14 @@ BOOL CWaveFile::LoadWaveformat()
 
 BOOL CWaveFile::FindData()
 {
-	LPMMCKINFO pDatack = & AllocateInstanceData<InstanceDataWav>()->datack;
+	LPMMCKINFO pDatack = &GetInstanceData()->datack;
 	pDatack->ckid = mmioFOURCC('d', 'a', 't', 'a');
 	return FindChunk( * pDatack, GetRiffChunk());
 }
 
 bool CWaveFile::ReadCharacterSetChunk(const MMCKINFO& chunk)
 {
-	InstanceDataWav* pInstData = AllocateInstanceData<InstanceDataWav>();
+	InstanceDataWav* pInstData = GetInstanceData();
 
 	CSET_CHUNK cset;
 
@@ -550,7 +550,7 @@ bool CWaveFile::ReadCharacterSetChunk(const MMCKINFO& chunk)
 
 BOOL CWaveFile::LoadMetadata()
 {
-	InstanceDataWav * pInstData = AllocateInstanceData<InstanceDataWav>();
+	InstanceDataWav * pInstData = GetInstanceData();
 	pInstData->ResetMetadata();
 
 	DWORD id;
@@ -986,7 +986,7 @@ void CWaveFile::SetInfoItem(DWORD fourcc, LPCSTR str)
 
 BOOL CWaveFile::ReadCueSheet(MMCKINFO & chunk)
 {
-	InstanceDataWav * pInstData = AllocateInstanceData<InstanceDataWav>();
+	InstanceDataWav * pInstData = GetInstanceData();
 	DWORD count;
 
 	if (chunk.cksize < sizeof count
@@ -1019,7 +1019,7 @@ BOOL CWaveFile::ReadCueSheet(MMCKINFO & chunk)
 
 BOOL CWaveFile::ReadPlaylist(MMCKINFO & chunk)
 {
-	InstanceDataWav * pInstData = AllocateInstanceData<InstanceDataWav>();
+	InstanceDataWav * pInstData = GetInstanceData();
 	DWORD count;
 	if (chunk.cksize < sizeof count
 		|| sizeof count != Read( & count, sizeof count))
@@ -1514,7 +1514,7 @@ BOOL CWaveFile::LoadListMetadata(MMCKINFO & chunk)
 {
 	// fccType is already read
 	MMCKINFO subchunk;
-	InstanceDataWav * pInstData = AllocateInstanceData<InstanceDataWav>();
+	InstanceDataWav * pInstData = GetInstanceData();
 
 	switch (chunk.fccType)
 	{
