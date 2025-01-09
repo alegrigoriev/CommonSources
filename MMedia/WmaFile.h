@@ -169,6 +169,7 @@ public:
 		return m_CurrentSamples;
 	}
 
+	void AttributesToWavMetadata(CWaveFile& WaveFile) const;
 
 protected:
 	BOOL volatile m_bNeedNextSample;

@@ -840,6 +840,140 @@ HRESULT CWmaDecoderSync::Open(CDirectFile & file)
 	return S_OK;
 }
 
+struct WindowsMediaAttribute
+{
+	LPCWSTR attr;
+	DWORD type;
+	DWORD fourcc;
+};
+
+static const WindowsMediaAttribute WindowsMediaAttrs[] =
+{
+	{
+		g_wszWMTitle, WMT_TYPE_STRING,
+		mmioFOURCC('D', 'I', 'S', 'P'),
+	},
+	{
+		g_wszWMAuthor, WMT_TYPE_STRING,
+		mmioFOURCC('I', 'A', 'U', 'T'),
+	},
+	{
+		g_wszWMAlbumTitle, WMT_TYPE_STRING,
+		mmioFOURCC('I', 'A', 'L', 'B'),
+	},
+	{
+		g_wszWMTrackNumber, WMT_TYPE_STRING,
+		mmioFOURCC('I', 'T', 'R', 'K'),
+	},
+	{
+		g_wszWMCopyright, WMT_TYPE_STRING,
+		mmioFOURCC('I', 'C', 'O', 'P'),
+	},
+	{
+		g_wszWMGenre, WMT_TYPE_STRING,
+		mmioFOURCC('I', 'G', 'N', 'R'),
+	},
+	{
+		g_wszWMDescription, WMT_TYPE_STRING,
+		mmioFOURCC('I', 'W', 'M', '/'),
+	},
+	{
+		g_wszWMAlbumTitle, WMT_TYPE_STRING,
+		mmioFOURCC('I', 'W', 'M', '/'),
+	},
+	{
+		g_wszWMTrack, WMT_TYPE_STRING,
+		mmioFOURCC('I', 'W', 'M', '/'),
+	},
+	{
+		g_wszWMTrackNumber, WMT_TYPE_STRING,
+		mmioFOURCC('I', 'W', 'M', '/'),
+	},
+	{
+		g_wszWMYear, WMT_TYPE_STRING,
+		mmioFOURCC('I', 'W', 'M', '/'),
+	},
+	{
+		g_wszWMComposer, WMT_TYPE_STRING,
+		mmioFOURCC('I', 'W', 'M', '/'),
+	},
+	{
+		g_wszWMAlbumArtist, WMT_TYPE_STRING,
+		mmioFOURCC('I', 'W', 'M', '/'),
+	},
+};
+
+void CWmaDecoderSync::AttributesToWavMetadata(CWaveFile& WaveFile) const
+{
+	CWaveFile::InstanceDataWav *pInstData = WaveFile.GetInstanceData();
+
+	for (auto ii = m_Attributes.cbegin(); ii != m_Attributes.cend(); ++ii)
+	{
+		DWORD fourcc = 0;
+		LPCWSTR tag = ii->name;
+
+		for (unsigned i = 0; i < sizeof WindowsMediaAttrs / sizeof WindowsMediaAttrs[0]; i++)
+		{
+			if (0 == wcscmp(WindowsMediaAttrs[i].attr, tag))
+			{
+				fourcc = WindowsMediaAttrs[i].fourcc;
+				break;
+			}
+		}
+		if (fourcc == 0)
+		{
+			continue;
+		}
+
+		CString str;
+
+		if (fourcc == mmioFOURCC('I', 'W', 'M', '/'))
+		{
+			str.Format(_T("%ws:"), tag);
+		}
+
+		QWORD qword = 0;
+		BYTE bytes[1024] = { 0 };
+
+		size_t Length = ii->value.size();
+		if (Length > sizeof bytes)
+		{
+			continue;
+		}
+		std::copy(ii->value.cbegin(), ii->value.cend(), bytes);
+
+		switch (ii->type)
+		{
+		case WMT_TYPE_QWORD:
+		case WMT_TYPE_DWORD:
+		case WMT_TYPE_WORD:
+		case WMT_TYPE_BOOL:
+			memcpy(&qword, bytes, sizeof qword);
+			str.AppendFormat(_T("%I64d"), qword);
+			break;
+
+		case WMT_TYPE_STRING:
+			if (bytes[sizeof bytes - 1] != 0
+				|| bytes[sizeof bytes - 2] != 0)
+			{
+				continue;
+			}
+			str += (LPCWSTR)bytes;
+			break;
+		default:
+			continue;
+		}
+
+		if (fourcc == mmioFOURCC('D', 'I', 'S', 'P'))
+		{
+			pInstData->m_DisplayTitle = str;
+			continue;
+		}
+
+		pInstData->SetInfoItem(fourcc, tag, str);
+	}
+}
+
 HRESULT CWmaDecoderSync::Start()
 {
 	m_bStarted = true;
