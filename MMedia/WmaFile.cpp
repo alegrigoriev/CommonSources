@@ -746,6 +746,37 @@ HRESULT CWmaDecoderSync::Open(CDirectFile & file)
 			{
 				if (TRACE_WMA_DECODER) TRACE(L"Attribute %d name=%s\n", ii, name);
 
+				// Convert the legacy WM/Track (0-based) to the new WM/TrackNumber (1-based) attribute
+				if (0 == wcscmp(name, g_wszWMTrack))
+				{
+					QWORD trk = 0;
+					switch (Type)
+					{
+					case WMT_TYPE_QWORD:
+					case WMT_TYPE_DWORD:
+					case WMT_TYPE_WORD:
+					case WMT_TYPE_BOOL:
+						trk = *(QWORD*)value;
+						break;
+
+					case WMT_TYPE_STRING:
+						if (swscanf_s((LPCWSTR)value, L"%lld", &trk) != 1)
+						{
+							continue;
+						}
+						break;
+
+					default:
+						continue;
+					}
+
+					trk += 1; // now 1-based
+					Type = WMT_TYPE_STRING;
+					Length = (WORD)swprintf_s((wchar_t*)value, sizeof(value) / sizeof(wchar_t), L"%lld", trk);
+					Length = (WORD)((Length + 1) * sizeof(WCHAR));
+					wcscpy_s(name, g_wszWMTrackNumber);
+				}
+
 				WM_Attribute attr =
 				{
 					Type, name, std::vector<BYTE>(value, value + Length),
