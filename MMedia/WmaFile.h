@@ -490,9 +490,9 @@ public:
 
 	BOOL Init();
 	void DeInit();
-	void SetArtist(LPCTSTR szArtist);
-	void SetAlbum(LPCTSTR szAlbum);
-	void SetGenre(LPCTSTR szGenre);
+	void SetArtist(LPCWSTR szArtist);
+	void SetAlbum(LPCWSTR szAlbum);
+	void SetGenre(LPCWSTR szGenre);
 	BOOL SetDestinationFormat(WAVEFORMATEX const * pDstWfx);
 	BOOL Write(void const * Buf, unsigned size);
 	void SetSourceWaveFormat(WAVEFORMATEX const * pSrcWfx);

@@ -1031,58 +1031,22 @@ BOOL WmaEncoder::Init()
 	return TRUE;
 }
 
-void WmaEncoder::SetArtist(LPCTSTR szArtist)
+void WmaEncoder::SetArtist(LPCWSTR szArtist)
 {
-#ifdef _UNICODE
-	m_pHeaderInfo->SetAttribute(1, g_wszWMAuthor, WMT_TYPE_STRING,
-								(LPBYTE)szArtist, WORD((wcslen(szArtist) + 1) * sizeof(TCHAR)));
-#else
-	WCHAR Artist[MAX_PATH+1] = {0};
-	int nChars = ::MultiByteToWideChar(CP_ACP, MB_PRECOMPOSED, szArtist, -1,
-										Artist, MAX_PATH);
-	if (0 == nChars)
-	{
-		return;
-	}
-	m_pHeaderInfo->SetAttribute(1, g_wszWMAuthor, WMT_TYPE_STRING,
-								(LPBYTE)Artist, (nChars + 1) * sizeof(TCHAR));
-#endif
+	m_pHeaderInfo->SetAttribute(0, g_wszWMAuthor, WMT_TYPE_STRING,
+								(LPBYTE)szArtist, WORD((wcslen(szArtist) + 1) * sizeof(WCHAR)));
 }
 
-void WmaEncoder::SetAlbum(LPCTSTR szAlbum)
+void WmaEncoder::SetAlbum(LPCWSTR szAlbum)
 {
-#ifdef _UNICODE
-	m_pHeaderInfo->SetAttribute(1, g_wszWMAlbumTitle, WMT_TYPE_STRING,
-								(LPBYTE)szAlbum, WORD((wcslen(szAlbum) + 1) * sizeof(TCHAR)));
-#else
-	WCHAR Album[MAX_PATH+1] = {0};
-	int nChars = ::MultiByteToWideChar(CP_ACP, MB_PRECOMPOSED, szAlbum, -1,
-										Album, MAX_PATH);
-	if (0 == nChars)
-	{
-		return;
-	}
-	m_pHeaderInfo->SetAttribute(1, g_wszWMAlbumTitle, WMT_TYPE_STRING,
-								(LPBYTE)Album, (nChars + 1) * sizeof(TCHAR));
-#endif
+	m_pHeaderInfo->SetAttribute(0, g_wszWMAlbumTitle, WMT_TYPE_STRING,
+								(LPBYTE)szAlbum, WORD((wcslen(szAlbum) + 1) * sizeof(WCHAR)));
 }
 
-void WmaEncoder::SetGenre(LPCTSTR szGenre)
+void WmaEncoder::SetGenre(LPCWSTR szGenre)
 {
-#ifdef _UNICODE
-	m_pHeaderInfo->SetAttribute(1, g_wszWMGenre, WMT_TYPE_STRING,
-								(LPBYTE)szGenre, WORD((wcslen(szGenre) + 1) * sizeof(TCHAR)));
-#else
-	WCHAR Genre[MAX_PATH+1] = {0};
-	int nChars = ::MultiByteToWideChar(CP_ACP, MB_PRECOMPOSED, szGenre, -1,
-										Genre, MAX_PATH);
-	if (0 == nChars)
-	{
-		return;
-	}
-	m_pHeaderInfo->SetAttribute(1, g_wszWMGenre, WMT_TYPE_STRING,
-								(LPBYTE)Genre, (nChars + 1) * sizeof(TCHAR));
-#endif
+	m_pHeaderInfo->SetAttribute(0, g_wszWMGenre, WMT_TYPE_STRING,
+								(LPBYTE)szGenre, WORD((wcslen(szGenre) + 1) * sizeof(WCHAR)));
 }
 
 void WmaEncoder::SetSourceWaveFormat(WAVEFORMATEX const * pSrcWfx)
