@@ -1049,17 +1049,7 @@ BOOL WmaEncoder::OpenWrite(CDirectFile & File)
 	hr = m_pWriterAdvanced->AddSink( & m_FileWriter);
 
 	m_pHeaderInfo = m_pWriter;
-#if 0
 
-	if ( ! m_pHeaderInfo)
-	{
-		return FALSE;
-	}
-
-	m_pHeaderInfo->SetAttribute(0, g_wszWMTitle, WMT_TYPE_STRING, (BYTE const *)L"Title", sizeof L"Title");
-	m_pHeaderInfo->SetAttribute(0, g_wszWMAuthor, WMT_TYPE_STRING, (BYTE const *)L"Author", sizeof L"Author");
-	m_pHeaderInfo.Release();
-#endif
 	// open input properties
 	CComPtr<IWMInputMediaProps> pMediaProps;
 	hr = m_pWriter->GetInputProps(0, & pMediaProps);
@@ -1108,6 +1098,69 @@ BOOL WmaEncoder::OpenWrite(CDirectFile & File)
 	if (TRACE_WMA_DECODER) TRACE(_T("Writer sink count=%d\n"), NumSinks);
 #endif
 	return TRUE;
+}
+
+void WmaEncoder::WavMetadataToAttributes(const CWaveFile& WaveFile)
+{
+	if (!m_pHeaderInfo)
+	{
+		return;
+	}
+
+	CWaveFile::InstanceDataWav* pInstData = WaveFile.GetInstanceData();
+
+	m_pHeaderInfo->SetAttribute(0, g_wszWMTitle, WMT_TYPE_STRING, (BYTE const*)L"Title", sizeof L"Title");
+	m_pHeaderInfo->SetAttribute(0, g_wszWMAuthor, WMT_TYPE_STRING, (BYTE const*)L"Author", sizeof L"Author");
+
+	for (auto ii = pInstData->m_InfoList.begin(); ii != pInstData->m_InfoList.end(); ++ii)
+	{
+		for (unsigned i = 0; i < sizeof WindowsMediaAttrs / sizeof WindowsMediaAttrs[0]; i++)
+		{
+			if (ii->fccCode == WindowsMediaAttrs[i].fourcc)
+			{
+				CStringW stringW;
+				int Length = ii->Text.GetLength();
+				if (Length)
+				{
+					Length = ::MultiByteToWideChar(pInstData->m_Cset.wCodePage, 0, ii->Text, Length,
+						stringW.GetBuffer(Length), Length);
+
+					stringW.ReleaseBuffer(Length);
+				}
+
+				m_pHeaderInfo->SetAttribute(0, WindowsMediaAttrs[i].attr,
+					WMT_TYPE_STRING,
+					(BYTE const*)(LPCWSTR)stringW, (WORD)((stringW.GetLength() + 1) * sizeof(WCHAR)));
+				break;
+			}
+		}
+	}
+	for (auto ii = pInstData->m_InfoListW.begin(); ii != pInstData->m_InfoListW.end(); ++ii)
+	{
+		if (ii->Tag.GetLength()) // (ii->fccCode == mmioFOURCC('I', 'W', 'M', '/'))
+		{
+			m_pHeaderInfo->SetAttribute(0, ii->Tag, WMT_TYPE_STRING,
+				(BYTE const*)(LPCWSTR)ii->Text, (WORD)((ii->Text.GetLength()+1)*sizeof(WCHAR)));
+			continue;
+		}
+
+		if (ii->fccCode == mmioFOURCC('I', 'W', 'M', '/'))
+		{
+			// Not supposed to happen
+			continue;
+		}
+
+		for (unsigned i = 0; i < sizeof WindowsMediaAttrs / sizeof WindowsMediaAttrs[0]; i++)
+		{
+			if (ii->fccCode == WindowsMediaAttrs[i].fourcc)
+			{
+				m_pHeaderInfo->SetAttribute(0, WindowsMediaAttrs[i].attr,
+					WMT_TYPE_STRING,
+					(BYTE const*)(LPCWSTR)ii->Text, (WORD)((ii->Text.GetLength() + 1) * sizeof(WCHAR)));
+				break;
+			}
+		}
+	}
 }
 
 #ifdef _DEBUG

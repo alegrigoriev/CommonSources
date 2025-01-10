@@ -509,6 +509,9 @@ public:
 	{
 		return m_SrcWfx;
 	}
+
+	void WavMetadataToAttributes(const CWaveFile& WaveFile);
+
 private:
 	CWaveFormat m_SrcWfx;
 	CComPtr<IWMWriter> m_pWriter;
@@ -519,4 +522,6 @@ private:
 	QWORD m_SampleTime100ns;
 	CComQIPtr<IWMHeaderInfo> m_pHeaderInfo;
 	CComPtr<INSSBuffer> m_pBuffer;
+
+	std::vector<WM_Attribute> m_Attributes;
 };
