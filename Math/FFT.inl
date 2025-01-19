@@ -1,5 +1,7 @@
-// Copyright Alexander Grigoriev, 1997-2016, All Rights Reserved
+// Copyright Alexander Grigoriev, 1997-2025, All Rights Reserved
 // File FFT.inl
+#pragma once
+#include <complex>
 
 #ifndef M_PI
 #define M_PI        3.14159265358979323846
@@ -12,17 +14,21 @@
 
 namespace FFT
 {
+typedef std::complex<double> complex;
 
-// Conversion of 'count' complex FFT result terms to 'count'
+// Conversion of [count] complex FFT result terms to [count+1]
 // terms as if they were obtained from real data. Used in real->complex FFT
 template<class T>
 void FFTPostProc(std::complex<T> * x, const unsigned count)
 {
-	ASSERT(count > 0 && count % 2 == 0);
-	double angle = M_PI / count;
-	std::complex<double> rot2(cos(2*angle), -sin(2*angle));
-	std::complex<double> u0(-sin(angle), -cos(angle));
-	std::complex<double> u1(-sin(2*angle), -cos(2*angle));
+	ASSERT(count != 0);
+	ASSERT(count % 2 == 0);
+	ASSERT(((0 - count) & count) == count);
+
+	double const angle = M_PI / count;
+	complex const rot2(cos(2*angle), -sin(2*angle));
+	complex u0(-sin(angle), -cos(angle));
+	complex u1(-sin(2*angle), -cos(2*angle));
 
 	x[count] = std::complex<T>(T(0.), T(x[0].real() - x[0].imag()));
 	x[0] = std::complex<T>(T(x[0].real() + x[0].imag()), T(0.));
@@ -32,10 +38,10 @@ void FFTPostProc(std::complex<T> * x, const unsigned count)
 	{
 		k--;
 		i++;
-		std::complex<double> xk = x[k];
-		std::complex<double> xi = conj(x[i]);
-		std::complex<double> tmp = xk + xi;
-		std::complex<double> tmp2 = u0 * (xk - xi);
+		complex xk = x[k];
+		complex xi = conj(x[i]);
+		complex tmp = xk + xi;
+		complex tmp2 = u0 * (xk - xi);
 		u0 *= rot2;
 
 		x[i] = conj(0.5 * (tmp + tmp2));
@@ -59,24 +65,31 @@ void FFTPostProc(std::complex<T> * x, const unsigned count)
 	}
 }
 
-// Conversion of 'count+1' complex FFT result terms to 'count+1'
+// Conversion of [count+1] complex FFT result terms to [count]
 // terms as if they were obtained from complex data.
 // Used in complex->real IFFT
 template<class T>
-void IFFTPreProc(const std::complex<T> * src, std::complex<T> * dst, const unsigned count)
+void IFFTPreProc(const std::complex<T> * src,
+				std::complex<T> * dst,
+				const unsigned count)
 {
-	ASSERT(count > 0 && count % 2 == 0);
-	double angle = M_PI / count;
-	std::complex<double> rot(cos(angle), -sin(angle));
-	std::complex<double> u(0., -1.);
+	typedef std::complex<T> complexT;
 
-	dst[0] = T(0.5) * (src[0] + conj(src[count]) + std::complex<T>(0., 1.) * (conj(src[count]) + src[0]));
+	ASSERT(count != 0);
+	ASSERT(count % 2 == 0);
+	ASSERT(((0 - count) & count) == count);
+
+	double angle = M_PI / count;
+	complex rot(cos(angle), -sin(angle));
+	complex u(0., -1.);
+
+	dst[0] = complexT(0.5, 0.5) * (conj(src[count]) + src[0]);
 
 	for (unsigned i = 1, k = count - 1; i <= count / 2; i++, k--)
 	{
 		u *= rot;
-		std::complex<T> tmp = conj(src[k]) + src[i];
-		std::complex<T> tmp2 = std::complex<T>(u * std::complex<double>(conj(src[k]) - src[i]));
+		complexT tmp(conj(src[k]) + src[i]);
+		complexT tmp2(u * complex(conj(src[k]) - src[i]));
 
 		dst[i] = T(0.5) * (tmp + tmp2);
 		dst[k] = T(0.5) * conj(tmp - tmp2);
@@ -84,7 +97,8 @@ void IFFTPreProc(const std::complex<T> * src, std::complex<T> * dst, const unsig
 }
 
 // FFT implementation accelerated with Intel SSE2
-static void FastFourierTransformCoreSSE2(const std::complex<double> * complex_src, std::complex<double> * complex_dst,
+static void FastFourierTransformCoreSSE2(const std::complex<double> * complex_src,
+										std::complex<double> * complex_dst,
 										const unsigned count,
 										const bool reverse_fft)
 {
@@ -181,7 +195,8 @@ static void FastFourierTransformCoreSSE2(const std::complex<double> * complex_sr
 	}
 }
 
-static void FastFourierTransformCoreSSE2(const std::complex<float> * complex_src, std::complex<float> * complex_dst,
+static void FastFourierTransformCoreSSE2(const std::complex<float> * complex_src,
+										std::complex<float> * complex_dst,
 										const unsigned count,
 										const bool reverse_fft)
 {
@@ -304,10 +319,13 @@ static void FastFourierTransformCoreSSE2(const std::complex<float> * complex_src
 
 //inline implementation of a generic complex->complex fft function
 template<class T>
-void FastFourierTransformCore(const std::complex<T> * src, std::complex<T> * dst,
+void FastFourierTransformCore(const std::complex<T> * src,
+							std::complex<T> * dst,
 							const unsigned count,
 							const bool reverse_fft)
 {
+	typedef std::complex<T> complexT;
+
 	static bool CanUseSSE2 = true;
 	if (CanUseSSE2
 		&& 0 == (uintptr_t(src) & 15)
@@ -316,7 +334,7 @@ void FastFourierTransformCore(const std::complex<T> * src, std::complex<T> * dst
 		FastFourierTransformCoreSSE2(src, dst, count, reverse_fft);
 		return;
 	}
-	std::complex<double> cs2(cos(M_PI / (count/2)), sin(M_PI / (count/2)));
+	complex cs2(cos(M_PI / (count/2)), sin(M_PI / (count/2)));
 	if (reverse_fft) cs2 = conj(cs2);
 
 	for (unsigned f = count / 2; f > 1; f /= 2, src = dst)
@@ -328,8 +346,8 @@ void FastFourierTransformCore(const std::complex<T> * src, std::complex<T> * dst
 
 		int e = f * 2;
 
-		std::complex<double> uv0(1., 0.);
-		std::complex<double> uv1 = cs2;		// from previous step
+		complex uv0(1., 0.);
+		complex uv1 = cs2;		// from previous step
 		cs2.real(cos(z));
 		cs2.imag(sin(z));
 
@@ -341,9 +359,9 @@ void FastFourierTransformCore(const std::complex<T> * src, std::complex<T> * dst
 			for(unsigned i = j; i < count; i += e)
 			{
 				// on the first j pass, i goes from j for each complex number
-				const std::complex<T> * srci = src + i;
-				std::complex<T> * dsti = dst + i;
-				std::complex<double> s0 = srci[0], s1 = srci[f];
+				const complexT* srci = src + i;
+				complexT* dsti = dst + i;
+				complex s0 = srci[0], s1 = srci[f];
 				dsti[0] = s0 + s1;
 				dsti[f] = uv0 * (s0 - s1);
 
@@ -363,7 +381,7 @@ void FastFourierTransformCore(const std::complex<T> * src, std::complex<T> * dst
 		T a = T(1.0 / count);
 		for (unsigned i = 0; i < count; i += 2)
 		{
-			std::complex<T> s0 = src[i], s1 = src[i + 1];
+			complexT s0 = src[i], s1 = src[i + 1];
 			dst[i] = a * (s0 + s1);
 			dst[i + 1] = a * (s0 - s1);
 		} // i-loop
@@ -372,18 +390,18 @@ void FastFourierTransformCore(const std::complex<T> * src, std::complex<T> * dst
 	{
 		for (unsigned i = 0; i < count; i += 2)
 		{
-			std::complex<T> s0 = src[i], s1 = src[i + 1];
+			complexT s0 = src[i], s1 = src[i + 1];
 			dst[i] = (s0 + s1);
 			dst[i + 1] = (s0 - s1);
 		} // i-loop
 	}
 
 	unsigned m = count / 2;	// iterate to the half of the array size
-	std::complex<T> * dst_m = dst + m;	// half of the array, corresponds to the most significant bit of i, j
+	complexT* dst_m = dst + m;	// half of the array, corresponds to the most significant bit of i, j
 	for (unsigned i = 0, j = 0; i < m; i +=2)
 	{
 		// j is a bit reverse of i
-		std::complex<T> tmp;
+		complexT tmp;
 		// exchange 0..i..1 and 1..j..0
 		tmp = dst_m[j];
 		dst_m[j] = dst[i + 1];
@@ -414,60 +432,111 @@ void FastFourierTransformCore(const std::complex<T> * src, std::complex<T> * dst
 
 } // namespace FFT
 
-template<class T> void FastFourierTransform(std::complex<T> * x, unsigned count)
+template<class T>
+void FastFourierTransform(std::complex<T> * x,
+							unsigned count)
 {
 	using namespace FFT;
 
-	ASSERT(count >= 2 && count < 0x08000000
-			&& count == (count & (0-count))
-			&& x != NULL);
+	ASSERT(count >= 2);
+	ASSERT(count < 0x08000000);
+	ASSERT(count == (count & (0 - count)));
+	ASSERT(x != NULL);
+
 	FastFourierTransformCore(x, x, count, false);
 }
 
-template<class T> void FastInverseFourierTransform(std::complex<T> * x, unsigned count)
-{
-	using namespace FFT;
-
-	ASSERT(count >= 2 && count < 0x08000000
-			&& count == (count & (0-count))
-			&& x != NULL);
-	FastFourierTransformCore(x, x, count, true);
-}
-
-// FFT real -> complex.
-// converts (count) real source samples to (count / 2 + 1)
-// complex terms.
-// IMPORTANT: dst array should be of size (count / 2 + 1);
 template<class T>
-void FastFourierTransform(const T * src, std::complex<T> * dst,
-						unsigned count)
-{
-	using namespace FFT;
-
-	ASSERT(count >= 4 && count < 0x08000000
-			&& count == (count & (0-count))
-			&& src != NULL && dst != NULL);
-
-	//T * tmp = reinterpret_cast<T * >(dst);
-	FastFourierTransformCore(reinterpret_cast<const std::complex<T> *>(src), dst, count / 2, false);
-	FFTPostProc(dst, count / 2);
-}
-
-// IFFT complex -> real.
-// converts (count / 2 + 1) complex source terms to
-// (count) real samples.
-// IMPORTANT: src array should be of size (count / 2 + 1);
-template<class T>
-void FastInverseFourierTransform(const std::complex<T> * src, T * dst,
+void FastInverseFourierTransform(std::complex<T> * x,
 								unsigned count)
 {
 	using namespace FFT;
 
-	ASSERT(count >= 4 && count < 0x08000000
-			&& count == (count & (0-count))
-			&& src != NULL && dst != NULL);
+	ASSERT(count >= 2);
+	ASSERT(count < 0x08000000);
+	ASSERT(count == (count & (0 - count)));
+	ASSERT(x != NULL);
 
-	IFFTPreProc(src, reinterpret_cast<std::complex<T> *>(dst), count / 2);
+	FastFourierTransformCore(x, x, count, true);
+}
 
-	FastFourierTransformCore(reinterpret_cast<std::complex<T> *>(dst), reinterpret_cast<std::complex<T> *>(dst), count / 2, true);
+// FFT real -> complex.
+// converts [count] real source samples to [count / 2 + 1]
+// complex terms.
+// IMPORTANT: dst array should be of size [count / 2 + 1];
+template<class T>
+void FastFourierTransform(const T * src,
+						std::complex<T> * dst,
+						unsigned count)
+{
+	using namespace FFT;
+
+	typedef std::complex<T> complexT;
+
+	ASSERT(count >= 4);
+	ASSERT(count < 0x08000000);
+	ASSERT(count == (count & (0 - count)));
+	ASSERT(src != NULL);
+	ASSERT(dst != NULL);
+	count /= 2;
+
+	FastFourierTransformCore(reinterpret_cast<const complexT*>(src), dst, count, false);
+	FFTPostProc(dst, count);
+}
+
+// IFFT complex -> real.
+// converts [count / 2 + 1] complex source terms to
+// [count] real samples.
+// IMPORTANT: src array should be of size [count / 2 + 1];
+template<class T>
+void FastInverseFourierTransform(const std::complex<T> * src,
+								T * dst,
+								unsigned count)
+{
+	using namespace FFT;
+
+	typedef std::complex<T> complexT;
+
+	ASSERT(count >= 4);
+	ASSERT(count < 0x08000000);
+	ASSERT(count == (count & (0 - count)));
+	ASSERT(src != NULL);
+	ASSERT(dst != NULL);
+	count /= 2;
+	complexT* complex_dst = reinterpret_cast<complexT*>(dst);
+
+	IFFTPreProc(src, complex_dst, count);
+
+	FastFourierTransformCore(complex_dst, complex_dst, count, true);
+}
+
+template<class T>
+void FastFourierTransform(const std::complex<T>* src, std::complex<T>* dst,
+						unsigned count)
+{
+	using namespace FFT;
+
+	ASSERT(count >= 2);
+	ASSERT(count < 0x08000000);
+	ASSERT(count == (count & (0 - count)));
+	ASSERT(src != NULL);
+	ASSERT(dst != NULL);
+
+	FastFourierTransformCore(src, dst, count, false);
+}
+
+template<class T>
+void FastInverseFourierTransform(const std::complex<T>* src,
+										std::complex<T>* dst,
+										unsigned count)
+{
+	using namespace FFT;
+
+	ASSERT(count >= 2);
+	ASSERT(count < 0x08000000);
+	ASSERT(count == (count & (0 - count)));
+	ASSERT(src != NULL);
+	ASSERT(dst != NULL);
+
+	FastFourierTransformCore(src, dst, count, true);
 }
