@@ -104,6 +104,73 @@ void IFFTPreProc(const std::complex<T> * src,
 	}
 }
 
+static inline void MakeComplexRootsOfUnity(std::complex<double> *dst, unsigned count, bool inverse)
+{
+	ASSERT(count != 0);
+	ASSERT(count % 2 == 0);
+	ASSERT(((0-count) & count) == count);
+
+	typedef std::complex<double> complex;
+
+	complex rotation(sqrt(0.5), sqrt(0.5));
+
+	dst[0] = complex(1., 0.);
+	dst[count / 2] = complex(0., 1.);
+
+	if (count < 4)
+	{
+		if (inverse)
+		{
+			dst[count/2] = complex(0., -1.);
+		}
+		return;
+	}
+
+	dst[count / 4] = rotation;
+
+	// Fill count/4 octant first, then reflect it to 3 other octants
+	for (unsigned n = count / 8; n != 0; n /= 2)
+	{
+		// n is number of point on the Z circle (in array) that a single rotation covers
+		// Convert the rotation to half of the angle
+		// sin(x/2)=sqrt((1-cos(x))/2)
+		// cos(x/2)=sqrt((1+cos(x))/2)
+		rotation.imag(sqrt((1. - rotation.real()) / 2.));
+		rotation.real(sqrt((1. + rotation.real()) / 2.));
+
+		// starting from count/2, and going by +/-'i', apply 'rotation'.
+		for (unsigned i = 0, j = count / 2 - n; i < j; i += n + n, j -= n + n)
+		{
+			complex tmp = dst[i] * rotation;
+			dst[i+n] = tmp;
+			// reflect over pi/4 line:
+			dst[j] = complex(tmp.imag(), tmp.real());
+		}
+	}
+
+	if (inverse)
+	{
+		// Make the result complex conjugate
+		dst[count / 2] = complex(0., -1.);
+		// reflect over pi/2 line:
+		for (unsigned i = 1, j = count - 1; i < j; i++, j--)
+		{
+			complex tmp = dst[i];
+			dst[j] = -tmp;
+			dst[i] = conj(tmp);
+		}
+	}
+	else
+	{
+		// reflect over pi/2 line:
+		for (unsigned i = 1, j = count - 1; i < j; i++, j--)
+		{
+			complex tmp = dst[i];
+			dst[j] = complex(-tmp.real(), tmp.imag());
+		}
+	}
+}
+
 template<typename T>
 void BitSwapArray(const T* src, T* dst, const unsigned count)
 {
