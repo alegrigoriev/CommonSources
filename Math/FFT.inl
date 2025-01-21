@@ -21,47 +21,27 @@ typedef std::complex<double> complex;
 // Conversion of [count] complex FFT result terms to [count+1]
 // terms as if they were obtained from real data. Used in real->complex FFT
 template<class T>
-void FFTPostProc(std::complex<T> * src, const unsigned count)
+void FFTPostProc(std::complex<T> * src,
+				const unsigned count,
+				complex const* Roots)
 {
 	ASSERT(count != 0);
 	ASSERT(count % 2 == 0);
 	ASSERT(((0 - count) & count) == count);
-
-	double const angle = M_PI / count;
-	complex const rot2(cos(2*angle), -sin(2*angle));
-	complex u0(-sin(angle), -cos(angle));
-	complex u1(0., -1.);
 
 	src[count].real(0.);
 	src[count].imag(src[0].real() - src[0].imag());
 	src[0].real(src[0].real() + src[0].imag());
 	src[0].imag(0.);
 
-	// at i==count/2 u reaches -unity, and x[k] stays unchanged
-	for (unsigned i = 0, k = count; ; )
+	Roots += count / 2;
+	for (unsigned i = 1, k = count - 1; i < k; k--, i++)
 	{
-		k--;
-		i++;
+		Roots--;
 		complex src_k = src[k];
 		complex src_i = conj(src[i]);
 		complex tmp = src_k + src_i;
-		complex tmp2 = u0 * (src_k - src_i);
-		u0 *= rot2;
-
-		src[i] = 0.5 * conj(tmp + tmp2);
-		src[k] = 0.5 * (tmp - tmp2);
-		k--;
-		i++;
-		if (i == k)
-		{
-			break;
-		}
-
-		u1 *= rot2;
-		src_k = src[k];
-		src_i = conj(src[i]);
-		tmp = src_k + src_i;
-		tmp2 = u1 * (src_k - src_i);
+		complex tmp2 = *Roots * (src_i - src_k);
 
 		src[i] = 0.5 * conj(tmp + tmp2);
 		src[k] = 0.5 * (tmp - tmp2);
@@ -501,8 +481,11 @@ void FastFourierTransform(const T * src,
 	ASSERT(dst != NULL);
 	count /= 2;
 
+	complex* Roots = static_cast<complex*>(_alloca(count * sizeof(complex)));
+	MakeComplexRootsOfUnity(Roots, count, false);
+
 	FastFourierTransformCore(reinterpret_cast<const complexT*>(src), dst, count, 0);
-	FFTPostProc(dst, count);
+	FFTPostProc(dst, count, Roots);
 }
 
 // IFFT complex -> real.
