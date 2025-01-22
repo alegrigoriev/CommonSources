@@ -352,9 +352,19 @@ template<class T>
 void FastFourierTransformCore(const std::complex<T> * src,
 							std::complex<T> * dst,
 							const unsigned count,
+							std::complex<double> const* Roots,
+							unsigned roots_count,
 							unsigned options)
 {
 	typedef std::complex<T> complexT;
+
+	if (Roots == nullptr)
+	{
+		roots_count = count / 2;
+		complex *tmp = static_cast<complex*>(_alloca(roots_count * sizeof(complex)));
+		MakeComplexRootsOfUnity(tmp, roots_count, options & FftOptions::Inverse);
+		Roots = tmp;
+	}
 
 	static bool CanUseSSE2 = true;
 	if (CanUseSSE2
@@ -364,28 +374,23 @@ void FastFourierTransformCore(const std::complex<T> * src,
 		FastFourierTransformCoreSSE2(src, dst, count, options);
 		return;
 	}
-	complex cs2(cos(M_PI / (count/2)), sin(M_PI / (count/2)));
-	if (options & FftOptions::Inverse) cs2 = conj(cs2);
 
+	unsigned roots_stride = roots_count * 2 / count;
 	for (unsigned f = count / 2; f > 1; f /= 2, src = dst)
 	{
 		// f iterates from 2^order_power to 4
+		const complex* p_uv0 = Roots;
+		const complex* p_uv1 = p_uv0 + roots_stride;
 
-		double z = 2.*M_PI / f;		// double of the standard rotation
-		if (options & FftOptions::Inverse) z = -z;
-
-		int e = f * 2;
-
-		complex uv0(1., 0.);
-		complex uv1 = cs2;		// from previous step
-		cs2.real(cos(z));
-		cs2.imag(sin(z));
+		unsigned e = f * 2;
 
 		for (unsigned j = 0; j < f; j+=2)
 		{
 			// on the first pass, j goes from 0 to half array size, for each complex number
 			// on the second pass, j goes from 0 to quarter array size, for each complex number
 			// etc
+			complex uv0 = *p_uv0;
+			complex uv1 = *p_uv1;
 			for(unsigned i = j; i < count; i += e)
 			{
 				// on the first j pass, i goes from j for each complex number
@@ -400,9 +405,10 @@ void FastFourierTransformCore(const std::complex<T> * src,
 				dsti[1] = s0 + s1;
 				dsti[f+1] = uv1 * (s0 - s1);
 			} // i-loop
-			uv0 *= cs2;
-			uv1 *= cs2;
+			p_uv0 = p_uv1 + roots_stride;
+			p_uv1 = p_uv0 + roots_stride;
 		}  // j - loop
+		roots_stride *= 2;
 	} // L - loop
 
 	// last pass, each couple of complex numbers goes through add/subtract
@@ -442,7 +448,7 @@ void FastFourierTransform(std::complex<T> * x,
 	ASSERT(count == (count & (0 - count)));
 	ASSERT(x != NULL);
 
-	FastFourierTransformCore(x, x, count, 0);
+	FastFourierTransformCore(x, x, count, nullptr, 0, 0);
 }
 
 template<class T>
@@ -456,7 +462,7 @@ void FastInverseFourierTransform(std::complex<T> * x,
 	ASSERT(count == (count & (0 - count)));
 	ASSERT(x != NULL);
 
-	FastFourierTransformCore(x, x, count, FftOptions::Inverse);
+	FastFourierTransformCore(x, x, count, nullptr, 0, FFT::FftOptions::Inverse);
 }
 
 // FFT real -> complex.
@@ -482,7 +488,8 @@ void FastFourierTransform(const T * src,
 	complex* Roots = static_cast<complex*>(_alloca(count * sizeof(complex)));
 	MakeComplexRootsOfUnity(Roots, count, false);
 
-	FastFourierTransformCore(reinterpret_cast<const complexT*>(src), dst, count, 0);
+	FastFourierTransformCore(reinterpret_cast<const complexT*>(src), dst, count,
+							Roots, count, 0);
 	FFTPostProc(dst, count, Roots);
 }
 
@@ -513,6 +520,7 @@ void FastInverseFourierTransform(const std::complex<T> * src,
 	IFFTPreProc(src, complex_dst, count, Roots);
 
 	FastFourierTransformCore(complex_dst, complex_dst, count,
+							Roots, count,
 							FftOptions::Inverse);
 }
 
@@ -528,7 +536,7 @@ void FastFourierTransform(const std::complex<T>* src, std::complex<T>* dst,
 	ASSERT(src != NULL);
 	ASSERT(dst != NULL);
 
-	FastFourierTransformCore(src, dst, count, 0);
+	FastFourierTransformCore(src, dst, count, nullptr, 0, 0);
 }
 
 template<class T>
@@ -544,6 +552,6 @@ void FastInverseFourierTransform(const std::complex<T>* src,
 	ASSERT(src != NULL);
 	ASSERT(dst != NULL);
 
-	FastFourierTransformCore(src, dst, count,
+	FastFourierTransformCore(src, dst, count, nullptr, 0,
 								FftOptions::Inverse);
 }
