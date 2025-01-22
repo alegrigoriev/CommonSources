@@ -54,7 +54,8 @@ void FFTPostProc(std::complex<T> * src,
 template<class T>
 void IFFTPreProc(const std::complex<T> * src,
 				std::complex<T> * dst,
-				const unsigned count)
+				unsigned count,
+				complex const* Roots)
 {
 	typedef std::complex<T> complexT;
 
@@ -62,22 +63,19 @@ void IFFTPreProc(const std::complex<T> * src,
 	ASSERT(count % 2 == 0);
 	ASSERT(((0 - count) & count) == count);
 
-	double angle = M_PI / count;
-	complex rot(cos(angle), sin(angle));
-	complex u(0., -1.);
-
 	dst[0].real(0.5f * T(src[0].real() + src[count].imag()));
 	dst[0].imag(0.5f * T(src[0].real() - src[count].imag()));
 
 	dst[count / 2] = src[count / 2];
 
+	Roots += count / 2;
 	for (unsigned i = 1, k = count - 1; i < k; k--, i++)
 	{
-		u *= rot;
+		Roots--;
 		complex src_k = src[k];
 		complex src_i = conj(src[i]);
 		complex tmp = src_k + src_i;
-		complex tmp2 = u * (src_i - src_k);
+		complex tmp2 = *Roots * (src_i - src_k);
 
 		dst[i] = 0.5 * conj(tmp + tmp2);
 		dst[k] = 0.5 * (tmp - tmp2);
@@ -509,7 +507,10 @@ void FastInverseFourierTransform(const std::complex<T> * src,
 	count /= 2;
 	complexT* complex_dst = reinterpret_cast<complexT*>(dst);
 
-	IFFTPreProc(src, complex_dst, count);
+	complex* Roots = static_cast<complex*>(_alloca(count * sizeof(complex)));
+	MakeComplexRootsOfUnity(Roots, count, true);
+
+	IFFTPreProc(src, complex_dst, count, Roots);
 
 	FastFourierTransformCore(complex_dst, complex_dst, count,
 							FftOptions::Inverse);
