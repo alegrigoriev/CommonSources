@@ -49,7 +49,7 @@ class poly
 {
 public:
 	poly(const poly&);
-	poly(int iInitOrder=0, Complex first=0., int iMaxOrder=256);
+	explicit poly(int iInitOrder=0, Complex first=0., int iMaxOrder=256);
 	poly(const Complex *roots, int Order=0, Complex first=1., int iMaxOrder=256);
 	poly(const polyRoots & roots, Complex first=1., int iMaxOrder = 256);
 	// Binary Operator Functions
