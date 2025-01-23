@@ -140,7 +140,7 @@ void poly::FromRoots(const polyRoots & roots, Complex first)
 	delete[] pp;
 }
 
-void __stdcall SafeDelete(complexArray * a)
+void SafeDelete(complexArray * a)
 {
 	if(a != NULL && --(a->iRefCount) == 0) delete a;
 }
@@ -269,100 +269,100 @@ poly & poly::operator *= (const poly &a)
 	isReal &= a.isReal;
 	return *this;
 }
-poly __stdcall operator *	(const poly & mult1, const Complex &mult2)
+poly operator *(const poly & mult1, const Complex &mult2)
 {
 	poly p(mult1);
 	p *= mult2;
 	return p;
 }
-poly __stdcall operator *	(const poly & mult1, double mult2)
+poly operator *(const poly & mult1, double mult2)
 {
 	poly p(mult1);
 	p *= mult2;
 	return p;
 }
-poly __stdcall operator *	(const Complex &mult2, const poly & mult1)
+poly operator *(const Complex &mult2, const poly & mult1)
 {
 	poly p(mult1);
 	p *= mult2;
 	return p;
 }
-poly __stdcall operator *	(double mult2, const poly & mult1)
+poly operator *(double mult2, const poly & mult1)
 {
 	poly p(mult1);
 	p *= mult2;
 	return p;
 }
-poly __stdcall operator *	(const poly & mult1, const poly &mult2)
+poly operator *(const poly & mult1, const poly &mult2)
 {
 	poly p(mult1);
 	p *= mult2;
 	return p;
 }
 
-poly __stdcall operator +	(const poly & arg1, const Complex &arg2)
+poly operator +(const poly & arg1, const Complex &arg2)
 {
 	poly p(arg1);
 	p += arg2;
 	return p;
 }
-poly __stdcall operator +	(const poly & arg1, double arg2)
+poly operator +(const poly & arg1, double arg2)
 {
 	poly p(arg1);
 	p += arg2;
 	return p;
 }
-poly __stdcall operator +	(const Complex &arg2, const poly & arg1)
+poly operator +(const Complex &arg2, const poly & arg1)
 {
 	poly p(arg1);
 	p += arg2;
 	return p;
 }
-poly __stdcall operator +	(double arg2, const poly & arg1)
+poly operator +(double arg2, const poly & arg1)
 {
 	poly p(arg1);
 	p += arg2;
 	return p;
 }
-poly __stdcall operator +	(const poly & arg1, const poly &arg2)
+poly operator +(const poly & arg1, const poly &arg2)
 {
 	poly p(arg1);
 	p += arg2;
 	return p;
 }
 
-poly __stdcall operator -	(const poly & arg1, const Complex &arg2)
+poly operator -(const poly & arg1, const Complex &arg2)
 {
 	poly p(arg1);
 	p -= arg2;
 	return p;
 }
-poly __stdcall operator -	(const poly & arg1, double arg2)
+poly operator -(const poly & arg1, double arg2)
 {
 	poly p(arg1);
 	p -= arg2;
 	return p;
 }
-poly __stdcall operator -	(const Complex &arg2, const poly & arg1)
+poly operator -(const Complex &arg2, const poly & arg1)
 {
 	poly p(-arg1);
 	p += arg2;
 	return p;
 }
-poly __stdcall operator -	(double arg2, const poly & arg1)
+poly operator -(double arg2, const poly & arg1)
 {
 	poly p(-arg1);
 	p += arg2;
 	return p;
 }
-poly __stdcall operator -	(const poly & arg1, const poly &arg2)
+poly operator -(const poly & arg1, const poly &arg2)
 {
 	poly p(arg1);
 	p -= arg2;
 	return p;
 }
 
-void __stdcall PolyDiv(poly *quot, poly *rem, const poly &numer, const poly &denom)
+void PolyDiv(poly *quot, poly *rem, const poly &numer, const poly &denom)
 {
 	poly quot1, rem1(numer);
 	rem1.MakeUnique();
@@ -431,14 +431,14 @@ poly poly::operator -() const
 	return p;
 }
 
-poly __stdcall operator <<(const poly & p, int i)
+poly operator <<(const poly & p, int i)
 {
 	poly tmp(p);
 	tmp <<= i;
 	return tmp;
 }
 
-poly __stdcall operator >>(const poly & p, int i)
+poly operator >>(const poly & p, int i)
 {
 	poly tmp(p);
 	tmp >>= i;
@@ -457,14 +457,14 @@ poly & poly::operator %= (const poly & denom)
 	return *this;
 }
 
-poly __stdcall operator / (const poly & numer, const poly & denom)
+poly operator / (const poly & numer, const poly & denom)
 {
 	poly quot;
 	PolyDiv(&quot, NULL, numer, denom);
 	return quot;
 }
 
-poly __stdcall operator % (const poly & numer, const poly & denom)
+poly operator % (const poly & numer, const poly & denom)
 {
 	poly rem;
 	PolyDiv(NULL, &rem, numer, denom);
@@ -1036,7 +1036,7 @@ void poly::Dump(CDumpContext & dc)
 }
 #endif
 
-std::ostream & __stdcall operator << (std::ostream &os, const poly &p)
+std::ostream & operator << (std::ostream &os, const poly &p)
 {
 	os << p.order() << "\n";
 	for (int i=0; i <= p.order(); i++)
@@ -1111,32 +1111,32 @@ polyRoots & polyRoots::operator +=(const polyRoots & a)
 	return *this;
 }
 
-polyRoots __stdcall operator + (const polyRoots & arg1, const Complex &arg2)
+polyRoots operator + (const polyRoots & arg1, const Complex &arg2)
 {
 	polyRoots p(arg1);
 	p += arg2;
 	return p;
 }
-polyRoots __stdcall operator + (const polyRoots & arg1, double arg2)
+polyRoots operator + (const polyRoots & arg1, double arg2)
 {
 	polyRoots p(arg1);
 	p += arg2;
 	return p;
 }
-polyRoots __stdcall operator + (const polyRoots & arg1, const polyRoots &  arg2)
+polyRoots operator + (const polyRoots & arg1, const polyRoots &  arg2)
 {
 	polyRoots p(arg1);
 	p += arg2;
 	return p;
 }
 
-polyRoots __stdcall operator + (const Complex &arg2, const polyRoots & arg1)
+polyRoots operator + (const Complex &arg2, const polyRoots & arg1)
 {
 	polyRoots p(arg1);
 	p += arg2;
 	return p;
 }
-polyRoots __stdcall operator + (double arg2, const polyRoots & arg1)
+polyRoots operator + (double arg2, const polyRoots & arg1)
 {
 	polyRoots p(arg1);
 	p += arg2;

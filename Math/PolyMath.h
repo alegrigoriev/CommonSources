@@ -11,7 +11,7 @@ typedef std::complex<double> Complex;
 class poly;
 /*
 complexArray class is introduced to reduce array copy overhead
-When 'poly'	class is copied, we just copy its complexArray pointer
+When 'poly' class is copied, we just copy its complexArray pointer
 and increment its reference count to 1. When we need to modify
 the array we allocate new copy only if the reference count is
 greater than 1.
@@ -31,7 +31,7 @@ public:
 	complexArray(const complexArray&);
 	operator Complex*() { return pArray; }
 	operator const Complex*() const { return pArray; }
-	friend void __stdcall SafeDelete(complexArray *);
+	friend void SafeDelete(complexArray *);
 	void Allocate(int);
 	int AllocatedSize() const { return iAllocatedSize; }
 	void IncRefCount() { ++iRefCount; }
@@ -53,30 +53,30 @@ public:
 	poly(const Complex *roots, int Order=0, Complex first=1., int iMaxOrder=256);
 	poly(const polyRoots & roots, Complex first=1., int iMaxOrder = 256);
 	// Binary Operator Functions
-	friend poly __stdcall operator+(const poly &, const poly &);
-	friend poly __stdcall operator+(double, const poly &);
-	friend poly __stdcall operator+(const poly &, double);
-	friend poly __stdcall operator+(const poly &, const Complex&);
-	friend poly __stdcall operator+(const Complex&, const poly &);
-	friend poly __stdcall operator-(const poly &, const poly &);
-	friend poly __stdcall operator-(double, const poly &);
-	friend poly __stdcall operator-(const poly &, double);
-	friend poly __stdcall operator-(const poly &, const Complex&);
-	friend poly __stdcall operator-(const Complex&, const poly &);
-	friend poly __stdcall operator*(const poly &, const poly &);
-	friend poly __stdcall operator*(double, const poly &);
-	friend poly __stdcall operator*(const poly &, double);
-	friend poly __stdcall operator*(const poly &, const Complex&);
-	friend poly __stdcall operator*(const Complex&, const poly &);
-	friend poly __stdcall operator/(const poly &, const poly &);
-	friend poly __stdcall operator%(const poly &, const poly &);
-	friend poly __stdcall operator/(const poly &, double);
-	friend poly __stdcall operator/(const poly &, const Complex&);
-	friend poly __stdcall operator<<(const poly &, int);
-	friend poly __stdcall operator>>(const poly &, int);
-	friend int __stdcall operator==(const poly &, const poly &);
-	friend int __stdcall operator!=(const poly &, const poly &);
-	friend void __stdcall PolyDiv(poly *quot, poly *rem, const poly &numer, const poly &denom);
+	friend poly operator+(const poly &, const poly &);
+	friend poly operator+(double, const poly &);
+	friend poly operator+(const poly &, double);
+	friend poly operator+(const poly &, const Complex&);
+	friend poly operator+(const Complex&, const poly &);
+	friend poly operator-(const poly &, const poly &);
+	friend poly operator-(double, const poly &);
+	friend poly operator-(const poly &, double);
+	friend poly operator-(const poly &, const Complex&);
+	friend poly operator-(const Complex&, const poly &);
+	friend poly operator*(const poly &, const poly &);
+	friend poly operator*(double, const poly &);
+	friend poly operator*(const poly &, double);
+	friend poly operator*(const poly &, const Complex&);
+	friend poly operator*(const Complex&, const poly &);
+	friend poly operator/(const poly &, const poly &);
+	friend poly operator%(const poly &, const poly &);
+	friend poly operator/(const poly &, double);
+	friend poly operator/(const poly &, const Complex&);
+	friend poly operator<<(const poly &, int);
+	friend poly operator>>(const poly &, int);
+	friend int operator==(const poly &, const poly &);
+	friend int operator!=(const poly &, const poly &);
+	friend void PolyDiv(poly *quot, poly *rem, const poly &numer, const poly &denom);
 	Complex eval(Complex arg) const;
 	Complex operator ()(Complex x) const { return eval(x); }
 	poly deriv(void) const;
@@ -87,7 +87,7 @@ public:
 	void FromRoots(const polyRoots & roots, Complex first=1.);
 	void FromPoints(const Complex * pArguments,
 					const Complex * pValues, int nCount);
-	friend void __stdcall SafeDelete(complexArray *);
+	friend void SafeDelete(complexArray *);
 	//	friend
 	poly & operator+=(const poly &);
 	poly & operator+=(const Complex &);
@@ -154,15 +154,15 @@ public:
 	polyRoots(const Complex *roots, int Count=0, int iMaxOrder=256);
 	~polyRoots();
 	// Binary Operator Functions
-	friend polyRoots __stdcall operator+(const polyRoots &, const polyRoots &);
-	friend polyRoots __stdcall operator+(double, const polyRoots &);
-	friend polyRoots __stdcall operator+(const polyRoots &, double);
-	friend polyRoots __stdcall operator+(const polyRoots &, const Complex&);
-	friend polyRoots __stdcall operator+(const Complex&, const polyRoots &);
-	friend int __stdcall operator==(const polyRoots &, const polyRoots &);
-	friend int __stdcall operator!=(const polyRoots &, const polyRoots &);
+	friend polyRoots operator+(const polyRoots &, const polyRoots &);
+	friend polyRoots operator+(double, const polyRoots &);
+	friend polyRoots operator+(const polyRoots &, double);
+	friend polyRoots operator+(const polyRoots &, const Complex&);
+	friend polyRoots operator+(const Complex&, const polyRoots &);
+	friend int operator==(const polyRoots &, const polyRoots &);
+	friend int operator!=(const polyRoots &, const polyRoots &);
 	Complex eval(Complex arg) const;
-	friend void __stdcall SafeDelete(complexArray *);
+	friend void SafeDelete(complexArray *);
 
 	polyRoots & operator+=(const polyRoots &);
 	polyRoots & operator+=(const Complex &);
@@ -201,8 +201,8 @@ protected:
 	int iMaxCount;  // maximum allowed array size
 };
 
-std::ostream & __stdcall operator<<(std::ostream &, const poly &);
-std::istream & __stdcall operator>>(std::istream &, poly &);
+std::ostream & operator<<(std::ostream &, const poly &);
+std::istream & operator>>(std::istream &, poly &);
 
-int __stdcall PolyRoots(Complex * roots, const poly & src,
+int PolyRoots(Complex* roots, const poly & src,
 						Complex cmStart = Complex(0., 0.), int iIter = 100);

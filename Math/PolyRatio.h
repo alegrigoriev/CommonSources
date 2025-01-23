@@ -17,40 +17,40 @@ public:
 	polyRatio(Complex *zeros, int nOrder=0,
 			Complex *poles=NULL, int dOrder=0, Complex first=1.);
 	// Binary Operator Functions
-	friend polyRatio __stdcall operator+(const polyRatio &, const polyRatio &);
-	friend polyRatio __stdcall operator+(const polyRatio &, double);
-	friend polyRatio __stdcall operator+(const polyRatio &, const Complex&);
-	friend polyRatio __stdcall operator+(const polyRatio &, const poly&);
-	friend polyRatio __stdcall operator+(double, const polyRatio &);
-	friend polyRatio __stdcall operator+(const Complex&, const polyRatio &);
-	friend polyRatio __stdcall operator+(const poly&, const polyRatio &);
+	friend polyRatio operator+(const polyRatio &, const polyRatio &);
+	friend polyRatio operator+(const polyRatio &, double);
+	friend polyRatio operator+(const polyRatio &, const Complex&);
+	friend polyRatio operator+(const polyRatio &, const poly&);
+	friend polyRatio operator+(double, const polyRatio &);
+	friend polyRatio operator+(const Complex&, const polyRatio &);
+	friend polyRatio operator+(const poly&, const polyRatio &);
 
-	friend polyRatio __stdcall operator-(const polyRatio &, const polyRatio &);
-	friend polyRatio __stdcall operator-(const polyRatio &, double);
-	friend polyRatio __stdcall operator-(const polyRatio &, const Complex&);
-	friend polyRatio __stdcall operator-(const polyRatio &, const poly&);
-	friend polyRatio __stdcall operator-(double, const polyRatio &);
-	friend polyRatio __stdcall operator-(const Complex&, const polyRatio &);
-	friend polyRatio __stdcall operator-(const poly&, const polyRatio &);
+	friend polyRatio operator-(const polyRatio &, const polyRatio &);
+	friend polyRatio operator-(const polyRatio &, double);
+	friend polyRatio operator-(const polyRatio &, const Complex&);
+	friend polyRatio operator-(const polyRatio &, const poly&);
+	friend polyRatio operator-(double, const polyRatio &);
+	friend polyRatio operator-(const Complex&, const polyRatio &);
+	friend polyRatio operator-(const poly&, const polyRatio &);
 
-	friend polyRatio __stdcall operator*(const polyRatio &, double);
-	friend polyRatio __stdcall operator*(const polyRatio &, const Complex&);
-	friend polyRatio __stdcall operator*(const polyRatio &, const poly&);
-	friend polyRatio __stdcall operator*(double, const polyRatio &);
-	friend polyRatio __stdcall operator*(const Complex&, const polyRatio &);
-	friend polyRatio __stdcall operator*(const poly&, const polyRatio &);
+	friend polyRatio operator*(const polyRatio &, double);
+	friend polyRatio operator*(const polyRatio &, const Complex&);
+	friend polyRatio operator*(const polyRatio &, const poly&);
+	friend polyRatio operator*(double, const polyRatio &);
+	friend polyRatio operator*(const Complex&, const polyRatio &);
+	friend polyRatio operator*(const poly&, const polyRatio &);
 
-	friend polyRatio __stdcall operator/(const polyRatio &, const polyRatio &);
-	friend polyRatio __stdcall operator/(const polyRatio &, const poly &);
-//	friend polyRatio __stdcall operator%(const polyRatio &, const polyRatio &);
-	friend polyRatio __stdcall operator/(const polyRatio &, double);
-	friend polyRatio __stdcall operator/(const polyRatio &, const Complex&);
-	friend polyRatio __stdcall operator<<(const polyRatio &, int);
-	friend polyRatio __stdcall operator>>(const polyRatio &, int);
-	//friend int __stdcall operator==(const polyRatio &, const polyRatio &);
-	//friend int __stdcall operator!=(const polyRatio &, const polyRatio &);
+	friend polyRatio operator/(const polyRatio &, const polyRatio &);
+	friend polyRatio operator/(const polyRatio &, const poly &);
+//	friend polyRatio operator%(const polyRatio &, const polyRatio &);
+	friend polyRatio operator/(const polyRatio &, double);
+	friend polyRatio operator/(const polyRatio &, const Complex&);
+	friend polyRatio operator<<(const polyRatio &, int);
+	friend polyRatio operator>>(const polyRatio &, int);
+	//friend int operator==(const polyRatio &, const polyRatio &);
+	//friend int operator!=(const polyRatio &, const polyRatio &);
 
-	friend polyRatio __stdcall reduce(const polyRatio &);
+	friend polyRatio reduce(const polyRatio &);
 	Complex eval(Complex arg) const;
 	Complex operator ()(Complex x) const { return eval(x); }
 	polyRatio deriv(void) const;
@@ -97,5 +97,5 @@ protected:
 	poly m_denom, m_numer;
 };
 
-std::ostream& __stdcall operator<<(std::ostream&, const polyRatio&);
-std::istream& __stdcall operator>>(std::istream&, polyRatio&);
+std::ostream& operator<<(std::ostream&, const polyRatio&);
+std::istream& operator>>(std::istream&, polyRatio&);

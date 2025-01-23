@@ -147,148 +147,148 @@ polyRatio & polyRatio::operator *= (const polyRatio &a)
 	return *this;
 }
 
-polyRatio __stdcall operator *	(const polyRatio & mult1, const Complex &mult2)
+polyRatio operator *(const polyRatio & mult1, const Complex &mult2)
 {
 	polyRatio p(mult1);
 	p *= mult2;
 	return p;
 }
-polyRatio __stdcall operator *	(const polyRatio & mult1, const poly &mult2)
+polyRatio operator *(const polyRatio & mult1, const poly &mult2)
 {
 	polyRatio p(mult1);
 	p *= mult2;
 	return p;
 }
-polyRatio __stdcall operator *	(const polyRatio & mult1, double mult2)
+polyRatio operator *(const polyRatio & mult1, double mult2)
 {
 	polyRatio p(mult1);
 	p *= mult2;
 	return p;
 }
-polyRatio __stdcall operator *	(const Complex &mult2, const polyRatio & mult1)
+polyRatio operator *(const Complex &mult2, const polyRatio & mult1)
 {
 	polyRatio p(mult1);
 	p *= mult2;
 	return p;
 }
-polyRatio __stdcall operator *	(const poly &mult2, const polyRatio & mult1)
+polyRatio operator *(const poly &mult2, const polyRatio & mult1)
 {
 	polyRatio p(mult1);
 	p *= mult2;
 	return p;
 }
-polyRatio __stdcall operator *	(double mult2, const polyRatio & mult1)
+polyRatio operator *(double mult2, const polyRatio & mult1)
 {
 	polyRatio p(mult1);
 	p *= mult2;
 	return p;
 }
-polyRatio __stdcall operator *	(const polyRatio & mult1, const polyRatio &mult2)
+polyRatio operator *(const polyRatio & mult1, const polyRatio &mult2)
 {
 	polyRatio p(mult1);
 	p *= mult2;
 	return p;
 }
 
-polyRatio __stdcall operator /	(const polyRatio & arg1, const Complex &arg2)
+polyRatio operator /(const polyRatio & arg1, const Complex &arg2)
 {
 	polyRatio p(arg1);
 	p /= arg2;
 	return p;
 }
-polyRatio __stdcall operator /	(const polyRatio & arg1, const poly &arg2)
+polyRatio operator /(const polyRatio & arg1, const poly &arg2)
 {
 	polyRatio p(arg1);
 	p /= arg2;
 	return p;
 }
-polyRatio __stdcall operator /	(const polyRatio & arg1, double arg2)
+polyRatio operator /(const polyRatio & arg1, double arg2)
 {
 	polyRatio p(arg1);
 	p /= arg2;
 	return p;
 }
 
-polyRatio __stdcall operator +	(const polyRatio & arg1, const Complex &arg2)
+polyRatio operator +(const polyRatio & arg1, const Complex &arg2)
 {
 	polyRatio p(arg1);
 	p += arg2;
 	return p;
 }
-polyRatio __stdcall operator +	(const polyRatio & arg1, const poly &arg2)
+polyRatio operator +(const polyRatio & arg1, const poly &arg2)
 {
 	polyRatio p(arg1);
 	p += arg2;
 	return p;
 }
-polyRatio __stdcall operator +	(const polyRatio & arg1, double arg2)
+polyRatio operator +(const polyRatio & arg1, double arg2)
 {
 	polyRatio p(arg1);
 	p += arg2;
 	return p;
 }
-polyRatio __stdcall operator +	(const Complex &arg2, const polyRatio & arg1)
+polyRatio operator +(const Complex &arg2, const polyRatio & arg1)
 {
 	polyRatio p(arg1);
 	p += arg2;
 	return p;
 }
-polyRatio __stdcall operator +	(const poly &arg2, const polyRatio & arg1)
+polyRatio operator +(const poly &arg2, const polyRatio & arg1)
 {
 	polyRatio p(arg1);
 	p += arg2;
 	return p;
 }
-polyRatio __stdcall operator +	(double arg2, const polyRatio & arg1)
+polyRatio operator +(double arg2, const polyRatio & arg1)
 {
 	polyRatio p(arg1);
 	p *= arg2;
 	return p;
 }
-polyRatio __stdcall operator +	(const polyRatio & arg1, const polyRatio &arg2)
+polyRatio operator +(const polyRatio & arg1, const polyRatio &arg2)
 {
 	polyRatio p(arg1);
 	p += arg2;
 	return p;
 }
 
-polyRatio __stdcall operator -	(const polyRatio & arg1, const Complex &arg2)
+polyRatio operator -(const polyRatio & arg1, const Complex &arg2)
 {
 	polyRatio p(arg1);
 	p -= arg2;
 	return p;
 }
-polyRatio __stdcall operator -	(const polyRatio & arg1, const poly &arg2)
+polyRatio operator -(const polyRatio & arg1, const poly &arg2)
 {
 	polyRatio p(arg1);
 	p -= arg2;
 	return p;
 }
-polyRatio __stdcall operator -	(const polyRatio & arg1, double arg2)
+polyRatio operator -(const polyRatio & arg1, double arg2)
 {
 	polyRatio p(arg1);
 	p -= arg2;
 	return p;
 }
-polyRatio __stdcall operator -	(const Complex &arg2, const polyRatio & arg1)
+polyRatio operator -(const Complex &arg2, const polyRatio & arg1)
 {
 	polyRatio p(-arg1);
 	p += arg2;
 	return p;
 }
-polyRatio __stdcall operator -	(const poly &arg2, const polyRatio & arg1)
+polyRatio operator -(const poly &arg2, const polyRatio & arg1)
 {
 	polyRatio p(-arg1);
 	p += arg2;
 	return p;
 }
-polyRatio __stdcall operator -	(double arg2, const polyRatio & arg1)
+polyRatio operator -(double arg2, const polyRatio & arg1)
 {
 	polyRatio p(-arg1);
 	p += arg2;
 	return p;
 }
-polyRatio __stdcall operator -	(const polyRatio & arg1, const polyRatio &arg2)
+polyRatio operator -(const polyRatio & arg1, const polyRatio &arg2)
 {
 	polyRatio p(arg1);
 	p -= arg2;
@@ -313,14 +313,14 @@ polyRatio polyRatio::operator -() const
 	return polyRatio(-m_numer, m_denom);
 }
 
-polyRatio __stdcall operator <<(const polyRatio & p, int i)
+polyRatio operator <<(const polyRatio & p, int i)
 {
 	polyRatio tmp(p);
 	tmp <<= i;
 	return tmp;
 }
 
-polyRatio __stdcall operator >>(const polyRatio & p, int i)
+polyRatio operator >>(const polyRatio & p, int i)
 {
 	polyRatio tmp(p);
 	tmp >>= i;
@@ -334,7 +334,7 @@ polyRatio & polyRatio::operator /= (const polyRatio & pDenom)
 	return *this;
 }
 
-polyRatio __stdcall operator / (const polyRatio & pNumer, const polyRatio & pDenom)
+polyRatio operator / (const polyRatio & pNumer, const polyRatio & pDenom)
 {
 	return polyRatio(pNumer.m_numer*pDenom.m_denom,
 					pNumer.m_denom*pDenom.m_numer);
