@@ -3,8 +3,9 @@
 
 #include "PolyMath.h"
 
-#include <afxtempl.h>
 
+namespace PolynomialMath
+{
 class polyRatio
 {
 public:
@@ -97,5 +98,7 @@ protected:
 	poly m_denom, m_numer;
 };
 
-std::ostream& operator<<(std::ostream&, const polyRatio&);
-std::istream& operator>>(std::istream&, polyRatio&);
+//std::ostream& operator<<(std::ostream&, const polyRatio&);
+//std::istream& operator>>(std::istream&, polyRatio&);
+
+} // namespace PolynomialMath

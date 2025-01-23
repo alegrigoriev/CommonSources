@@ -2,6 +2,9 @@
 #include "PolyMath.h"
 #include <float.h>
 
+namespace PolynomialMath
+{
+
 #if defined(_DEBUG)
 CDumpContext & operator << (CDumpContext & dc, Complex c)
 {
@@ -362,6 +365,18 @@ poly operator -(const poly & arg1, const poly &arg2)
 	return p;
 }
 
+poly operator /(const poly& mult1, const Complex& mult2)
+{
+	poly p(mult1);
+	p /= mult2;
+	return p;
+}
+poly operator /(const poly& mult1, double mult2)
+{
+	poly p(mult1);
+	p /= mult2;
+	return p;
+}
 void PolyDiv(poly *quot, poly *rem, const poly &numer, const poly &denom)
 {
 	poly quot1, rem1(numer);
@@ -1206,3 +1221,4 @@ void polyRoots::Dump(CDumpContext & dc)
 }
 #endif
 
+}

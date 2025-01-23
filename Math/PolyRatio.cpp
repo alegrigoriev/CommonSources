@@ -1,6 +1,8 @@
 #include "stdafx.h"
 #include "PolyRatio.h"
 #include <float.h>
+namespace PolynomialMath
+{
 
 polyRatio::polyRatio(Complex first, int MaxOrder)
 	: m_denom(0, Complex(1.), MaxOrder), m_numer(0, first, MaxOrder)
@@ -459,3 +461,77 @@ CArray<polyRatio *, polyRatio *>
 	}
 	return pprArray;
 }
+}
+
+#if 0
+// Lookup scope text
+void PolyRatioCompileTest(std::ostream& out, std::istream& in)
+{
+	PolynomialMath::polyRatio r1, r2;
+	PolynomialMath::poly p1, p2;
+//	in >> r1;
+//	in >> p1;
+
+	r2 = r1 + r1;
+	r2 = 1. + r1;
+	r2 = r1 + 1.;
+	r2 = r1 + p1;
+	r2 = p1 + r1;
+	r2 = r1 + PolynomialMath::Complex(0., 1.);
+	r2 = PolynomialMath::Complex(0., 1.) + r1;
+
+	r2 = r1 - r1;
+	r2 = 1. - r1;
+	r2 = r1 - 1.;
+	r2 = r1 - p1;
+	r2 = p1 - r1;
+	r2 = r1 - PolynomialMath::Complex(0., 1.);
+	r2 = PolynomialMath::Complex(0., 1.) - r1;
+
+	r2 = r1 * r1;
+	r2 = 1. * r1;
+	r2 = r1 * 1.;
+	r2 = r1 * p1;
+	r2 = p1 * r1;
+	r2 = r1 * PolynomialMath::Complex(0., 1.);
+	r2 = PolynomialMath::Complex(0., 1.) * r1;
+
+	r2 = r1 / r1;
+	r2 = r1 / 2.;
+	r2 = r1 / p1;
+	r2 = p1 / r1;
+	r2 = r1 / PolynomialMath::Complex(0., 1.);
+
+	r2 = r1 << 2;
+	r1 = r2 >> 2;
+
+	p2 = p1 + p1;
+	p2 = 1. + p1;
+	p2 = p1 + 1.;
+	p2 = p1 + PolynomialMath::Complex(0., 1.);
+	p2 = PolynomialMath::Complex(0., 1.) + p1;
+
+	p2 = p1 - p1;
+	p2 = 1. - p1;
+	p2 = p1 - 1.;
+	p2 = p1 - PolynomialMath::Complex(0., 1.);
+	p2 = PolynomialMath::Complex(0., 1.) - p1;
+
+	p2 = p1 * p1;
+	p2 = 1. * p1;
+	p2 = p1 * 1.;
+	p2 = p1 * PolynomialMath::Complex(0., 1.);
+	p2 = PolynomialMath::Complex(0., 1.) * p1;
+
+	p2 = p1 / p1;
+	p2 = p1 / 1.;
+	p2 = p1 / PolynomialMath::Complex(0., 1.);
+
+	r2 = r1 << 2;
+	r1 = r2 >> 2;
+
+//	out << r1;
+	out << p1;
+}
+
+#endif

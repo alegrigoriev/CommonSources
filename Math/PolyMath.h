@@ -7,6 +7,9 @@
  #include "afx.h"
 #endif
 #include <complex>
+
+namespace PolynomialMath
+{
 typedef std::complex<double> Complex;
 class poly;
 /*
@@ -202,7 +205,6 @@ protected:
 };
 
 std::ostream & operator<<(std::ostream &, const poly &);
-std::istream & operator>>(std::istream &, poly &);
+//std::istream & operator>>(std::istream &, poly &);
 
-int PolyRoots(Complex* roots, const poly & src,
-						Complex cmStart = Complex(0., 0.), int iIter = 100);
+} // namespace PolynomialMath

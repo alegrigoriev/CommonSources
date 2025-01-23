@@ -6,16 +6,14 @@
 #include "PolyMath.h"
 #include "PolyRatio.h"
 
-typedef polyRoots POLY_ROOTS;
-typedef polyRatio POLY_RATIO;
-typedef poly POLY;
-typedef Complex COMPLEX;
-typedef complexArray COMPLEX_ARRAY;
-
-#define TWO_PI (M_PI*2.)
+typedef PolynomialMath::polyRoots POLY_ROOTS;
+typedef PolynomialMath::polyRatio POLY_RATIO;
+typedef PolynomialMath::poly POLY;
+typedef PolynomialMath::Complex COMPLEX;
+typedef PolynomialMath::complexArray COMPLEX_ARRAY;
 
 int LaguerreMethod(	POLY &coef,
-					Complex *zz,
+					COMPLEX*zz,
 					double epsilon,
 					double epsilon2,
 					int maxIterations);
@@ -54,13 +52,13 @@ void BilinearLowPass(const POLY_ROOTS & SrcPoles,
 					double T,
 					POLY_ROOTS & ZPlanePoles,
 					POLY_ROOTS & ZPlaneZeros,
-					COMPLEX rotator = Complex(1., 0.));
+					COMPLEX rotator = COMPLEX(1., 0.));
 
-void BilinearTransform(const poly & src, poly & dst,
-						double T, Complex rotator, int nAddZeros);
+void BilinearTransform(const POLY& src, POLY& dst,
+						double T, COMPLEX rotator, int nAddZeros);
 
-void BilinearTransform(const polyRatio & src, polyRatio & dst,
-						double T, Complex rotator = 1.);
+void BilinearTransform(const POLY_RATIO& src, POLY_RATIO& dst,
+						double T, COMPLEX rotator = 1.);
 
 COMPLEX BilinearNormCoeff(const POLY_ROOTS & SrcPoles,
 						const POLY_ROOTS & SrcZeros,

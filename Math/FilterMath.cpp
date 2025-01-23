@@ -1,8 +1,9 @@
 // filter math
 #include "stdafx.h"
-#include "Filtermath.h"
+#include "FilterMath.h"
 #include <limits.h>
-#include <complex>
+using namespace PolynomialMath;
+
 /**********************************/
 /*                                */
 /*   sincSqrd()                   */
@@ -11,6 +12,7 @@
 const int MAXPOINTS = 100;
 const int MAXPOLES = 100;
 
+#define TWO_PI (M_PI*2.)
 
 /**********************************/
 /*                                */
@@ -79,7 +81,7 @@ static double ipow(double x,
 /*                                                */
 /**************************************************/
 int LaguerreMethod(POLY &coef,
-					Complex *zz,
+					COMPLEX *zz,
 					double epsilon,
 					double epsilon2,
 					int maxIterations)
@@ -964,9 +966,9 @@ void BilinearLowPass(const POLY_ROOTS & SrcPoles,
 	return;
 }
 
-void BilinearTransform(const poly & src,
-						poly & dst,
-						double T, Complex rotator,
+void BilinearTransform(const POLY & src,
+						POLY & dst,
+						double T, COMPLEX rotator,
 						int nAddZeros)
 {
 	// nAddZeros argument specifies, how many T/2*(z+1)
@@ -997,8 +999,8 @@ void BilinearTransform(const poly & src,
 	dst = res;
 }
 
-void BilinearTransform(const polyRatio & src, polyRatio & dst,
-						double T, Complex rotator)
+void BilinearTransform(const POLY_RATIO& src, POLY_RATIO& dst,
+						double T, COMPLEX rotator)
 {
 	int AddNumer = src.denom().order() - src.numer().order();
 	int AddDenom = 0;
