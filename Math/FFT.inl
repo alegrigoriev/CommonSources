@@ -125,7 +125,7 @@ static void FastFourierTransformCoreSSE2(const std::complex<double> * complex_sr
 	// last pass, each couple of complex numbers goes through add/subtract
 	if (reverse_fft)
 	{
-		__m128d a = { 2.0 / count,  2.0 / count};
+		__m128d a = { 1.0 / count,  1.0 / count};
 
 		for (unsigned i = 0; i <= count - 2; i += 2)
 		{
@@ -239,7 +239,7 @@ static void FastFourierTransformCoreSSE2(const std::complex<float> * complex_src
 	// last pass, each couple of complex numbers goes through add/subtract
 	if (reverse_fft)
 	{
-		__m128 a = { 2.0f / count,  2.0f / count,  2.0f / count,  2.0f / count};
+		__m128 a = { 1.0f / count,  1.0f / count,  1.0f / count,  1.0f / count};
 
 		for (unsigned i = 0; i < half_count; i ++)
 		{
@@ -356,7 +356,7 @@ void FastFourierTransformCore(const std::complex<T> * src, std::complex<T> * dst
 	// last pass, each couple of complex numbers goes through add/subtract
 	if (reverse_fft)
 	{
-		T a = T(2.0 / count);
+		T a = T(1.0 / count);
 		for (unsigned i = 0; i < count; i += 2)
 		{
 			std::complex<T> s0 = src[i], s1 = src[i + 1];
