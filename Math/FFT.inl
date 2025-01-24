@@ -63,10 +63,10 @@ void IFFTPreProc(const std::complex<T> * src, std::complex<T> * dst, const unsig
 {
 	ASSERT(count > 0 && count % 2 == 0);
 	double angle = M_PI / count;
-	std::complex<double> rot(cos(angle), sin(angle));
+	std::complex<double> rot(cos(angle), -sin(angle));
 	std::complex<double> u(0., -1.);
 
-	dst[0] = T(0.5) * (src[0] + conj(src[count]) + std::complex<T>(0., -1.) * (conj(src[count]) - src[0]));
+	dst[0] = T(0.5) * (src[0] + conj(src[count]) + std::complex<T>(0., 1.) * (conj(src[count]) + src[0]));
 
 	for (unsigned i = 1, k = count - 1; i <= count / 2; i++, k--)
 	{
