@@ -21,7 +21,7 @@ typedef std::complex<double> complex;
 // Conversion of [count] complex FFT result terms to [count+1]
 // terms as if they were obtained from real data. Used in real->complex FFT
 template<class T>
-void FFTPostProc(std::complex<T> * x, const unsigned count)
+void FFTPostProc(std::complex<T> * src, const unsigned count)
 {
 	ASSERT(count != 0);
 	ASSERT(count % 2 == 0);
@@ -30,24 +30,26 @@ void FFTPostProc(std::complex<T> * x, const unsigned count)
 	double const angle = M_PI / count;
 	complex const rot2(cos(2*angle), -sin(2*angle));
 	complex u0(-sin(angle), -cos(angle));
-	complex u1(-sin(2*angle), -cos(2*angle));
+	complex u1(0., -1.);
 
-	x[count] = std::complex<T>(T(0.), T(x[0].real() - x[0].imag()));
-	x[0] = std::complex<T>(T(x[0].real() + x[0].imag()), T(0.));
+	src[count].real(0.);
+	src[count].imag(src[0].real() - src[0].imag());
+	src[0].real(src[0].real() + src[0].imag());
+	src[0].imag(0.);
 
 	// at i==count/2 u reaches -unity, and x[k] stays unchanged
 	for (unsigned i = 0, k = count; ; )
 	{
 		k--;
 		i++;
-		complex xk = x[k];
-		complex xi = conj(x[i]);
-		complex tmp = xk + xi;
-		complex tmp2 = u0 * (xk - xi);
+		complex src_k = src[k];
+		complex src_i = conj(src[i]);
+		complex tmp = src_k + src_i;
+		complex tmp2 = u0 * (src_k - src_i);
 		u0 *= rot2;
 
-		x[i] = conj(0.5 * (tmp + tmp2));
-		x[k] = 0.5 * (tmp - tmp2);
+		src[i] = 0.5 * conj(tmp + tmp2);
+		src[k] = 0.5 * (tmp - tmp2);
 		k--;
 		i++;
 		if (i == k)
@@ -55,15 +57,14 @@ void FFTPostProc(std::complex<T> * x, const unsigned count)
 			break;
 		}
 
-		xk = x[k];
-		xi = conj(x[i]);
-		tmp = xk + xi;
-		tmp2 = u1 * (xk - xi);
 		u1 *= rot2;
+		src_k = src[k];
+		src_i = conj(src[i]);
+		tmp = src_k + src_i;
+		tmp2 = u1 * (src_k - src_i);
 
-		x[i] = conj(0.5 * (tmp + tmp2));
-		x[k] = 0.5 * (tmp - tmp2);
-
+		src[i] = 0.5 * conj(tmp + tmp2);
+		src[k] = 0.5 * (tmp - tmp2);
 	}
 }
 
@@ -82,19 +83,24 @@ void IFFTPreProc(const std::complex<T> * src,
 	ASSERT(((0 - count) & count) == count);
 
 	double angle = M_PI / count;
-	complex rot(cos(angle), -sin(angle));
+	complex rot(cos(angle), sin(angle));
 	complex u(0., -1.);
 
-	dst[0] = complexT(0.5, 0.5) * (conj(src[count]) + src[0]);
+	dst[0].real(0.5f * T(src[0].real() + src[count].imag()));
+	dst[0].imag(0.5f * T(src[0].real() - src[count].imag()));
 
-	for (unsigned i = 1, k = count - 1; i <= count / 2; i++, k--)
+	dst[count / 2] = src[count / 2];
+
+	for (unsigned i = 1, k = count - 1; i < k; k--, i++)
 	{
 		u *= rot;
-		complexT tmp(conj(src[k]) + src[i]);
-		complexT tmp2(u * complex(conj(src[k]) - src[i]));
+		complex src_k = src[k];
+		complex src_i = conj(src[i]);
+		complex tmp = src_k + src_i;
+		complex tmp2 = u * (src_i - src_k);
 
-		dst[i] = T(0.5) * (tmp + tmp2);
-		dst[k] = T(0.5) * conj(tmp - tmp2);
+		dst[i] = 0.5 * conj(tmp + tmp2);
+		dst[k] = 0.5 * (tmp - tmp2);
 	}
 }
 
