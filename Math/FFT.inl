@@ -24,6 +24,7 @@ template<class T>
 void FFTPostProc(std::complex<T> * src,
 				const unsigned count,
 				complex const* Roots,
+				const unsigned roots_count,
 				unsigned options)
 {
 	ASSERT(count != 0);
@@ -44,10 +45,12 @@ void FFTPostProc(std::complex<T> * src,
 	src[0].real(src[0].real() + src[0].imag());
 	src[0].imag(0.);
 
-	Roots += count / 2;
+	const unsigned roots_stride = roots_count / count;
+	// at i==count/2 u reaches -unity, and x[k] stays unchanged
+	Roots += roots_count / 2;
 	for (unsigned i = 1, k = count - 1; i < k; k--, i++)
 	{
-		Roots--;
+		Roots -= roots_stride;
 		complex src_k = src[k];
 		complex src_i = conj(src[i]);
 		complex tmp = src_k + src_i;
@@ -530,7 +533,7 @@ void FastFourierTransform(const T * src,
 	FastFourierTransformCore(reinterpret_cast<const complexT*>(src), dst, count,
 							Roots, count,
 		options & ~(FftOptions::Inverse| FFT_NormalizeToUnity));
-	FFTPostProc(dst, count, Roots, options);
+	FFTPostProc(dst, count, Roots, count, options);
 }
 
 // IFFT complex -> real.
