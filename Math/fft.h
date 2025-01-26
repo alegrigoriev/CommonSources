@@ -3,6 +3,17 @@
 #pragma once
 #include <complex>
 
+namespace FFT
+{
+
+enum FftOptions : unsigned
+{
+	None = 0,
+	Inverse = 1,
+};
+
+}
+
 template<class T>
 extern void FastFourierTransform(std::complex<T>* x,
 								unsigned count);
