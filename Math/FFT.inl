@@ -9,6 +9,10 @@
 #define ASSERT(x)
 #endif
 #include <intrin.h>
+
+namespace FFT
+{
+
 // Conversion of 'count' complex FFT result terms to 'count'
 // terms as if they were obtained from real data. Used in real->complex FFT
 template<class T>
@@ -408,8 +412,12 @@ void FastFourierTransformCore(const std::complex<T> * src, std::complex<T> * dst
 	}
 }
 
+} // namespace FFT
+
 template<class T> void FastFourierTransform(std::complex<T> * x, unsigned count)
 {
+	using namespace FFT;
+
 	ASSERT(count >= 2 && count < 0x08000000
 			&& count == (count & (0-count))
 			&& x != NULL);
@@ -418,6 +426,8 @@ template<class T> void FastFourierTransform(std::complex<T> * x, unsigned count)
 
 template<class T> void FastInverseFourierTransform(std::complex<T> * x, unsigned count)
 {
+	using namespace FFT;
+
 	ASSERT(count >= 2 && count < 0x08000000
 			&& count == (count & (0-count))
 			&& x != NULL);
@@ -432,6 +442,8 @@ template<class T>
 void FastFourierTransform(const T * src, std::complex<T> * dst,
 						unsigned count)
 {
+	using namespace FFT;
+
 	ASSERT(count >= 4 && count < 0x08000000
 			&& count == (count & (0-count))
 			&& src != NULL && dst != NULL);
@@ -449,6 +461,8 @@ template<class T>
 void FastInverseFourierTransform(const std::complex<T> * src, T * dst,
 								unsigned count)
 {
+	using namespace FFT;
+
 	ASSERT(count >= 4 && count < 0x08000000
 			&& count == (count & (0-count))
 			&& src != NULL && dst != NULL);
