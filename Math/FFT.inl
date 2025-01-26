@@ -98,6 +98,44 @@ void IFFTPreProc(const std::complex<T> * src,
 	}
 }
 
+template<typename T>
+void BitSwapArray(const T* src, T* dst, const unsigned count)
+{
+	unsigned m = count / 2;	// iterate to the half of the array size
+	const T* src_m = src + m;	// half of the array, corresponds to the most significant bit of i, j
+	T* dst_m = dst + m;	// half of the array, corresponds to the most significant bit of i, j
+	for (unsigned i = 0, j = 0; i < m; i += 2)
+	{
+		// j is a bit reverse of i
+		T tmp;
+		// exchange 0..i..1 and 1..j..0
+		tmp = src_m[j];
+		dst_m[j] = src[i + 1];
+		dst[i + 1] = tmp;
+
+		if (i >= j)
+		{
+			// exchange 0..i..0 and 0..j..0
+			tmp = src[j];
+			dst[j] = src[i];
+			dst[i] = tmp;
+			// exchange 1..i..1 and 1..j..1
+			tmp = src_m[j + 1];
+			dst_m[j + 1] = src_m[i + 1];
+			dst_m[i + 1] = tmp;
+		}
+
+		unsigned k = count / 4;
+		// simulate increment on reverse bit pattern by propagating the carry from most to least significant bit
+		while (k & j)
+		{
+			j ^= k;
+			k >>= 1;
+		}
+		j += k;
+	}
+}
+
 // FFT implementation accelerated with Intel SSE2
 static void FastFourierTransformCoreSSE2(const std::complex<double> * complex_src,
 										std::complex<double> * complex_dst,
@@ -163,38 +201,8 @@ static void FastFourierTransformCoreSSE2(const std::complex<double> * complex_sr
 			dst[i] = tmp;
 		}
 	}
-	unsigned m = count / 2;	// iterate to the half of the array size
-	__m128d * dst_m = dst + m;	// half of the array, corresponds to the most significant bit of i, j
-	for (unsigned i = 0, j = 0; i < m; i +=2)
-	{
-		// j is a bit reverse of i
-		register __m128d tmp;
-		// exchange 0..i..1 and 1..j..0
-		tmp = dst_m[j];
-		dst_m[j] = dst[i + 1];
-		dst[i + 1] = tmp;
 
-		if (i > j)
-		{
-			// exchange 0..i..0 and 0..j..0
-			tmp = dst[j];
-			dst[j] = dst[i];
-			dst[i] = tmp;
-			// exchange 1..i..1 and 1..j..1
-			tmp = dst_m[j + 1];
-			dst_m[j + 1] = dst_m[i + 1];
-			dst_m[i + 1] = tmp;
-		}
-		// n = 2*number of complex numbers
-		unsigned k = count / 4;
-		// simulate increment on reverse bit pattern by propagating the carry from most to least significant bit
-		while(k & j)
-		{
-			j ^= k;
-			k >>= 1;
-		}
-		j += k;
-	}
+	BitSwapArray((const __m128d*)dst, (__m128d*)dst, count);
 }
 
 static void FastFourierTransformCoreSSE2(const std::complex<float> * complex_src,
@@ -284,39 +292,8 @@ static void FastFourierTransformCoreSSE2(const std::complex<float> * complex_src
 			dst[i] = _mm_shuffle_ps(tmp1, tmp1, (1 << 0) | (3 << 2) | (0 << 4) | (2 << 6));
 		}
 	}
-	unsigned m = count / 2;	// iterate to the half of the array size
-	__int64 * dst64_0 = (__int64 *)dst;
-	__int64 * dst64_1 = dst64_0 + m;	// half of the array, corresponds to the most significant bit of i, j
-	for (unsigned i = 0, j = 0; i < m; i +=2)
-	{
-		// j is a bit reverse of i
-		register __int64 tmp;
-		// exchange 0..i..1 and 1..j..0
-		tmp = dst64_1[j];
-		dst64_1[j] = dst64_0[i + 1];
-		dst64_0[i + 1] = tmp;
 
-		if (i > j)
-		{
-			// exchange 0..i..0 and 0..j..0
-			tmp = dst64_0[j];
-			dst64_0[j] = dst64_0[i];
-			dst64_0[i] = tmp;
-			// exchange 1..i..1 and 1..j..1
-			tmp = dst64_1[j + 1];
-			dst64_1[j + 1] = dst64_1[i + 1];
-			dst64_1[i + 1] = tmp;
-		}
-		// n = 2*number of complex numbers
-		unsigned k = count / 4;
-		// simulate increment on reverse bit pattern by propagating the carry from most to least significant bit
-		while(k & j)
-		{
-			j ^= k;
-			k >>= 1;
-		}
-		j += k;
-	}
+	BitSwapArray((const __int64*)dst, (__int64*)dst, count);
 }
 
 //inline implementation of a generic complex->complex fft function
@@ -398,38 +375,7 @@ void FastFourierTransformCore(const std::complex<T> * src,
 		} // i-loop
 	}
 
-	unsigned m = count / 2;	// iterate to the half of the array size
-	complexT* dst_m = dst + m;	// half of the array, corresponds to the most significant bit of i, j
-	for (unsigned i = 0, j = 0; i < m; i +=2)
-	{
-		// j is a bit reverse of i
-		complexT tmp;
-		// exchange 0..i..1 and 1..j..0
-		tmp = dst_m[j];
-		dst_m[j] = dst[i + 1];
-		dst[i + 1] = tmp;
-
-		if (i > j)
-		{
-			// exchange 0..i..0 and 0..j..0
-			tmp = dst[j];
-			dst[j] = dst[i];
-			dst[i] = tmp;
-			// exchange 1..i..1 and 1..j..1
-			tmp = dst_m[j+1];
-			dst_m[j+1] = dst_m[i+1];
-			dst_m[i+1] = tmp;
-		}
-		// n = number of complex numbers
-		unsigned k = count / 4;
-		// simulate increment on reverse bit pattern by propagating the carry from most to least significant bit
-		while(k & j)
-		{
-			j ^= k;
-			k >>= 1;
-		}
-		j += k;
-	}
+	BitSwapArray(dst, dst, count);
 }
 
 } // namespace FFT
