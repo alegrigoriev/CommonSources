@@ -439,7 +439,8 @@ void FastFourierTransformCore(const std::complex<T> * src,
 
 template<class T>
 void FastFourierTransform(std::complex<T> * x,
-							unsigned count)
+							unsigned count,
+							unsigned options)
 {
 	using namespace FFT;
 
@@ -448,12 +449,13 @@ void FastFourierTransform(std::complex<T> * x,
 	ASSERT(count == (count & (0 - count)));
 	ASSERT(x != NULL);
 
-	FastFourierTransformCore(x, x, count, nullptr, 0, 0);
+	FastFourierTransformCore(x, x, count, nullptr, 0, options & ~FftOptions::Inverse);
 }
 
 template<class T>
 void FastInverseFourierTransform(std::complex<T> * x,
-								unsigned count)
+								unsigned count,
+								unsigned options)
 {
 	using namespace FFT;
 
@@ -462,7 +464,7 @@ void FastInverseFourierTransform(std::complex<T> * x,
 	ASSERT(count == (count & (0 - count)));
 	ASSERT(x != NULL);
 
-	FastFourierTransformCore(x, x, count, nullptr, 0, FFT::FftOptions::Inverse);
+	FastFourierTransformCore(x, x, count, nullptr, 0, options | FftOptions::Inverse);
 }
 
 // FFT real -> complex.
@@ -472,7 +474,8 @@ void FastInverseFourierTransform(std::complex<T> * x,
 template<class T>
 void FastFourierTransform(const T * src,
 						std::complex<T> * dst,
-						unsigned count)
+						unsigned count,
+						unsigned options)
 {
 	using namespace FFT;
 
@@ -489,7 +492,7 @@ void FastFourierTransform(const T * src,
 	MakeComplexRootsOfUnity(Roots, count, false);
 
 	FastFourierTransformCore(reinterpret_cast<const complexT*>(src), dst, count,
-							Roots, count, 0);
+							Roots, count, options & ~FFT::FftOptions::Inverse);
 	FFTPostProc(dst, count, Roots);
 }
 
@@ -500,7 +503,8 @@ void FastFourierTransform(const T * src,
 template<class T>
 void FastInverseFourierTransform(const std::complex<T> * src,
 								T * dst,
-								unsigned count)
+								unsigned count,
+								unsigned options)
 {
 	using namespace FFT;
 
@@ -521,28 +525,14 @@ void FastInverseFourierTransform(const std::complex<T> * src,
 
 	FastFourierTransformCore(complex_dst, complex_dst, count,
 							Roots, count,
-							FftOptions::Inverse);
+							options | FftOptions::Inverse);
 }
 
 template<class T>
-void FastFourierTransform(const std::complex<T>* src, std::complex<T>* dst,
-						unsigned count)
-{
-	using namespace FFT;
-
-	ASSERT(count >= 2);
-	ASSERT(count < 0x08000000);
-	ASSERT(count == (count & (0 - count)));
-	ASSERT(src != NULL);
-	ASSERT(dst != NULL);
-
-	FastFourierTransformCore(src, dst, count, nullptr, 0, 0);
-}
-
-template<class T>
-void FastInverseFourierTransform(const std::complex<T>* src,
-										std::complex<T>* dst,
-										unsigned count)
+void FastFourierTransform(const std::complex<T>* src,
+						std::complex<T>* dst,
+						unsigned count,
+						unsigned options)
 {
 	using namespace FFT;
 
@@ -553,5 +543,23 @@ void FastInverseFourierTransform(const std::complex<T>* src,
 	ASSERT(dst != NULL);
 
 	FastFourierTransformCore(src, dst, count, nullptr, 0,
-								FftOptions::Inverse);
+								options & ~FftOptions::Inverse);
+}
+
+template<class T>
+void FastInverseFourierTransform(const std::complex<T>* src,
+								std::complex<T>* dst,
+								unsigned count,
+								unsigned options)
+{
+	using namespace FFT;
+
+	ASSERT(count >= 2);
+	ASSERT(count < 0x08000000);
+	ASSERT(count == (count & (0 - count)));
+	ASSERT(src != NULL);
+	ASSERT(dst != NULL);
+
+	FastFourierTransformCore(src, dst, count, nullptr, 0,
+								options | FftOptions::Inverse);
 }

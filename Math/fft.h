@@ -16,11 +16,13 @@ enum FftOptions : unsigned
 
 template<class T>
 extern void FastFourierTransform(std::complex<T>* x,
-								unsigned count);
+								unsigned count,
+								unsigned options = 0);
 
 template<class T>
 extern void FastInverseFourierTransform(std::complex<T>* x,
-										unsigned count);
+										unsigned count,
+										unsigned options = 0);
 
 // FFT real -> complex.
 // converts [count] real source samples to [count / 2 + 1]
@@ -29,7 +31,8 @@ extern void FastInverseFourierTransform(std::complex<T>* x,
 template<class T>
 extern void FastFourierTransform(const T* src,
 								std::complex<T>* dst,
-								unsigned count);
+								unsigned count,
+								unsigned options = 0);
 
 // IFFT complex -> real.
 // converts [count / 2 + 1] complex source terms to
@@ -38,13 +41,16 @@ extern void FastFourierTransform(const T* src,
 template<class T>
 extern void FastInverseFourierTransform(const std::complex<T>* src,
 										T* dst,
-										unsigned count);
+										unsigned count,
+										unsigned options = 0);
 
 template<class T>
 extern void FastFourierTransform(const std::complex<T>* src, std::complex<T>* dst,
-								unsigned count);
+								unsigned count,
+								unsigned options = 0);
 
 template<class T>
 extern void FastInverseFourierTransform(const std::complex<T>* src,
 										std::complex<T>* dst,
-										unsigned count);
+										unsigned count,
+										unsigned options = 0);
