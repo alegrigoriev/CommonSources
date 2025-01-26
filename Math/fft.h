@@ -10,6 +10,8 @@ enum FftOptions : unsigned
 {
 	None = 0,
 	Inverse = 1,
+	/* Force use of FPU for calculations */
+	DontUseSSE2 = 2,
 };
 
 }
