@@ -23,11 +23,21 @@ typedef std::complex<double> complex;
 template<class T>
 void FFTPostProc(std::complex<T> * src,
 				const unsigned count,
-				complex const* Roots)
+				complex const* Roots,
+				unsigned options)
 {
 	ASSERT(count != 0);
 	ASSERT(count % 2 == 0);
 	ASSERT(((0 - count) & count) == count);
+
+	double multiplier = 0.5;
+	if (options & FFT_NormalizeToUnity)
+	{
+		multiplier = 1. / T(count);
+		src[count / 2] *= T(multiplier);
+		multiplier *= 0.5;
+		src[0] *= T(multiplier);
+	}
 
 	src[count].real(0.);
 	src[count].imag(src[0].real() - src[0].imag());
@@ -43,8 +53,8 @@ void FFTPostProc(std::complex<T> * src,
 		complex tmp = src_k + src_i;
 		complex tmp2 = *Roots * (src_i - src_k);
 
-		src[i] = 0.5 * conj(tmp + tmp2);
-		src[k] = 0.5 * (tmp - tmp2);
+		src[i] = multiplier * conj(tmp + tmp2);
+		src[k] = multiplier * (tmp - tmp2);
 	}
 }
 
@@ -55,7 +65,8 @@ template<class T>
 void IFFTPreProc(const std::complex<T> * src,
 				std::complex<T> * dst,
 				unsigned count,
-				complex const* Roots)
+				complex const* Roots,
+				unsigned options)
 {
 	typedef std::complex<T> complexT;
 
@@ -63,10 +74,19 @@ void IFFTPreProc(const std::complex<T> * src,
 	ASSERT(count % 2 == 0);
 	ASSERT(((0 - count) & count) == count);
 
-	dst[0].real(0.5f * T(src[0].real() + src[count].imag()));
-	dst[0].imag(0.5f * T(src[0].real() - src[count].imag()));
-
 	dst[count / 2] = src[count / 2];
+
+	double multiplier = 0.5;
+	dst[0].real(src[0].real() + src[count].imag());
+	dst[0].imag(src[0].real() - src[count].imag());
+
+	if (0 == (options & IFFT_NormalizedToUnity))
+	{
+		multiplier = 1. / count;
+		dst[count / 2] *= T(multiplier);
+		multiplier *= 0.5;
+		dst[0] *= T(multiplier);
+	}
 
 	Roots += count / 2;
 	for (unsigned i = 1, k = count - 1; i < k; k--, i++)
@@ -77,8 +97,8 @@ void IFFTPreProc(const std::complex<T> * src,
 		complex tmp = src_k + src_i;
 		complex tmp2 = *Roots * (src_i - src_k);
 
-		dst[i] = 0.5 * conj(tmp + tmp2);
-		dst[k] = 0.5 * (tmp - tmp2);
+		dst[i] = multiplier * conj(tmp + tmp2);
+		dst[k] = multiplier * (tmp - tmp2);
 	}
 }
 
@@ -190,6 +210,7 @@ void BitSwapArray(const T* src, T* dst, const unsigned count)
 // FFT implementation accelerated with Intel SSE2
 static void FastFourierTransformCoreSSE2(const std::complex<double> * complex_src,
 										std::complex<double> * complex_dst,
+										double multiplier,
 										const unsigned count,
 										unsigned options)
 {
@@ -232,9 +253,9 @@ static void FastFourierTransformCoreSSE2(const std::complex<double> * complex_sr
 	} // f - loop
 
 	// last pass, each couple of complex numbers goes through add/subtract
-	if (options & FftOptions::Inverse)
+	if (multiplier != 1.)
 	{
-		__m128d a = { 1.0 / count,  1.0 / count};
+		__m128d a = { multiplier,  multiplier };
 
 		for (unsigned i = 0; i <= count - 2; i += 2)
 		{
@@ -258,6 +279,7 @@ static void FastFourierTransformCoreSSE2(const std::complex<double> * complex_sr
 
 static void FastFourierTransformCoreSSE2(const std::complex<float> * complex_src,
 										std::complex<float> * complex_dst,
+										float multiplier,
 										const unsigned count,
 										unsigned options)
 {
@@ -317,9 +339,9 @@ static void FastFourierTransformCoreSSE2(const std::complex<float> * complex_src
 	} // f - loop
 
 	// last pass, each couple of complex numbers goes through add/subtract
-	if (options & FftOptions::Inverse)
+	if (multiplier != 1.)
 	{
-		__m128 a = { 1.0f / count,  1.0f / count,  1.0f / count,  1.0f / count};
+		__m128 a = { multiplier,  multiplier,  multiplier,  multiplier };
 
 		for (unsigned i = 0; i < half_count; i ++)
 		{
@@ -366,12 +388,27 @@ void FastFourierTransformCore(const std::complex<T> * src,
 		Roots = tmp;
 	}
 
+	T multiplier = 1.f;
+	if (options & FftOptions::Inverse)
+	{
+		// If inverse uses non-scaled FFT outputs, it needs to scale the result down
+		// by 1/count
+		if (!(options & IFFT_NormalizedToUnity))
+		{
+			multiplier = 1.0f / count;
+		}
+	}
+	else if (options & FFT_NormalizeToUnity)
+	{
+		multiplier = 1.0f / count;
+	}
+
 	static bool CanUseSSE2 = true;
 	if (CanUseSSE2 && ! (options & FftOptions::DontUseSSE2)
 		&& 0 == (uintptr_t(src) & 15)
 		&& 0 == (uintptr_t(dst) & 15))
 	{
-		FastFourierTransformCoreSSE2(src, dst, count, options);
+		FastFourierTransformCoreSSE2(src, dst, multiplier, count, options);
 		return;
 	}
 
@@ -412,14 +449,13 @@ void FastFourierTransformCore(const std::complex<T> * src,
 	} // L - loop
 
 	// last pass, each couple of complex numbers goes through add/subtract
-	if (options & FftOptions::Inverse)
+	if (multiplier != 1.)
 	{
-		T a = T(1.0 / count);
 		for (unsigned i = 0; i < count; i += 2)
 		{
 			complexT s0 = src[i], s1 = src[i + 1];
-			dst[i] = a * (s0 + s1);
-			dst[i + 1] = a * (s0 - s1);
+			dst[i] = multiplier * (s0 + s1);
+			dst[i + 1] = multiplier * (s0 - s1);
 		} // i-loop
 	}
 	else
@@ -492,8 +528,9 @@ void FastFourierTransform(const T * src,
 	MakeComplexRootsOfUnity(Roots, count, false);
 
 	FastFourierTransformCore(reinterpret_cast<const complexT*>(src), dst, count,
-							Roots, count, options & ~FFT::FftOptions::Inverse);
-	FFTPostProc(dst, count, Roots);
+							Roots, count,
+		options & ~(FftOptions::Inverse| FFT_NormalizeToUnity));
+	FFTPostProc(dst, count, Roots, options);
 }
 
 // IFFT complex -> real.
@@ -507,7 +544,6 @@ void FastInverseFourierTransform(const std::complex<T> * src,
 								unsigned options)
 {
 	using namespace FFT;
-
 	typedef std::complex<T> complexT;
 
 	ASSERT(count >= 4);
@@ -521,11 +557,11 @@ void FastInverseFourierTransform(const std::complex<T> * src,
 	complex* Roots = static_cast<complex*>(_alloca(count * sizeof(complex)));
 	MakeComplexRootsOfUnity(Roots, count, true);
 
-	IFFTPreProc(src, complex_dst, count, Roots);
+	IFFTPreProc(src, complex_dst, count, Roots, options);
 
 	FastFourierTransformCore(complex_dst, complex_dst, count,
 							Roots, count,
-							options | FftOptions::Inverse);
+							options | (FftOptions::IFFT_NormalizedToUnity | FftOptions::Inverse));
 }
 
 template<class T>

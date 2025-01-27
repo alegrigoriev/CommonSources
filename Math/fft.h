@@ -12,6 +12,21 @@ enum FftOptions : unsigned
 	Inverse = 1,
 	/* Force use of FPU for calculations */
 	DontUseSSE2 = 2,
+	/* FFT_NormalizeToUnity changes scale of FFT terms.
+	   By default, AC result of a sine/cosine wave of unity amplitude produces a term with magnitude
+	   equal half the length of of the source array,
+	   and DC magnitude 1 will produce zeroth term equal the length of of the source array.
+	   If FFT_NormalizeToUnity bit set in 'options',
+	   unity AC inputs will produce outputs with magnitude 0.5, and unity DC will produce unity zeroth term.
+
+	   IFFT_NormalizedToUnity used with IFFT, changes the source scale to properly accept results
+	   of FFT with FFT_NormalizeToUnity option.
+
+	   If you do FFT with FFT_ScalePowerToUnity, and then IFFT with IFFT_PowerScaledToUnity,
+	   it produces the original source array back.
+	   */
+	FFT_NormalizeToUnity = 4,
+	IFFT_NormalizedToUnity = FFT_NormalizeToUnity,
 };
 
 }
