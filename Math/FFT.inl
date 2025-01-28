@@ -12,6 +12,8 @@
 #endif
 #include <intrin.h>
 
+#include "fft.h"
+
 namespace FFT
 {
 typedef std::complex<double> complex;
