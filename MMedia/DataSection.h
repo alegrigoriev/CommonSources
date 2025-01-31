@@ -68,10 +68,45 @@ bool CDataSection<T, C>::Allocate(long nCount)
 template <typename T, typename C>
 void CDataSection<T, C>::InvalidateRange(LONGLONG nOffset, long nCount)
 {
-	if (nOffset < m_BufferOffset + m_nCountInBuffer
-		&& nOffset + nCount > m_BufferOffset)
+	if (m_nCountInBuffer == 0)
 	{
-		m_nCountInBuffer = 0;
+		return;
+	}
+	LONGLONG nEndOffset = nOffset + nCount;
+	LONGLONG nBufferEndOffset = m_BufferOffset + m_nCountInBuffer;
+
+	if (nOffset >= nBufferEndOffset)
+	{
+		return;
+	}
+	if (nEndOffset <= m_BufferOffset)
+	{
+		return;
+	}
+
+	if (nOffset - m_BufferOffset >= nBufferEndOffset - nEndOffset)
+	{
+		if (nOffset > m_BufferOffset)
+		{
+			m_nCountInBuffer = long(nOffset - m_BufferOffset);
+		}
+		else
+		{
+			m_nCountInBuffer = 0;
+		}
+	}
+	else
+	{
+		if (nEndOffset < nBufferEndOffset)
+		{
+			m_nCountInBuffer = long(nEndOffset - m_BufferOffset);
+			memmove(m_pBuffer, m_pBuffer + (nEndOffset - m_BufferOffset), m_nCountInBuffer * sizeof * m_pBuffer);
+			m_BufferOffset = nEndOffset;
+		}
+		else
+		{
+			m_nCountInBuffer = 0;
+		}
 	}
 }
 
@@ -146,7 +181,6 @@ int CDataSection<T, C>::GetData(T ** ppBuf, LONGLONG nOffset, long nCount, C * p
 								m_BufferOffset + m_nCountInBuffer, ReadCount, pSource);
 		ASSERT(ReadCount == WasRead);
 		m_nCountInBuffer += WasRead;
-		//nCount = long(m_BufferOffset + m_nCountInBuffer - nOffset);
 	}
 
 	ASSERT (nOffset >= m_BufferOffset
