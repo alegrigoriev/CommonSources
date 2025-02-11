@@ -32,6 +32,12 @@ private:
 		ItemHeader * pFreeItems;
 		CSmallAllocator * pAllocator;
 		size_t NumOfFreeItems;
+
+	private:
+		BlockHeader(const BlockHeader&) = delete;
+		BlockHeader(BlockHeader&&) = delete;
+		BlockHeader& operator=(const BlockHeader&) = delete;
+		BlockHeader& operator=(BlockHeader&&) = delete;
 	};
 	BlockHeader * AllocateBlock();
 	ListHead<BlockHeader> m_Blocks;
@@ -41,6 +47,12 @@ private:
 	size_t m_BlockSize;
 	unsigned m_ItemsInBlock;
 	unsigned m_TotalFreeItems;
+
+private:
+	CSmallAllocator(const CSmallAllocator&) = delete;
+	CSmallAllocator(CSmallAllocator&&) = delete;
+	CSmallAllocator& operator=(const CSmallAllocator&) = delete;
+	CSmallAllocator& operator=(CSmallAllocator&&) = delete;
 };
 
 #pragma warning(default:4355)

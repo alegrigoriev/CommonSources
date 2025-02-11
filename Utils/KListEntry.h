@@ -35,14 +35,17 @@ public:
 
 private:
 	// protection against assignment:
-	ListEntry(ListEntry<T> const &);
-	ListEntry<T> & operator =(ListEntry<T> const &);
+	ListEntry(List const &) = delete;
+	ListEntry(List&&) = delete;
+	List& operator=(const List&) = delete;
+	List& operator=(List&&) = delete;
 };
 
 template<class T>
 struct ListItem : ListEntry<T>
 {
-	//typedef ListItem<T> Item;
+	ListItem() {}
+
 	T * Next() const volatile { return static_cast<T *>(pNext); }
 	T * Prev() const volatile { return static_cast<T *>(pPrev); }
 	bool IsAlone() const volatile
@@ -78,13 +81,20 @@ struct ListItem : ListEntry<T>
 		entry->pNext = this;
 		pPrev = entry;
 	}
+
+private:
+	// protection against assignment:
+	ListItem(Item const&) = delete;
+	ListItem(Item&&) = delete;
+	Item& operator=(const Item&) = delete;
+	Item& operator=(Item&&) = delete;
 };
 
 template<class T>
 struct ListHead : ListEntry<T>
 {
-	//typename Item;
 	typedef ListHead<T> Head;
+	ListHead() {}
 
 	T * First() const volatile { return static_cast<T *>(pNext); }
 	T * Last() const volatile { return static_cast<T *>(pPrev); }
@@ -267,6 +277,12 @@ struct ListHead : ListEntry<T>
 		return false;
 	}
 
+private:
+	// protection against assignment:
+	ListHead(Head const&) = delete;
+	ListHead(Head&&) = delete;
+	Head& operator=(const Head&) = delete;
+	Head& operator=(Head&&) = delete;
 };
 
 // the list may use dispatch (thread) lock or more strong interrupt lock
@@ -274,6 +290,8 @@ struct ListHead : ListEntry<T>
 template<class T, class L = CSimpleCriticalSection>
 struct LockedListHead : ListHead<T>, public L
 {
+	LockedListHead() {}
+
 	// no destructor necessary
 	void InsertHead(Item * entry)
 	{
@@ -339,4 +357,10 @@ struct LockedListHead : ListHead<T>, public L
 		Unlock();
 	}
 
+private:
+	// protection against assignment:
+	LockedListHead(LockedListHead const&) = delete;
+	LockedListHead(LockedListHead&&) = delete;
+	LockedListHead& operator=(const LockedListHead&) = delete;
+	LockedListHead& operator=(LockedListHead&&) = delete;
 };

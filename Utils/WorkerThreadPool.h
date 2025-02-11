@@ -28,6 +28,11 @@ private:
 	static unsigned __stdcall WorkerThread(void *);
 	LONG m_JobsMasterLock;	// whichever thread gets it, will wait for
 
+private:
+	WorkerThreadPool(const WorkerThreadPool&) = delete;
+	WorkerThreadPool(WorkerThreadPool&&) = delete;
+	WorkerThreadPool& operator=(const WorkerThreadPool&) = delete;
+	WorkerThreadPool& operator=(WorkerThreadPool&&) = delete;
 };
 
 class WorkerThreadPoolItem;
@@ -52,6 +57,11 @@ public:
 	WorkerItemProc * Proc;
 	void * Context1;
 	void * Context2;
+private:
+	WorkerThreadPoolItem(const WorkerThreadPoolItem&) = delete;
+	WorkerThreadPoolItem(WorkerThreadPoolItem&&) = delete;
+	WorkerThreadPoolItem& operator=(const WorkerThreadPoolItem&) = delete;
+	WorkerThreadPoolItem& operator=(WorkerThreadPoolItem&&) = delete;
 };
 
 class WorkerThreadPoolJob : public ListItem<WorkerThreadPoolJob>
@@ -68,5 +78,11 @@ public:
 	WorkerThreadPool * m_Pool;
 	ListHead<WorkerThreadPoolItem> m_Items;
 	ListHead<WorkerThreadPoolItem> m_DoneItems;
+
+private:
+	WorkerThreadPoolJob(const WorkerThreadPoolJob&) = delete;
+	WorkerThreadPoolJob(WorkerThreadPoolJob&&) = delete;
+	WorkerThreadPoolJob& operator=(const WorkerThreadPoolJob&) = delete;
+	WorkerThreadPoolJob& operator=(WorkerThreadPoolJob&&) = delete;
 };
 

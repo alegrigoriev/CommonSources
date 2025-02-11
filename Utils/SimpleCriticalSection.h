@@ -1,4 +1,4 @@
-// Copyright Alexander Grigoriev, 1997-2002, All Rights Reserved
+// Copyright Alexander Grigoriev, 1997-2025, All Rights Reserved
 #pragma once
 
 class CSimpleCriticalSection
@@ -21,7 +21,14 @@ public:
 	{
 		LeaveCriticalSection(const_cast<CRITICAL_SECTION *>( & m_cs));
 	}
+
+private:
+	CSimpleCriticalSection(const CSimpleCriticalSection&) = delete;
+	CSimpleCriticalSection(CSimpleCriticalSection&&) = delete;
+	CSimpleCriticalSection& operator=(const CSimpleCriticalSection&) = delete;
+	CSimpleCriticalSection& operator=(CSimpleCriticalSection&&) = delete;
 };
+
 class CSimpleCriticalSectionLock
 {
 	CSimpleCriticalSection volatile & m_cs;
@@ -36,6 +43,8 @@ public:
 		m_cs.Unlock();
 	}
 private:
-	CSimpleCriticalSectionLock & operator =(const CSimpleCriticalSectionLock&);
-	CSimpleCriticalSectionLock(const CSimpleCriticalSectionLock&);
+	CSimpleCriticalSectionLock& operator =(const CSimpleCriticalSectionLock&) = delete;
+	CSimpleCriticalSectionLock& operator=(CSimpleCriticalSectionLock&&) = delete;
+	CSimpleCriticalSectionLock(const CSimpleCriticalSectionLock&) = delete;
+	CSimpleCriticalSectionLock(CSimpleCriticalSectionLock&&) = delete;
 };
